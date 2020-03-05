@@ -1,4 +1,4 @@
-from .models import User
+from .models import User, ImageStore
 from rest_framework.serializers import ModelSerializer
 
 
@@ -12,3 +12,9 @@ class UserCreateSerializer(ModelSerializer):
         user.set_password(validated_data["password"])
         user.save()
         return user
+
+
+class ImageStoreSerializer(ModelSerializer):
+    class Meta:
+        model = ImageStore
+        fields = ("user", "image_path", "thumbnail", "text", "short_text")
