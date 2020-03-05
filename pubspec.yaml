@@ -18,6 +18,9 @@ environment:
 
 dependencies:
   # firebase_auth: ^0.15.5+2
+  # image: ^2.1.12
+  # path: ^1.6.4
+  path_provider: ^1.6.5
   shared_preferences: ^0.5.6+2
   after_layout: ^1.0.7+2
   rxdart: ^0.23.1
