@@ -1,0 +1,1 @@
+ADB=/home/purplecandy/Android/Sdk/platform-tools/adb scrcpy

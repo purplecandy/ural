@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1038730636601",
+    "firebase_url": "https://ural-d83bb.firebaseio.com",
+    "project_id": "ural-d83bb",
+    "storage_bucket": "ural-d83bb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1038730636601:android:d6a77bfa897f0e77bacce8",
+        "android_client_info": {
+          "package_name": "in.kibibyte.ural"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1038730636601-oh51k0781kvlaqd68q7qdn3l63dn4a9s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.kibibyte.ural",
+            "certificate_hash": "9a8020205cbb7ce727d93354997dd3fa2055858c"
+          }
+        },
+        {
+          "client_id": "1038730636601-0ovgtmb1q1v6udoomc0ldnja9o8bkuhj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDASFm2r59FIqMEX4XjeiZM9267BEgqt2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1038730636601-0ovgtmb1q1v6udoomc0ldnja9o8bkuhj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
