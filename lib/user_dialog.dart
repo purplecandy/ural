@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ural/auth_bloc.dart';
+import 'package:ural/blocs/auth_bloc.dart';
 import 'package:ural/utils/async.dart';
 
 class UserDialog extends StatelessWidget {

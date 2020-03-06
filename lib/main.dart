@@ -1,57 +1,53 @@
 import 'dart:convert';
-
 import 'package:after_layout/after_layout.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:folder_picker/folder_picker.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ural/auth_bloc.dart';
-import 'package:ural/image_handler.dart';
+import 'package:workmanager/workmanager.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+
+import 'auth_dialog.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/pages/home_body.dart';
 import 'package:ural/urls.dart';
-import 'package:ural/user_dialog.dart';
 import 'package:ural/utils/async.dart';
-import 'package:workmanager/workmanager.dart';
-import 'textview.dart';
-import 'auth_dialog.dart';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:image/image.dart' as img;
-import 'package:path_provider/path_provider.dart';
-import 'dart:async';
-
-enum SearchStates { searching, finished, empty }
+import 'controllers/permission_handler.dart';
+import 'blocs/auth_bloc.dart';
+import 'controllers/action_handlers.dart';
+import 'utils/parsers.dart';
 
 Future<bool> uploadImagesToBackground() async {
   final pref = await SharedPreferences.getInstance();
   if (pref.containsKey("ural_default_folder")) {
     // final dir = Directory(pref.getString("ural_default_folder"));
-    final dir = Directory("/storage/emulated/0/Pictures/Screenshots/");
-    final token = pref.getString("uralToken");
-    final textRecognizer = FirebaseVision.instance.textRecognizer();
-    var config;
-    if (pref.containsKey("ural_synced_config")) {
-      config = json.decode(pref.getString("ural_synced_config"));
-    } else {
-      config = {};
-    }
-    int count = 0;
-    List<FileSystemEntity> fileEntities = dir.listSync(recursive: true);
+    // final dir = Directory("/storage/emulated/0/Pictures/Screenshots/");
+    // final token = pref.getString("uralToken");
+    // final textRecognizer = FirebaseVision.instance.textRecognizer();
+    // var config;
+    // if (pref.containsKey("ural_synced_config")) {
+    //   config = json.decode(pref.getString("ural_synced_config"));
+    // } else {
+    //   config = {};
+    // }
+    // int count = 0;
+    // List<FileSystemEntity> fileEntities = dir.listSync(recursive: true);
 
-    for (FileSystemEntity entity in fileEntities) {
-      if (entity is File) {
-        if (count > 20) break;
-        final result =
-            await syncImageToServer(File(entity.path), textRecognizer, token);
-        if (result.state == ResponseStatus.success) {
-          config[entity.path.hashCode.toString()] = "";
-          count++;
-        }
-      }
-    }
+    // for (FileSystemEntity entity in fileEntities) {
+    //   if (entity is File) {
+    //     if (count > 20) break;
+    //     final result =
+    //         await syncImageToServer(File(entity.path), textRecognizer, token);
+    //     if (result.state == ResponseStatus.success) {
+    //       config[entity.path.hashCode.toString()] = "";
+    //       count++;
+    //     }
+    //   }
+    // }
     return true;
   }
   return false;
@@ -59,9 +55,9 @@ Future<bool> uploadImagesToBackground() async {
 
 void callbackDispatcher() {
   print("CallBackDispacther RUNNING");
-  Workmanager.executeTask((task, input) async {
-    return await uploadImagesToBackground();
-  });
+  // Workmanager.executeTask((task, input) async {
+  //   return await uploadImagesToBackground();
+  // });
 }
 
 void main() async {
@@ -103,6 +99,10 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   List<ScreenModel> screenshots = [];
   List<ScreenModel> searchResults = [];
   File _image;
+
+  final BehaviorSubject<SearchStates> searchSubjects =
+      BehaviorSubject<SearchStates>.seeded(SearchStates.searching);
+
   final PageController _pageController = PageController();
   final _scaffold = GlobalKey<ScaffoldState>();
   final recognizer = FirebaseVision.instance.textRecognizer();
@@ -120,85 +120,15 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
     return visionText.blocks;
   }
 
-  Future<VisionText> getTextFromImage() async {
-    final fbImage = FirebaseVisionImage.fromFile(_image);
-    final visionText = await recognizer.processImage(fbImage);
-    return visionText;
-  }
-
-  Future<void> handleUpload() async {
-    if (_image != null) {
-      img.Image image = img.decodeImage(_image.readAsBytesSync());
-      img.Image thumbnail = img.copyResize(image, width: 120);
-      Directory tempDir = await getTemporaryDirectory();
-      String encoded;
-      var path = _image.path.split("/").last;
-      final filename = path.split(".")[0] + ".jpg";
-      File(tempDir.path + '/' + filename)
-        ..writeAsBytes(img.encodeJpg(thumbnail)).then((file) async {
-          encoded = base64.encode(await file.readAsBytes());
-          // encoded = file.readAsBytesSync().toString();
-        });
-      String url = ApiUrls.root + ApiUrls.images;
-      String text;
-      await getTextFromImage().then((obj) => text = obj.text);
-      String payload = json.encode({
-        "filename": filename,
-        "thumbnail": encoded,
-        "image_path": _image.path,
-        "text": text,
-        "short_text": "",
-      });
-      try {
-        final response = await http.post(url,
-            body: payload,
-            headers: ApiUrls.authenticatedHeader(Auth().user.token));
-        if (response.statusCode == 201) {
-          print("Image uploaded successfully");
-        } else {
-          print(response.body);
-        }
-      } catch (e) {
-        print(e);
-      }
-    }
-  }
-
   @override
   void initState() {
     super.initState();
   }
 
-  Future<void> getPermissionStatus() async {
-    PermissionStatus permission = await PermissionHandler()
-        .checkPermissionStatus(PermissionGroup.storage);
-    if (permission == PermissionStatus.granted) {
-    } else if (permission == PermissionStatus.denied ||
-        permission == PermissionStatus.unknown ||
-        permission == PermissionStatus.restricted) {
-      await PermissionHandler().requestPermissions([PermissionGroup.storage]);
-      getPermissionStatus();
-    }
-  }
-
-  void startBackGroundJob() async {
-    await Workmanager.registerPeriodicTask(
-        "uralfetchscreens", "ural_background",
-        initialDelay: Duration(seconds: 5));
-  }
-
-  void setDefaultFolder(String path) async {
-    final pref = await SharedPreferences.getInstance();
-    pref.setString("ural_default_folder", path);
-  }
-
-  List<ScreenModel> parseModelFromJson(jsonData) {
-    List<ScreenModel> temp = [];
-    for (var item in jsonData) {
-      ScreenModel model = ScreenModel.fromJson(item);
-      temp.add(model);
-    }
-    return temp;
+  @override
+  void dispose() {
+    searchSubjects.close();
+    super.dispose();
   }
 
   void getImagesList() async {
@@ -229,101 +159,6 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
       );
     await getPermissionStatus();
     getImagesList();
-    startBackGroundJob();
-  }
-
-  void handleDirectory() async {
-    final pref = await SharedPreferences.getInstance();
-    final defaultDir = pref.getString("ural_default_folder");
-
-    showDialog(
-        context: context,
-        child: AlertDialog(
-          title: Text("Default Directory"),
-          content: Text(defaultDir == null ? "NOT SET" : defaultDir),
-          actions: <Widget>[
-            FlatButton(
-                onPressed: () => Navigator.pop(context), child: Text("Close")),
-            FlatButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          fullscreenDialog: true,
-                          builder: (context) => FolderPickerPage(
-                              action: (context, directory) async {
-                                setDefaultFolder(directory.path);
-                                Navigator.pop(context);
-                              },
-                              rootDirectory:
-                                  Directory("/storage/emulated/0/"))));
-                },
-                child: Text("Change Folder")),
-          ],
-        ));
-  }
-
-  void handleSettings() async {
-    print(await uploadImagesToBackground());
-  }
-
-  void handleManualUpload() {}
-  void handleTextView() async {
-    final blocks = await recognizeImage();
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (context) => TextView(
-                  textBlocks: blocks,
-                )));
-  }
-
-  void handleTextField(String query) async {
-    _pageController.nextPage(
-        duration: Duration(milliseconds: 350),
-        curve: Curves.fastLinearToSlowEaseIn);
-    setState(() {
-      searchStates = SearchStates.searching;
-    });
-    String url = ApiUrls.root + ApiUrls.search + "?query=$query";
-    try {
-      final response = await http.get(url,
-          headers: ApiUrls.authenticatedHeader(Auth().user.token));
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        setState(() {
-          searchResults = parseModelFromJson(jsonData);
-          if (searchResults.length > 0) {
-            searchStates = SearchStates.finished;
-          } else {
-            searchStates = SearchStates.empty;
-          }
-        });
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Widget searchWidget() {
-    switch (searchStates) {
-      case SearchStates.finished:
-        return HomeBody(
-          screenshots: searchResults,
-        );
-        break;
-      case SearchStates.empty:
-        return Center(
-          child: Text(
-              "Couldn't find anything. Please trying typing something else"),
-        );
-        break;
-      default:
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-    }
   }
 
   @override
@@ -351,9 +186,11 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                         child: Card(
                           child: ListTile(
                             title: TextField(
-                              onSubmitted: (val) {
-                                print(val.runtimeType);
-                                handleTextField(val);
+                              onSubmitted: (val) async {
+                                searchResults = await handleTextField(
+                                    query: val,
+                                    pageController: _pageController,
+                                    searchSubject: searchSubjects);
                               },
                               decoration: InputDecoration(
                                   border: InputBorder.none,
@@ -375,28 +212,21 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                             elevation: 0,
                             heroTag: null,
                             onPressed: () {
-                              handleUpload();
+                              handleManualUpload();
                             },
                             child: Icon(Icons.file_upload),
                           ),
                           FloatingActionButton(
                             elevation: 0,
                             heroTag: null,
-                            onPressed: () async {
-                              var image = await ImagePicker.pickImage(
-                                  source: ImageSource.gallery);
-                              setState(() {
-                                _image = image;
-                              });
-                              handleTextView();
-                            },
+                            onPressed: () async {},
                             child: Icon(Icons.text_fields),
                           ),
                           FloatingActionButton(
                             elevation: 0,
                             heroTag: null,
                             onPressed: () {
-                              handleDirectory();
+                              handleDirectory(context);
                             },
                             child: Icon(Icons.folder),
                           ),
@@ -421,10 +251,10 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
         body: PageView(
           controller: _pageController,
           physics: NeverScrollableScrollPhysics(),
-          // scrollDirection: Axis.vertical,
           children: <Widget>[
             screenshots.length > 0
                 ? HomeBody(
+                    title: "Recent screenshots",
                     screenshots: screenshots,
                   )
                 : Material(
@@ -432,20 +262,56 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                       child: CircularProgressIndicator(),
                     ),
                   ),
-            searchWidget(),
+            StreamBuilder<SearchStates>(
+              stream: searchSubjects.stream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data == SearchStates.finished) {
+                    return HomeBody(
+                      title: "Search results",
+                      screenshots: searchResults,
+                    );
+                  }
+                  if (snapshot.data == SearchStates.empty) {
+                    return Material(
+                      child: Center(
+                        child: Text(
+                          "Couldn't find anything. Please trying typing something else",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    );
+                  }
+                }
+                return Material(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
-      floatingActionButton: Visibility(
-          visible: (searchStates != SearchStates.searching),
-          child: FloatingActionButton(
-            heroTag: null,
-            onPressed: () {
-              _pageController.previousPage(
-                  duration: Duration(milliseconds: 400), curve: Curves.easeIn);
-            },
-            child: Icon(Icons.grid_on),
-          )),
+      floatingActionButton: StreamBuilder<SearchStates>(
+          stream: searchSubjects.stream,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data != SearchStates.searching)
+                return FloatingActionButton(
+                  heroTag: null,
+                  onPressed: () {
+                    _pageController.previousPage(
+                        duration: Duration(milliseconds: 400),
+                        curve: Curves.easeIn);
+                  },
+                  child: Icon(Icons.grid_on),
+                );
+              else
+                return Container();
+            }
+            return Container();
+          }),
     );
   }
 }

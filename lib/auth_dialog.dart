@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'utils/async.dart';
-import 'auth_bloc.dart';
+import 'blocs/auth_bloc.dart';
 
 class AuthenticationDialog extends StatefulWidget {
   AuthenticationDialog({Key key}) : super(key: key);

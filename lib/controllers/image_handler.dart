@@ -1,21 +1,25 @@
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'utils/async.dart';
 import 'dart:convert';
-import 'urls.dart';
+import 'package:ural/utils/async.dart';
+import 'package:ural/urls.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 
-Future<VisionText> recognizeImage(File image, TextRecognizer recognizer) async {
+Future<dynamic> recognizeImage(File image, TextRecognizer recognizer,
+    {bool getBlocks = false}) async {
   //parsed image
   final visionImage = FirebaseVisionImage.fromFile(image);
   //processing parsed image
   final visionText = await recognizer.processImage(visionImage);
+  if (getBlocks) return visionText.blocks;
   //reutrn text
   return visionText;
 }
 
+/// Uploads the image to the server
 Future<AsyncResponse> syncImageToServer(
     File _image, TextRecognizer recognizer, String token) async {
   if (_image != null) {
