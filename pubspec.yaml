@@ -20,10 +20,15 @@ dependencies:
   # firebase_auth: ^0.15.5+2
   # image: ^2.1.12
   # path: ^1.6.4
+  # flutter_staggered_grid_view: ^0.3.0
+  cached_network_image: ^2.0.0
+  folder_picker: ^0.3.0
+  permission_handler: ^4.3.0
+  workmanager: ^0.2.1
   path_provider: ^1.6.5
   shared_preferences: ^0.5.6+2
   after_layout: ^1.0.7+2
-  rxdart: ^0.23.1
+  rxdart: ^0.22.2
   http: ^0.12.0+4
   firebase_ml_vision: ^0.9.3+8
   image_picker: ^0.6.3+4

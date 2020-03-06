@@ -3,6 +3,7 @@ class ApiUrls {
   // static String root = "http://192.168.43.90:8000/";
   static String auth = "auth/";
   static String user = "user/";
+  static String search = "search/";
   static String images = "images/";
 
   static Map<String, String> headers = {"Content-Type": "application/json"};
