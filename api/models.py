@@ -8,4 +8,4 @@ class ImageStore(models.Model):
     thumbnail = models.ImageField()
     text = models.TextField()
     short_text = models.TextField()
-  
+    date = models.DateTimeField(auto_now_add=True)

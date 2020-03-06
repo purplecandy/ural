@@ -18,3 +18,9 @@ class ImageStoreSerializer(ModelSerializer):
     class Meta:
         model = ImageStore
         fields = ("user", "image_path", "thumbnail", "text", "short_text")
+
+
+class ImageStoreMetaSerializer(ModelSerializer):
+    class Meta:
+        model = ImageStore
+        fields = ("id","image_path", "thumbnail")
