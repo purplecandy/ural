@@ -17,11 +17,8 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
-  # firebase_auth: ^0.15.5+2
-  # image: ^2.1.12
-  # path: ^1.6.4
-  # flutter_staggered_grid_view: ^0.3.0
-  cached_network_image: ^2.0.0
+  clipboard_manager: ^0.0.4
+  url_launcher: ^5.4.2
   folder_picker: ^0.3.0
   permission_handler: ^4.3.0
   workmanager: ^0.2.1

@@ -1,7 +1,11 @@
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
+import 'package:ural/controllers/image_handler.dart';
 import 'package:ural/image_view.dart';
 import 'package:ural/models/screen_model.dart';
 import 'dart:io';
+
+import 'package:ural/pages/textview.dart';
 
 class HomeBody extends StatefulWidget {
   final String title;
@@ -61,12 +65,37 @@ class _HomeBodyState extends State<HomeBody> {
                             builder: (context) => ImageView(
                                   imageFile: file,
                                 ))),
-                    child: Container(
-                      margin: EdgeInsets.all(8),
-                      child: Image.file(
-                        file,
-                        fit: BoxFit.cover,
-                      ),
+                    child: Stack(
+                      children: [
+                        Container(
+                          margin: EdgeInsets.all(8),
+                          width: double.infinity,
+                          child: Image.file(
+                            file,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        FractionalTranslation(
+                          translation: Offset(3, 0.2),
+                          child: FloatingActionButton(
+                            onPressed: () async {
+                              final textBlocs = await recognizeImage(file,
+                                  FirebaseVision.instance.textRecognizer(),
+                                  getBlocks: true);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => TextView(
+                                            textBlocks: textBlocs,
+                                          )));
+                            },
+                            elevation: 0,
+                            heroTag: null,
+                            mini: true,
+                            child: Icon(Icons.text_fields),
+                          ),
+                        )
+                      ],
                     ),
                   );
                 }),

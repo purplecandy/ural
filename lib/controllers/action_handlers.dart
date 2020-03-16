@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:folder_picker/folder_picker.dart';
+import 'package:ural/utils/async.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'package:ural/controllers/image_handler.dart';
@@ -19,12 +20,85 @@ import 'package:ural/models/screen_model.dart';
 enum SearchStates { searching, finished, empty }
 
 /// Handles Settings button events
-void handleSettings() async {
-  // print(await uploadImagesToBackground());
+void handleSettings(BuildContext context) async {
+  final pref = await SharedPreferences.getInstance();
+  String dir = pref.getString("ural_default_folder");
+  showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Card(
+                    child: ListTile(
+                      leading: Icon(Icons.person),
+                      title: Text(Auth().user.username),
+                      subtitle: Text("Currently logged in as"),
+                      trailing: IconButton(
+                          icon: Icon(
+                            Icons.exit_to_app,
+                            color: Colors.redAccent,
+                          ),
+                          onPressed: () async {
+                            final Auth auth = Auth();
+                            await auth.logout();
+                            Navigator.pop(context);
+                            Navigator.pushReplacementNamed(context, '/');
+                          }),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Card(
+                    child: ListTile(
+                      leading: Icon(Icons.folder),
+                      title: Text(dir),
+                      subtitle: Text("Default directory"),
+                      trailing: IconButton(
+                          icon: Icon(Icons.add_box),
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => FolderPickerPage(
+                                        action: (context, directory) async {
+                                          setDefaultFolder(directory.path);
+                                          Navigator.pop(context);
+                                        },
+                                        rootDirectory: Directory(
+                                            "/storage/emulated/0/"))));
+                          }),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ));
 }
 
 /// Gets called when manual-upload button called
-void handleManualUpload() {}
+void handleManualUpload(GlobalKey<ScaffoldState> scaffoldState,
+    TextRecognizer textRecognizer) async {
+  File image = await ImagePicker.pickImage(source: ImageSource.gallery);
+  final resp =
+      await syncImageToServer(image, textRecognizer, Auth().user.token);
+  if (resp.state == ResponseStatus.success) {
+    scaffoldState.currentState.showSnackBar(SnackBar(
+      content: Text("Image uploaded successfully"),
+      backgroundColor: Colors.greenAccent,
+    ));
+  } else {
+    scaffoldState.currentState.showSnackBar(SnackBar(
+      content: Text("Couldn't upload the image"),
+      backgroundColor: Colors.redAccent,
+    ));
+  }
+}
 
 ///Handle textView events
 void handleTextView(BuildContext context, TextRecognizer textRecognizer) async {
@@ -72,34 +146,20 @@ Future<List<ScreenModel>> handleTextField({
   return searchResults;
 }
 
-void handleDirectory(BuildContext context) async {
+void handleBackgroundSync(GlobalKey<ScaffoldState> scaffold) async {
   final pref = await SharedPreferences.getInstance();
-  final defaultDir = pref.getString("ural_default_folder");
-
-  showDialog(
-      context: context,
-      child: AlertDialog(
-        title: Text("Default Directory"),
-        content: Text(defaultDir == null ? "NOT SET" : defaultDir),
-        actions: <Widget>[
-          FlatButton(
-              onPressed: () => Navigator.pop(context), child: Text("Close")),
-          FlatButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        fullscreenDialog: true,
-                        builder: (context) => FolderPickerPage(
-                            action: (context, directory) async {
-                              setDefaultFolder(directory.path);
-                              Navigator.pop(context);
-                            },
-                            rootDirectory: Directory("/storage/emulated/0/"))));
-              },
-              child: Text("Change Folder")),
-        ],
-      ));
+  if (pref.containsKey("ural_default_folder")) {
+    startBackGroundJob();
+    scaffold.currentState.showSnackBar(SnackBar(
+      content: Text("Background sync has been initialized"),
+      backgroundColor: Colors.greenAccent,
+    ));
+  } else {
+    scaffold.currentState.showSnackBar(SnackBar(
+      content: Text("No default directory set"),
+      backgroundColor: Colors.redAccent,
+    ));
+  }
 }
 
 void setDefaultFolder(String path) async {

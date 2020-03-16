@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:after_layout/after_layout.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
-import 'package:folder_picker/folder_picker.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
@@ -20,34 +18,34 @@ import 'controllers/permission_handler.dart';
 import 'blocs/auth_bloc.dart';
 import 'controllers/action_handlers.dart';
 import 'utils/parsers.dart';
+import 'controllers/image_handler.dart';
 
 Future<bool> uploadImagesToBackground() async {
   final pref = await SharedPreferences.getInstance();
   if (pref.containsKey("ural_default_folder")) {
-    // final dir = Directory(pref.getString("ural_default_folder"));
-    // final dir = Directory("/storage/emulated/0/Pictures/Screenshots/");
-    // final token = pref.getString("uralToken");
-    // final textRecognizer = FirebaseVision.instance.textRecognizer();
-    // var config;
-    // if (pref.containsKey("ural_synced_config")) {
-    //   config = json.decode(pref.getString("ural_synced_config"));
-    // } else {
-    //   config = {};
-    // }
-    // int count = 0;
-    // List<FileSystemEntity> fileEntities = dir.listSync(recursive: true);
-
-    // for (FileSystemEntity entity in fileEntities) {
-    //   if (entity is File) {
-    //     if (count > 20) break;
-    //     final result =
-    //         await syncImageToServer(File(entity.path), textRecognizer, token);
-    //     if (result.state == ResponseStatus.success) {
-    //       config[entity.path.hashCode.toString()] = "";
-    //       count++;
-    //     }
-    //   }
-    // }
+    final dir = Directory(pref.getString("ural_default_folder"));
+    final token = pref.getString("uralToken");
+    final textRecognizer = FirebaseVision.instance.textRecognizer();
+    var config;
+    if (pref.containsKey("ural_synced_config")) {
+      config = json.decode(pref.getString("ural_synced_config"));
+    } else {
+      config = {};
+    }
+    int count = 0;
+    List<FileSystemEntity> fileEntities = dir.listSync(recursive: true);
+    for (FileSystemEntity entity in fileEntities) {
+      if (entity is File) {
+        if (config.containsKey(entity.path.hashCode.toString())) continue;
+        if (count > 20) break;
+        final result =
+            await syncImageToServer(File(entity.path), textRecognizer, token);
+        if (result.state == ResponseStatus.success) {
+          config[entity.path.hashCode.toString()] = "";
+          count++;
+        }
+      }
+    }
     return true;
   }
   return false;
@@ -55,15 +53,15 @@ Future<bool> uploadImagesToBackground() async {
 
 void callbackDispatcher() {
   print("CallBackDispacther RUNNING");
-  // Workmanager.executeTask((task, input) async {
-  //   return await uploadImagesToBackground();
-  // });
+  Workmanager.executeTask((task, input) async {
+    return await uploadImagesToBackground();
+  });
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
+  await Workmanager.initialize(callbackDispatcher, isInDebugMode: false);
   runApp(App());
 }
 
@@ -98,7 +96,6 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   SearchStates searchStates = SearchStates.searching;
   List<ScreenModel> screenshots = [];
   List<ScreenModel> searchResults = [];
-  File _image;
 
   final BehaviorSubject<SearchStates> searchSubjects =
       BehaviorSubject<SearchStates>.seeded(SearchStates.searching);
@@ -106,19 +103,6 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   final PageController _pageController = PageController();
   final _scaffold = GlobalKey<ScaffoldState>();
   final recognizer = FirebaseVision.instance.textRecognizer();
-  Future getImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      _image = image;
-    });
-  }
-
-  Future<List<TextBlock>> recognizeImage() async {
-    final fbImage = FirebaseVisionImage.fromFile(_image);
-    final visionText = await recognizer.processImage(fbImage);
-    return visionText.blocks;
-  }
 
   @override
   void initState() {
@@ -212,30 +196,32 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                             elevation: 0,
                             heroTag: null,
                             onPressed: () {
-                              handleManualUpload();
+                              handleManualUpload(_scaffold, recognizer);
                             },
                             child: Icon(Icons.file_upload),
                           ),
                           FloatingActionButton(
                             elevation: 0,
                             heroTag: null,
-                            onPressed: () async {},
+                            onPressed: () async {
+                              handleTextView(context, recognizer);
+                            },
                             child: Icon(Icons.text_fields),
                           ),
                           FloatingActionButton(
                             elevation: 0,
                             heroTag: null,
                             onPressed: () {
-                              handleDirectory(context);
+                              handleBackgroundSync(_scaffold);
                             },
-                            child: Icon(Icons.folder),
+                            child: Icon(Icons.sync),
                           ),
                           FloatingActionButton(
                             heroTag: null,
                             elevation: 0,
                             child: Icon(Icons.settings),
                             onPressed: () {
-                              handleSettings();
+                              handleSettings(context);
                             },
                           )
                         ],
