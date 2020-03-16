@@ -1,5 +1,18 @@
 #PyCache
-django/api/__pycache__/*
+*.pyc
+*.pyo
+django/.vscode
+
+# Django stuff:
+*.log
+*.pot
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
 
 # Miscellaneous
 *.class
