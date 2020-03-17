@@ -17,8 +17,6 @@ import 'package:ural/urls.dart';
 import 'package:ural/blocs/auth_bloc.dart';
 import 'package:ural/models/screen_model.dart';
 
-enum SearchStates { searching, finished, empty }
-
 /// Handles Settings button events
 void handleSettings(BuildContext context) async {
   final pref = await SharedPreferences.getInstance();

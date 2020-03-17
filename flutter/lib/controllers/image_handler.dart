@@ -55,8 +55,7 @@ Future<AsyncResponse> syncImageToServer(
       "thumbnail": encoded,
       "image_path": _image.path,
       "text": text,
-      "short_text": "",
-      "hash_code": _image.path.hashCode.toString()
+      "short_text": ""
     });
     try {
       final response = await http.post(url,

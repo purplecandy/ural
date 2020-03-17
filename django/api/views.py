@@ -7,8 +7,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank
 import base64
-from .models import User, ImageStore
-from .serializers import UserCreateSerializer, ImageStoreSerializer, ImageStoreMetaSerializer
+from .models import ImageStore
+from .serializers import UserCreateSerializer, ImageStoreMetaSerializer
 import os
 from django.conf import settings
 
@@ -35,12 +35,20 @@ class ImageStoreView(APIView):
     def get(self, request: Request) -> Response:
         queryset = ImageStore.objects.filter(user=request.user)
         serializer = ImageStoreMetaSerializer(queryset, many=True)
-        # serializer.is_valid(raise_exception=True)
         return Response(data=serializer.data, status=200)
 
     def post(self, request: Request) -> Response:
         if not request.data["thumbnail"]:
             return Response(data={"message": "No image data provided"}, status=404)
+
+        hash_code: int = hash(request.data["image_path"])
+
+        try:
+            ImageStore.objects.get(hash_code=str(hash_code))
+        except ImageStore.DoesNotExist:
+            pass
+        else:
+            return Response(data={"message": "File already exists"}, status=201)
 
         # Set file path
         loc = os.path.join(settings.MEDIA_ROOT, request.data["filename"])
@@ -49,9 +57,13 @@ class ImageStoreView(APIView):
         thumbnail.write(base64.b64decode(request.data["thumbnail"]))
         thumbnail.close()
         # create a new record
-        ImageStore.objects.create(user=request.user, image_path=request.data["image_path"],
-                                  thumbnail=request.data["filename"], text=request.data["text"],
-                                  short_text="")
+        ImageStore.objects.create(user=request.user,
+                                  image_path=request.data["image_path"],
+                                  thumbnail=request.data["filename"],
+                                  text=request.data["text"],
+                                  short_text="",
+                                  hash_code=str(hash_code)
+                                  )
 
         return Response(data={"message": "Created successfully"}, status=201)
 
@@ -65,7 +77,7 @@ class ImageSearchView(APIView):
             return Response(data={"message": "Invalid query"}, status=400)
 
         query = SearchQuery(request.GET.get('query'))
-        vector = SearchVector("text") + SearchVector("short_text")
+        vector = SearchVector("text", weight="C") + SearchVector("short_text", weight="A")
         queryset = ImageStore.objects.filter(user=request.user).annotate(rank=SearchRank(vector, query)).filter(
             rank__gt=0).order_by(
             '-rank')

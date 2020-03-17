@@ -2,22 +2,24 @@ import 'dart:convert';
 import 'package:after_layout/after_layout.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
-import 'package:rxdart/rxdart.dart';
+// import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ural/blocs/screen_bloc.dart';
+// import 'package:ural/database.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 import 'dart:async';
 
-import 'auth_dialog.dart';
-import 'package:ural/models/screen_model.dart';
+// import 'auth_dialog.dart';
+// import 'package:ural/models/screen_model.dart';
 import 'package:ural/pages/home_body.dart';
-import 'package:ural/urls.dart';
+// import 'package:ural/urls.dart';
 import 'package:ural/utils/async.dart';
 import 'controllers/permission_handler.dart';
-import 'blocs/auth_bloc.dart';
+// import 'blocs/auth_bloc.dart';
 import 'controllers/action_handlers.dart';
-import 'utils/parsers.dart';
+// import 'utils/parsers.dart';
 import 'controllers/image_handler.dart';
 
 Future<bool> uploadImagesToBackground() async {
@@ -93,12 +95,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with AfterLayoutMixin {
-  SearchStates searchStates = SearchStates.searching;
-  List<ScreenModel> screenshots = [];
-  List<ScreenModel> searchResults = [];
-
-  final BehaviorSubject<SearchStates> searchSubjects =
-      BehaviorSubject<SearchStates>.seeded(SearchStates.searching);
+  ScreenBloc _bloc = ScreenBloc();
 
   final PageController _pageController = PageController();
   final _scaffold = GlobalKey<ScaffoldState>();
@@ -107,42 +104,52 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   @override
   void initState() {
     super.initState();
+    startup();
+  }
+
+  void startup() async {
+    //gotta wait for database to get initialized
+    await _bloc.initializeDatabase();
+    //then lazily load all the screens
+    _bloc.listAllScreens();
   }
 
   @override
   void dispose() {
-    searchSubjects.close();
+    _bloc.dispose();
     super.dispose();
   }
 
-  void getImagesList() async {
-    String url = ApiUrls.root + ApiUrls.images;
-    try {
-      final response = await http.get(url,
-          headers: ApiUrls.authenticatedHeader(Auth().user.token));
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+  // void getImagesList() async {
+  //   String url = ApiUrls.root + ApiUrls.images;
+  //   try {
+  //     final response = await http.get(url,
+  //         headers: ApiUrls.authenticatedHeader(Auth().user.token));
+  //     if (response.statusCode == 200) {
+  //       final jsonData = json.decode(response.body);
 
-        setState(() {
-          screenshots = parseModelFromJson(jsonData);
-        });
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
+  //       setState(() {
+  //         screenshots = parseModelFromJson(jsonData);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   @override
   void afterFirstLayout(BuildContext context) async {
-    final authState = await Auth().authenticate();
-    if (authState.state == ResponseStatus.failed)
-      await showDialog(
-        context: context,
-        child: AuthenticationDialog(),
-        barrierDismissible: false,
-      );
     await getPermissionStatus();
-    getImagesList();
+    // slDB.initDB();
+    // final authState = await Auth().authenticate();
+    // if (authState.state == ResponseStatus.failed)
+    //   await showDialog(
+    //     context: context,
+    //     child: AuthenticationDialog(),
+    //     barrierDismissible: false,
+    //   );
+
+    // getImagesList();
   }
 
   @override
@@ -171,10 +178,9 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                           child: ListTile(
                             title: TextField(
                               onSubmitted: (val) async {
-                                searchResults = await handleTextField(
+                                _bloc.handleTextField(
                                     query: val,
-                                    pageController: _pageController,
-                                    searchSubject: searchSubjects);
+                                    pageController: _pageController);
                               },
                               decoration: InputDecoration(
                                   border: InputBorder.none,
@@ -196,7 +202,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                             elevation: 0,
                             heroTag: null,
                             onPressed: () {
-                              handleManualUpload(_scaffold, recognizer);
+                              _bloc.handleManualUpload(_scaffold);
                             },
                             child: Icon(Icons.file_upload),
                           ),
@@ -221,7 +227,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                             elevation: 0,
                             child: Icon(Icons.settings),
                             onPressed: () {
-                              handleSettings(context);
+                              _bloc.handleSettings(context);
                             },
                           )
                         ],
@@ -238,24 +244,34 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
           controller: _pageController,
           physics: NeverScrollableScrollPhysics(),
           children: <Widget>[
-            screenshots.length > 0
-                ? HomeBody(
-                    title: "Recent screenshots",
-                    screenshots: screenshots,
-                  )
-                : Material(
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
+            StreamBuilder<StreamEvents>(
+              stream: _bloc.streamOfRecentScreens,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data == StreamEvents.loading) {
+                    return Material(
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  } else {
+                    return HomeBody(
+                      title: "Recent Screenshots",
+                      screenshots: _bloc.recentScreenshots,
+                    );
+                  }
+                }
+                return Container();
+              },
+            ),
             StreamBuilder<SearchStates>(
-              stream: searchSubjects.stream,
+              stream: _bloc.streamofSearchResults,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   if (snapshot.data == SearchStates.finished) {
                     return HomeBody(
                       title: "Search results",
-                      screenshots: searchResults,
+                      screenshots: _bloc.searchResults,
                     );
                   }
                   if (snapshot.data == SearchStates.empty) {
@@ -280,7 +296,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
         ),
       ),
       floatingActionButton: StreamBuilder<SearchStates>(
-          stream: searchSubjects.stream,
+          stream: _bloc.streamofSearchResults,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data != SearchStates.searching)

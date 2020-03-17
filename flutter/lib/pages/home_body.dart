@@ -9,7 +9,7 @@ import 'package:ural/pages/textview.dart';
 
 class HomeBody extends StatefulWidget {
   final String title;
-  final List<ScreenModel> screenshots;
+  final List<ScreenshotModel> screenshots;
   HomeBody({Key key, this.screenshots, this.title}) : super(key: key);
 
   @override
@@ -17,7 +17,7 @@ class HomeBody extends StatefulWidget {
 }
 
 class _HomeBodyState extends State<HomeBody> {
-  List<ScreenModel> get screenshots => widget.screenshots;
+  List<ScreenshotModel> get screenshots => widget.screenshots;
   String get title => widget.title;
   @override
   Widget build(BuildContext context) {
@@ -46,7 +46,7 @@ class _HomeBodyState extends State<HomeBody> {
                 itemBuilder: (context, index) {
                   File file;
                   try {
-                    file = File(screenshots[index].path);
+                    file = File(screenshots[index].imagePath);
                     if (!file.existsSync()) {
                       throw Exception("Image does not exist");
                     }

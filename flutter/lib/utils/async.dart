@@ -7,7 +7,8 @@ enum ResponseStatus {
   idle // idle or not ready
 }
 
-enum StreamEvents { update }
+enum StreamEvents { update, loading, done }
+enum SearchStates { searching, finished, empty }
 
 class AsyncResponse<T> {
   final ResponseStatus state;
