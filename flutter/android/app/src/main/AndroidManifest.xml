@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="in.kibibyte.ural">
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
@@ -11,7 +12,8 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="Ural"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        >
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -28,9 +30,20 @@
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
           android:name="com.google.firebase.ml.vision.DEPENDENCIES"
-          android:value="barcode,face,label,ocr" />
+          android:value="ocr" />
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.fileProvider"
+                android:exported="false"
+                android:grantUriPermissions="true"
+                tools:replace="android:authorities">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/filepaths"
+                    tools:replace="android:resource" />
+        </provider>
     </application>
 </manifest>
