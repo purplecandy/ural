@@ -2,7 +2,7 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/controllers/image_handler.dart';
-import 'package:ural/image_view.dart';
+import 'package:ural/pages/image_view.dart';
 import 'package:ural/models/screen_model.dart';
 import 'dart:io';
 

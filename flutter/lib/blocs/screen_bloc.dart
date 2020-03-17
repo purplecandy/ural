@@ -47,8 +47,7 @@ class ScreenBloc extends BlocBase {
   void startBackGroundJob() async {
     await Workmanager.registerPeriodicTask(
         "uralfetchscreens", "ural_background",
-        // frequency: Duration(hours: 2),
-        initialDelay: Duration(seconds: 5));
+        frequency: Duration(hours: 2), initialDelay: Duration(seconds: 5));
   }
 
   void handleBackgroundSync(GlobalKey<ScaffoldState> scaffold) async {

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:open_file/open_file.dart';
 import 'package:ural/utils/bloc_provider.dart';
-import 'blocs/screen_bloc.dart';
+import 'package:ural/blocs/screen_bloc.dart';
 
 class ImageView extends StatefulWidget {
   final File imageFile;
@@ -22,7 +22,7 @@ class _ImageViewState extends State<ImageView> {
         padding: EdgeInsets.all(16),
         height: double.infinity,
         width: double.infinity,
-        child: PhotoView(imageProvider: AssetImage(widget.imageFile.path)),
+        child: PhotoView.customChild(child: Image.file(widget.imageFile)),
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.transparent,

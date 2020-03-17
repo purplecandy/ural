@@ -57,15 +57,15 @@ Future<bool> uploadImagesInBackground() async {
 
 void callbackDispatcher() {
   print("CallBackDispacther RUNNING");
-  // Workmanager.executeTask((task, input) async {
-  //   return await uploadImagesInBackground();
-  // });
+  Workmanager.executeTask((task, input) async {
+    return await uploadImagesInBackground();
+  });
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
+  await Workmanager.initialize(callbackDispatcher, isInDebugMode: false);
   runApp(App());
 }
 
@@ -103,6 +103,8 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   final _scaffold = GlobalKey<ScaffoldState>();
   final recognizer = FirebaseVision.instance.textRecognizer();
 
+  bool intial = false;
+
   @override
   void initState() {
     super.initState();
@@ -124,7 +126,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
 
   @override
   void afterFirstLayout(BuildContext context) async {
-    await getPermissionStatus();
+    // await getPermissionStatus();
   }
 
   void refresh() {
@@ -133,6 +135,135 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
       "Refreshing...",
     )));
     _bloc.listAllScreens();
+  }
+
+  Future<void> intialSetup() async {
+    final pref = await SharedPreferences.getInstance();
+    setState(() {
+      intial = pref.containsKey("ural_initial_setup");
+    });
+  }
+
+  Widget intialSetupWidget() {
+    return Material(
+      child: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(top: 20),
+                width: MediaQuery.of(context).size.width,
+                child: Text(
+                  "In order to work Ural needs your permission to access your files",
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(
+                height: 40,
+              ),
+              FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: Colors.pinkAccent, width: 1)),
+                  textColor: Colors.white,
+                  onPressed: () async {
+                    final resp = await getPermissionStatus();
+                    if (resp.state == ResponseStatus.success) {
+                      _scaffold.currentState.showSnackBar(SnackBar(
+                        content: Text("Permission Granted"),
+                        backgroundColor: Colors.greenAccent,
+                      ));
+                    } else if (resp.state == ResponseStatus.failed) {
+                      _scaffold.currentState.showSnackBar(SnackBar(
+                        content: Text("Permission Denied"),
+                        backgroundColor: Colors.redAccent,
+                      ));
+                    } else {
+                      _scaffold.currentState.showSnackBar(SnackBar(
+                        content: Text("Can't request permissions"),
+                        backgroundColor: Colors.redAccent,
+                      ));
+                    }
+                  },
+                  child: Text("Grant Permission")),
+              Container(
+                padding: EdgeInsets.only(top: 20),
+                width: MediaQuery.of(context).size.width,
+                child: Text(
+                  "Guide",
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              HelpFuction(),
+              Container(
+                padding: EdgeInsets.only(top: 20),
+                width: MediaQuery.of(context).size.width,
+                child: Text(
+                  "How Ural works?",
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(24),
+                child: Card(
+                  child: Column(
+                    children: <Widget>[
+                      ListTile(
+                        leading: Text(
+                          "1",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.red),
+                        ),
+                        title: Text("Sync/Upload your images"),
+                      ),
+                      Divider(),
+                      ListTile(
+                        leading: Text(
+                          "2",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.purple),
+                        ),
+                        title: Text(
+                            "Get your screenshot by searching the content of your screenshot"),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: Colors.pinkAccent, width: 1)),
+                  textColor: Colors.white,
+                  onPressed: () async {
+                    setState(() {
+                      intial = true;
+                    });
+                  },
+                  child: Text("Close")),
+              SizedBox(
+                height: 40,
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -147,10 +278,17 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
               actions: <Widget>[
                 IconButton(icon: Icon(Icons.refresh), onPressed: refresh),
                 IconButton(
-                    icon: Icon(Icons.adb),
+                    icon: Icon(Icons.help_outline),
                     onPressed: () {
-                      uploadImagesInBackground();
+                      setState(() {
+                        intial = false;
+                      });
                     })
+                // IconButton(
+                //     icon: Icon(Icons.adb),
+                //     onPressed: () {
+                //       uploadImagesInBackground();
+                //     })
               ],
               pinned: true,
               floating: true,
@@ -233,89 +371,93 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
               expandedHeight: 220,
             ),
           ],
-          body: PageView(
-            controller: _pageController,
-            physics: NeverScrollableScrollPhysics(),
-            children: <Widget>[
-              StreamBuilder<StreamEvents>(
-                stream: _bloc.streamOfRecentScreens,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data == StreamEvents.loading) {
-                      return Material(
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    } else {
-                      if (_bloc.recentScreenshots.length > 0) {
-                        return HomeBody(
-                          title: "Recent Screenshots",
-                          screenshots: _bloc.recentScreenshots,
-                        );
-                      } else {
-                        return Material(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Text(
-                                "You don't have any screenshots synced.",
-                                style: TextStyle(
-                                    fontSize: 18, color: Colors.white),
+          body: !intial
+              ? intialSetupWidget()
+              : PageView(
+                  controller: _pageController,
+                  physics: NeverScrollableScrollPhysics(),
+                  children: <Widget>[
+                    StreamBuilder<StreamEvents>(
+                      stream: _bloc.streamOfRecentScreens,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          if (snapshot.data == StreamEvents.loading) {
+                            return Material(
+                              child: Center(
+                                child: CircularProgressIndicator(),
                               ),
-                              SizedBox(
-                                height: 40,
-                              ),
-                              FlatButton(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      side: BorderSide(
-                                          color: Colors.pinkAccent, width: 1)),
-                                  textColor: Colors.white,
-                                  onPressed: () {
-                                    refresh();
-                                  },
-                                  child: Text("Refresh"))
-                            ],
-                          ),
-                        );
-                      }
-                    }
-                  }
-                  return Container();
-                },
-              ),
-              StreamBuilder<SearchStates>(
-                stream: _bloc.streamofSearchResults,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (snapshot.data == SearchStates.finished) {
-                      return HomeBody(
-                        title: "Search results",
-                        screenshots: _bloc.searchResults,
-                      );
-                    }
-                    if (snapshot.data == SearchStates.empty) {
-                      return Material(
-                        child: Center(
-                          child: Text(
-                            "Couldn't find anything. Please trying typing something else",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      );
-                    }
-                  }
-                  return Material(
-                    child: Center(
-                      child: CircularProgressIndicator(),
+                            );
+                          } else {
+                            if (_bloc.recentScreenshots.length > 0) {
+                              return HomeBody(
+                                title: "Recent Screenshots",
+                                screenshots: _bloc.recentScreenshots,
+                              );
+                            } else {
+                              return Material(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text(
+                                      "You don't have any screenshots synced.",
+                                      style: TextStyle(
+                                          fontSize: 18, color: Colors.white),
+                                    ),
+                                    SizedBox(
+                                      height: 40,
+                                    ),
+                                    FlatButton(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            side: BorderSide(
+                                                color: Colors.pinkAccent,
+                                                width: 1)),
+                                        textColor: Colors.white,
+                                        onPressed: () {
+                                          refresh();
+                                        },
+                                        child: Text("Refresh"))
+                                  ],
+                                ),
+                              );
+                            }
+                          }
+                        }
+                        return Container();
+                      },
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
+                    StreamBuilder<SearchStates>(
+                      stream: _bloc.streamofSearchResults,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          if (snapshot.data == SearchStates.finished) {
+                            return HomeBody(
+                              title: "Search results",
+                              screenshots: _bloc.searchResults,
+                            );
+                          }
+                          if (snapshot.data == SearchStates.empty) {
+                            return Material(
+                              child: Center(
+                                child: Text(
+                                  "Couldn't find anything. Please trying typing something else",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                        return Material(
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
         ),
         floatingActionButton: StreamBuilder<SearchStates>(
             stream: _bloc.streamofSearchResults,
@@ -325,9 +467,15 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                   return FloatingActionButton(
                     heroTag: null,
                     onPressed: () {
-                      _pageController.previousPage(
-                          duration: Duration(milliseconds: 400),
-                          curve: Curves.easeIn);
+                      if (_pageController.page == 1) {
+                        _pageController.previousPage(
+                            duration: Duration(milliseconds: 400),
+                            curve: Curves.easeIn);
+                      } else {
+                        _pageController.nextPage(
+                            duration: Duration(milliseconds: 400),
+                            curve: Curves.easeIn);
+                      }
                     },
                     child: Icon(Icons.grid_on),
                   );
@@ -336,6 +484,62 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
               }
               return Container();
             }),
+      ),
+    );
+  }
+}
+
+class HelpFuction extends StatelessWidget {
+  const HelpFuction({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Card(
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: Icon(Icons.file_upload),
+                title: Text("Manual Upload"),
+                subtitle: Text("Manually upload images to database."),
+              ),
+            ),
+            Divider(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: Icon(Icons.text_fields),
+                title: Text("Text View"),
+                subtitle: Text(
+                    "Extracts text from an image but doesn't saves it to database"),
+              ),
+            ),
+            Divider(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: Icon(Icons.sync),
+                title: Text("Sync"),
+                subtitle: Text(
+                    "Once you have specified the default directory. You can start background sync."),
+              ),
+            ),
+            Divider(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: Icon(Icons.settings),
+                title: Text(
+                  "Settings",
+                ),
+                subtitle: Text("You can set your default directory here"),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
