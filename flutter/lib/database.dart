@@ -59,10 +59,23 @@ class ScreenshotListDatabase {
     // });
   }
 
-  void createFtable() async {
-    String sql = '''PRAGMA table_info($vtable)''';
-    // await database.execute(sql);
-    await database.rawQuery(sql);
+  Future<void> delete(int hash) async {
+    try {
+      await database.rawQuery('DELETE FROM $vtable WHERE hash = $hash');
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  ///Check if image already exist
+  Future<bool> exist(int hash) async {
+    // final records =
+    //     await database.query(vtable, where: "$hash = ?", whereArgs: [hash]);
+    final records =
+        await database.rawQuery('SELECT hash FROM $vtable WHERE hash = $hash');
+    if (records == null) return false;
+    if (records.length > 0) return true;
+    return false;
   }
 
   /// Returns all screenshots
@@ -83,15 +96,7 @@ class ScreenshotListDatabase {
   }
 
   Future<void> insert(ScreenshotModel model) async {
-    var records = await database
-        .query(vtable, where: "$hash = ?", whereArgs: [model.hash]);
-    if (records.length == 0) {
-      await database.insert(vtable, model.toMap());
-    } else {
-      print("Record already exist skipping");
-      throw InsertionError(
-          "Failed when trying to add model-hash: ${model.hash}");
-    }
+    await database.insert(vtable, model.toMap());
   }
 
   Future<List<ScreenshotModel>> find(String query) async {

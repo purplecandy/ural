@@ -98,19 +98,6 @@ void handleManualUpload(GlobalKey<ScaffoldState> scaffoldState,
   }
 }
 
-///Handle textView events
-void handleTextView(BuildContext context, TextRecognizer textRecognizer) async {
-  File image = await ImagePicker.pickImage(source: ImageSource.gallery);
-  final blocks = await recognizeImage(image, textRecognizer, getBlocks: true);
-  Navigator.push(
-      context,
-      MaterialPageRoute(
-          fullscreenDialog: true,
-          builder: (context) => TextView(
-                textBlocks: blocks,
-              )));
-}
-
 /// Handles textField or searchField queries
 Future<List<ScreenModel>> handleTextField({
   String query,

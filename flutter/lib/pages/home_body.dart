@@ -1,11 +1,13 @@
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
+import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/controllers/image_handler.dart';
 import 'package:ural/image_view.dart';
 import 'package:ural/models/screen_model.dart';
 import 'dart:io';
 
 import 'package:ural/pages/textview.dart';
+import 'package:ural/utils/bloc_provider.dart';
 
 class HomeBody extends StatefulWidget {
   final String title;
@@ -22,7 +24,7 @@ class _HomeBodyState extends State<HomeBody> {
   @override
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
-
+    final ScreenBloc screenBloc = StaticBloc.of<ScreenBloc>(context);
     return Material(
       child: Column(
         children: <Widget>[
@@ -62,8 +64,11 @@ class _HomeBodyState extends State<HomeBody> {
                         context,
                         MaterialPageRoute(
                             fullscreenDialog: true,
-                            builder: (context) => ImageView(
-                                  imageFile: file,
+                            builder: (context) => StaticBloc<ScreenBloc>(
+                                  bloc: screenBloc,
+                                  child: ImageView(
+                                    imageFile: file,
+                                  ),
                                 ))),
                     child: Stack(
                       children: [

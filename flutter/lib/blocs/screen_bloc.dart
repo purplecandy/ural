@@ -11,6 +11,7 @@ import 'package:folder_picker/folder_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import 'package:ural/pages/textview.dart';
+import 'package:workmanager/workmanager.dart';
 
 class ScreenBloc extends BlocBase {
   final ScreenshotListDatabase _slDB = ScreenshotListDatabase();
@@ -36,6 +37,34 @@ class ScreenBloc extends BlocBase {
   void listAllScreens() async {
     recentScreenshots = await _slDB.list();
     _rscreenSubject.add(StreamEvents.done);
+  }
+
+  Future<void> delete(String path) async {
+    await _slDB.delete(path.hashCode);
+    listAllScreens();
+  }
+
+  void startBackGroundJob() async {
+    await Workmanager.registerPeriodicTask(
+        "uralfetchscreens", "ural_background",
+        // frequency: Duration(hours: 2),
+        initialDelay: Duration(seconds: 5));
+  }
+
+  void handleBackgroundSync(GlobalKey<ScaffoldState> scaffold) async {
+    final pref = await SharedPreferences.getInstance();
+    if (pref.containsKey("ural_default_folder")) {
+      startBackGroundJob();
+      scaffold.currentState.showSnackBar(SnackBar(
+        content: Text("Background sync has been initialized"),
+        backgroundColor: Colors.greenAccent,
+      ));
+    } else {
+      scaffold.currentState.showSnackBar(SnackBar(
+        content: Text("No default directory set"),
+        backgroundColor: Colors.redAccent,
+      ));
+    }
   }
 
   /// Handles textField or searchField queries
@@ -94,7 +123,13 @@ class ScreenBloc extends BlocBase {
 
   Future<AsyncResponse> saveToDatabase(ScreenshotModel model) async {
     try {
-      await _slDB.insert(model);
+      bool exist = await _slDB.exist(model.hash);
+      if (!exist) {
+        await _slDB.insert(model);
+      } else {
+        throw InsertionError(
+            "Failed when trying to add model-hash: ${model.hash}");
+      }
     } on InsertionError catch (e) {
       return AsyncResponse(ResponseStatus.failed, e.message);
     } catch (e) {
@@ -141,6 +176,7 @@ class ScreenBloc extends BlocBase {
                                       builder: (context) => FolderPickerPage(
                                           action: (context, directory) async {
                                             setDefaultFolder(directory.path);
+                                            Navigator.pop(context);
                                             Navigator.pop(context);
                                           },
                                           rootDirectory: Directory(
