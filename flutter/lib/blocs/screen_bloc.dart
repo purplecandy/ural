@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:folder_picker/folder_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import 'package:ural/pages/textview.dart';

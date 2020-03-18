@@ -329,46 +329,6 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                           ),
                         ),
                       ),
-                      // Container(
-                      //   width: MediaQuery.of(context).size.width * 0.8,
-                      //   child: Wrap(
-                      //     alignment: WrapAlignment.spaceEvenly,
-                      //     children: <Widget>[
-                      //       FloatingActionButton(
-                      //         elevation: 0,
-                      //         heroTag: null,
-                      //         onPressed: () {
-                      //           _bloc.handleManualUpload(_scaffold);
-                      //         },
-                      //         child: Icon(Icons.file_upload),
-                      //       ),
-                      //       FloatingActionButton(
-                      //         elevation: 0,
-                      //         heroTag: null,
-                      //         onPressed: () async {
-                      //           _bloc.handleTextView(context);
-                      //         },
-                      //         child: Icon(Icons.text_fields),
-                      //       ),
-                      //       FloatingActionButton(
-                      //         elevation: 0,
-                      //         heroTag: null,
-                      //         onPressed: () {
-                      //           _bloc.handleBackgroundSync(_scaffold);
-                      //         },
-                      //         child: Icon(Icons.sync),
-                      //       ),
-                      //       FloatingActionButton(
-                      //         heroTag: null,
-                      //         elevation: 0,
-                      //         child: Icon(Icons.settings),
-                      //         onPressed: () {
-                      //           _bloc.handleSettings(context);
-                      //         },
-                      //       )
-                      //     ],
-                      //   ),
-                      // )
                     ],
                   ),
                 ),
