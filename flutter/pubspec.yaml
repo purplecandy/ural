@@ -23,7 +23,7 @@ dependencies:
   clipboard_manager: ^0.0.4
   url_launcher: ^5.4.2
   folder_picker: ^0.3.0
-  permission_handler: ^4.3.0
+  permission_handler: ^4.4.0+hotfix.2
   workmanager: ^0.2.1
   path_provider: ^1.6.5
   shared_preferences: ^0.5.6+2

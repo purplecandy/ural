@@ -112,6 +112,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   }
 
   void startup() async {
+    intialSetup();
     //gotta wait for database to get initialized
     await _bloc.initializeDatabase();
     //then lazily load all the screens
@@ -145,6 +146,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   }
 
   Widget intialSetupWidget() {
+    AsyncResponse resp;
     return Material(
       child: SingleChildScrollView(
         child: Container(
@@ -170,7 +172,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                       side: BorderSide(color: Colors.pinkAccent, width: 1)),
                   textColor: Colors.white,
                   onPressed: () async {
-                    final resp = await getPermissionStatus();
+                    resp = await getPermissionStatus();
                     if (resp.state == ResponseStatus.success) {
                       _scaffold.currentState.showSnackBar(SnackBar(
                         content: Text("Permission Granted"),
@@ -251,6 +253,12 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                       side: BorderSide(color: Colors.pinkAccent, width: 1)),
                   textColor: Colors.white,
                   onPressed: () async {
+                    if (resp != null) {
+                      if (resp.state == ResponseStatus.success) {
+                        final pref = await SharedPreferences.getInstance();
+                        pref.setBool("ural_initial_setup", true);
+                      }
+                    }
                     setState(() {
                       intial = true;
                     });
