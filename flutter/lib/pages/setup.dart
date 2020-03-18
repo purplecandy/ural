@@ -223,7 +223,10 @@ class _SetupState extends State<Setup> {
                         incrementStep(resp);
                       });
                     }
-                    if (currentStep == 3) Navigator.pop(context);
+                    if (currentStep == 3) {
+                      Navigator.pop(context);
+                      handleFinalStep();
+                    }
                   }
                 },
               ),
