@@ -103,6 +103,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   final PageController _pageController = PageController();
   final _scaffold = GlobalKey<ScaffoldState>();
   final recognizer = FirebaseVision.instance.textRecognizer();
+  String searchQuery = "";
   int currentTab = 0;
 
   bool intial = false;
@@ -307,8 +308,9 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                             child: ListTile(
                               title: TextField(
                                 onSubmitted: (val) async {
+                                  searchQuery = val;
                                   _bloc.handleTextField(
-                                      query: val,
+                                      query: searchQuery,
                                       pageController: _pageController);
                                 },
                                 decoration: InputDecoration(
@@ -317,7 +319,12 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                                         "Type what you're looking for here"),
                               ),
                               trailing: IconButton(
-                                  icon: Icon(Icons.search), onPressed: null),
+                                  icon: Icon(Icons.search),
+                                  onPressed: () {
+                                    _bloc.handleTextField(
+                                        query: searchQuery,
+                                        pageController: _pageController);
+                                  }),
                             ),
                           ),
                         ),

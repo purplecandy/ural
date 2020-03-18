@@ -72,10 +72,11 @@ class ScreenBloc extends BlocBase {
     String query,
     PageController pageController,
   }) async {
-    pageController.nextPage(
-        duration: Duration(milliseconds: 350),
-        curve: Curves.fastLinearToSlowEaseIn);
-
+    if (pageController.page == 0) {
+      pageController.nextPage(
+          duration: Duration(milliseconds: 350),
+          curve: Curves.fastLinearToSlowEaseIn);
+    }
     _searchSubject.add(SearchStates.searching);
     searchResults = await _slDB.find(query);
     if (searchResults.length > 0) {
