@@ -272,6 +272,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
         body: NestedScrollView(
           headerSliverBuilder: (context, isBoxScroll) => [
             SliverAppBar(
+              leading: null,
               actions: <Widget>[
                 IconButton(icon: Icon(Icons.refresh), onPressed: refresh),
                 IconButton(
@@ -284,11 +285,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                 IconButton(
                     icon: Icon(Icons.settings),
                     onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              fullscreenDialog: true,
-                              builder: (context) => Setup()));
+                      _bloc.handleSettings(context);
                     })
               ],
               pinned: true,
@@ -369,7 +366,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                   ),
                 ),
               ),
-              expandedHeight: 140,
+              expandedHeight: 150,
             ),
           ],
           body: !intial
@@ -587,10 +584,12 @@ class FaqsWidget extends StatelessWidget {
     QA("I can't upload an image",
         "Make sure you have configured Ural properly. Incase you're getting an error then the image already exist."),
     QA("It won't recognize text properly",
-        "Sadly this a limitation that can't be much improved. It depends on things like quality of image, what fonts are used etc."),
+        "It depends on things like quality of image, what fonts are used etc. T"),
     QA("What languages are currently supported?",
         "English but you can try if it works"),
-    QA("My search results are empty", "Try different search queries.")
+    QA("My search results are empty", "Try different search queries."),
+    QA("Is Ural making copies of my screenshots?",
+        "No, Ural only links your screenshots available on your device")
   ];
   FaqsWidget({Key key}) : super(key: key);
 

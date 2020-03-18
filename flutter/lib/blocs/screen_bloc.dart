@@ -1,4 +1,5 @@
 import 'package:ural/database.dart';
+import 'package:ural/pages/setup.dart';
 import 'package:ural/utils/async.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/models/screen_model.dart';
@@ -114,7 +115,7 @@ class ScreenBloc extends BlocBase {
       listAllScreens();
     } else {
       scaffoldState.currentState.showSnackBar(SnackBar(
-        content: Text("Couldn't upload the image"),
+        content: Text("Image already exist"),
         backgroundColor: Colors.redAccent,
       ));
     }
@@ -149,64 +150,97 @@ class ScreenBloc extends BlocBase {
 
   /// Handles Settings button events
   void handleSettings(BuildContext context) async {
-    final pref = await SharedPreferences.getInstance();
-    String dir = pref.getString("ural_default_folder");
     showModalBottomSheet(
         context: context,
-        builder: (context) => Container(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Card(
-                      child: ListTile(
-                        leading: Icon(Icons.folder),
-                        title: Text(dir ?? "NOT SET"),
-                        subtitle: Text("Default directory"),
-                        trailing: IconButton(
-                            icon: Icon(Icons.add_box),
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      fullscreenDialog: true,
-                                      builder: (context) => FolderPickerPage(
-                                          action: (context, directory) async {
-                                            setDefaultFolder(directory.path);
-                                            Navigator.pop(context);
-                                            Navigator.pop(context);
-                                          },
-                                          rootDirectory: Directory(
-                                              "/storage/emulated/0/"))));
-                            }),
+        builder: (context) => SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        child: ListTile(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => Setup()));
+                          },
+                          leading: Icon(Icons.build),
+                          title: Text("Setup Ural"),
+                          subtitle: Text("Configure Ural settings"),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.redAccent,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Card(
-                      child: ListTile(
-                        leading: Icon(Icons.person),
-                        title: Text("Mohammed Nadeem"),
-                        subtitle: Text("Author of Ural"),
-                        trailing: IconButton(
-                            icon: Icon(
-                              Icons.mail,
-                              color: Colors.redAccent,
-                            ),
-                            onPressed: () async {
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        child: ListTile(
+                            onTap: () async {
                               const url =
                                   "mailto:hellomr82k@gmail.com?subject=Feedback";
                               if (await canLaunch(url)) {
                                 launch(url);
                               }
-                            }),
+                            },
+                            leading: Icon(Icons.person),
+                            title: Text("Mohammed Nadeem"),
+                            subtitle: Text("Author of Ural"),
+                            trailing: Icon(
+                              Icons.mail,
+                              color: Colors.redAccent,
+                            )),
                       ),
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        child: ListTile(
+                          onTap: () async {
+                            const url =
+                                "https://play.google.com/store/apps/details?id=in.kibibyte.ural";
+                            if (await canLaunch(url)) {
+                              launch(url);
+                            }
+                          },
+                          leading: Icon(Icons.rate_review),
+                          title: Text("Rate and Review"),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        child: ListTile(
+                          onTap: () async {
+                            const url =
+                                "https://github.com/purplecandy/ural/tree/master/flutter";
+                            if (await canLaunch(url)) {
+                              launch(url);
+                            }
+                          },
+                          leading: Icon(Icons.archive),
+                          title: Text("Github Repository"),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ));
   }
