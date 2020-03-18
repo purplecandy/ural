@@ -1,3 +1,11 @@
+#env
+env/
+django/media/
+
+flutter/build/
+*key.properties
+*pubspec.lock
+
 #PyCache
 *.pyc
 *.pyo
