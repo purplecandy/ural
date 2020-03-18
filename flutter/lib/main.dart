@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/database.dart';
 import 'package:ural/models/screen_model.dart';
+import 'package:ural/pages/setup.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:io';
@@ -64,8 +65,8 @@ void callbackDispatcher() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Workmanager.initialize(callbackDispatcher, isInDebugMode: false);
+
   runApp(App());
 }
 
@@ -291,6 +292,15 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                       setState(() {
                         intial = false;
                       });
+                    }),
+                IconButton(
+                    icon: Icon(Icons.build),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              fullscreenDialog: true,
+                              builder: (context) => Setup()));
                     })
                 // IconButton(
                 //     icon: Icon(Icons.adb),
