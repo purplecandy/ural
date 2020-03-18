@@ -264,6 +264,9 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
     );
   }
 
+  void onSubmitTF() => _bloc.handleTextField(
+      query: searchQuery.trim(), pageController: _pageController);
+
   @override
   Widget build(BuildContext context) {
     return StaticBloc<ScreenBloc>(
@@ -306,26 +309,22 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                         child: Center(
                           child: Card(
                             child: ListTile(
-                              title: TextField(
-                                onSubmitted: (val) async {
-                                  searchQuery = val;
-                                  _bloc.handleTextField(
-                                      query: searchQuery,
-                                      pageController: _pageController);
-                                },
-                                decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText:
-                                        "Type what you're looking for here"),
-                              ),
-                              trailing: IconButton(
+                                title: TextField(
+                                  onChanged: (val) {
+                                    searchQuery = val;
+                                  },
+                                  onSubmitted: (val) {
+                                    onSubmitTF();
+                                  },
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText:
+                                          "Type what you're looking for here"),
+                                ),
+                                trailing: IconButton(
                                   icon: Icon(Icons.search),
-                                  onPressed: () {
-                                    _bloc.handleTextField(
-                                        query: searchQuery,
-                                        pageController: _pageController);
-                                  }),
-                            ),
+                                  onPressed: onSubmitTF,
+                                )),
                           ),
                         ),
                       ),
@@ -424,7 +423,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                             padding: const EdgeInsets.all(8.0),
                             child: Center(
                               child: Text(
-                                "Looking for a screenshot? Just try typing what was inside it above.",
+                                "Looking for a screenshot? Just try searchin what was inside it.",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontSize: 18, color: Colors.white),
@@ -514,7 +513,7 @@ class HelpFuction extends StatelessWidget {
                 leading: Icon(Icons.text_fields),
                 title: Text("Text View"),
                 subtitle: Text(
-                    "You this when you just want to extract the text from an image"),
+                    "Use this when you just want to extract texts from an image"),
               ),
             ),
             Divider(),
@@ -545,13 +544,13 @@ class FaqsWidget extends StatelessWidget {
   final List<QA> faqs = [
     QA("I can't see my images?",
         "First make sure your default directory contains screenshots.\n\nIt takes sometimes to automatically sync.\n\nTry re-configuring Ural from settings."),
-    QA("Can't grant permission",
-        "Please close the app and re try. If it still doesn't work give permissions manually from settings."),
+    QA("I'm unable to grant permission?",
+        "Please close the app and re-try. If it still doesn't work give permissions manually from settings."),
     QA("How frequent are background syncs?", "Every 2 hours"),
-    QA("I can't upload an image",
+    QA("I can't manually upload an image?",
         "Make sure you have configured Ural properly. Incase you're getting an error then the image already exist."),
     QA("It won't recognize text properly",
-        "It depends on things like quality of image, what fonts are used etc. T"),
+        "It depends on things like quality of image, what fonts are used etc."),
     QA("What languages are currently supported?",
         "English but you can try if it works"),
     QA("My search results are empty", "Try different search queries."),
