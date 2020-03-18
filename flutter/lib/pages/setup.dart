@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/controllers/permission_handler.dart';
 import 'package:ural/utils/async.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import 'package:folder_picker/folder_picker.dart';
 
@@ -227,6 +228,21 @@ class _SetupState extends State<Setup> {
                 },
               ),
             ),
+            SizedBox(
+              height: 20,
+            ),
+            FlatButton(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: Colors.pinkAccent, width: 1)),
+                textColor: Colors.white,
+                onPressed: () async {
+                  const url = "https://youtu.be/a-diWDZX2vM";
+                  if (await canLaunch(url)) {
+                    launch(url);
+                  }
+                },
+                child: Text("Watch Demo on YT")),
           ],
         ),
       ),
