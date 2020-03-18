@@ -7,13 +7,13 @@ import 'package:ural/database.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/pages/setup.dart';
 import 'package:ural/utils/bloc_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:io';
 import 'dart:async';
 
 import 'package:ural/pages/home_body.dart';
 import 'package:ural/utils/async.dart';
-import 'controllers/permission_handler.dart';
 
 Future<bool> uploadImagesInBackground() async {
   final pref = await SharedPreferences.getInstance();
@@ -103,6 +103,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   final PageController _pageController = PageController();
   final _scaffold = GlobalKey<ScaffoldState>();
   final recognizer = FirebaseVision.instance.textRecognizer();
+  int currentTab = 0;
 
   bool intial = false;
 
@@ -144,10 +145,15 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
     setState(() {
       intial = pref.containsKey("ural_initial_setup");
     });
+    if (intial == false) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              fullscreenDialog: true, builder: (context) => Setup()));
+    }
   }
 
   Widget intialSetupWidget() {
-    AsyncResponse resp;
     return Material(
       child: SingleChildScrollView(
         child: Container(
@@ -155,43 +161,6 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(top: 20),
-                width: MediaQuery.of(context).size.width,
-                child: Text(
-                  "In order to work Ural needs your permission to access your files",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              SizedBox(
-                height: 40,
-              ),
-              FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(color: Colors.pinkAccent, width: 1)),
-                  textColor: Colors.white,
-                  onPressed: () async {
-                    resp = await getPermissionStatus();
-                    if (resp.state == ResponseStatus.success) {
-                      _scaffold.currentState.showSnackBar(SnackBar(
-                        content: Text("Permission Granted"),
-                        backgroundColor: Colors.greenAccent,
-                      ));
-                    } else if (resp.state == ResponseStatus.failed) {
-                      _scaffold.currentState.showSnackBar(SnackBar(
-                        content: Text("Permission Denied"),
-                        backgroundColor: Colors.redAccent,
-                      ));
-                    } else {
-                      _scaffold.currentState.showSnackBar(SnackBar(
-                        content: Text("Can't request permissions"),
-                        backgroundColor: Colors.redAccent,
-                      ));
-                    }
-                  },
-                  child: Text("Grant Permission")),
               Container(
                 padding: EdgeInsets.only(top: 20),
                 width: MediaQuery.of(context).size.width,
@@ -254,12 +223,31 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                       side: BorderSide(color: Colors.pinkAccent, width: 1)),
                   textColor: Colors.white,
                   onPressed: () async {
-                    if (resp != null) {
-                      if (resp.state == ResponseStatus.success) {
-                        final pref = await SharedPreferences.getInstance();
-                        pref.setBool("ural_initial_setup", true);
-                      }
+                    const url = "https://youtu.be/zlU_TqqDjyI";
+                    if (await canLaunch(url)) {
+                      launch(url);
                     }
+                  },
+                  child: Text("Watch Demo on YT")),
+              Container(
+                padding: EdgeInsets.only(top: 20),
+                width: MediaQuery.of(context).size.width,
+                child: Text(
+                  "FAQs",
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              FaqsWidget(),
+              FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: Colors.pinkAccent, width: 1)),
+                  textColor: Colors.white,
+                  onPressed: () async {
                     setState(() {
                       intial = true;
                     });
@@ -294,7 +282,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                       });
                     }),
                 IconButton(
-                    icon: Icon(Icons.build),
+                    icon: Icon(Icons.settings),
                     onPressed: () {
                       Navigator.push(
                           context,
@@ -302,11 +290,6 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                               fullscreenDialog: true,
                               builder: (context) => Setup()));
                     })
-                // IconButton(
-                //     icon: Icon(Icons.adb),
-                //     onPressed: () {
-                //       uploadImagesInBackground();
-                //     })
               ],
               pinned: true,
               floating: true,
@@ -342,56 +325,61 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                           ),
                         ),
                       ),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        child: Wrap(
-                          alignment: WrapAlignment.spaceEvenly,
-                          children: <Widget>[
-                            FloatingActionButton(
-                              elevation: 0,
-                              heroTag: null,
-                              onPressed: () {
-                                _bloc.handleManualUpload(_scaffold);
-                              },
-                              child: Icon(Icons.file_upload),
-                            ),
-                            FloatingActionButton(
-                              elevation: 0,
-                              heroTag: null,
-                              onPressed: () async {
-                                _bloc.handleTextView(context);
-                              },
-                              child: Icon(Icons.text_fields),
-                            ),
-                            FloatingActionButton(
-                              elevation: 0,
-                              heroTag: null,
-                              onPressed: () {
-                                _bloc.handleBackgroundSync(_scaffold);
-                              },
-                              child: Icon(Icons.sync),
-                            ),
-                            FloatingActionButton(
-                              heroTag: null,
-                              elevation: 0,
-                              child: Icon(Icons.settings),
-                              onPressed: () {
-                                _bloc.handleSettings(context);
-                              },
-                            )
-                          ],
-                        ),
-                      )
+                      // Container(
+                      //   width: MediaQuery.of(context).size.width * 0.8,
+                      //   child: Wrap(
+                      //     alignment: WrapAlignment.spaceEvenly,
+                      //     children: <Widget>[
+                      //       FloatingActionButton(
+                      //         elevation: 0,
+                      //         heroTag: null,
+                      //         onPressed: () {
+                      //           _bloc.handleManualUpload(_scaffold);
+                      //         },
+                      //         child: Icon(Icons.file_upload),
+                      //       ),
+                      //       FloatingActionButton(
+                      //         elevation: 0,
+                      //         heroTag: null,
+                      //         onPressed: () async {
+                      //           _bloc.handleTextView(context);
+                      //         },
+                      //         child: Icon(Icons.text_fields),
+                      //       ),
+                      //       FloatingActionButton(
+                      //         elevation: 0,
+                      //         heroTag: null,
+                      //         onPressed: () {
+                      //           _bloc.handleBackgroundSync(_scaffold);
+                      //         },
+                      //         child: Icon(Icons.sync),
+                      //       ),
+                      //       FloatingActionButton(
+                      //         heroTag: null,
+                      //         elevation: 0,
+                      //         child: Icon(Icons.settings),
+                      //         onPressed: () {
+                      //           _bloc.handleSettings(context);
+                      //         },
+                      //       )
+                      //     ],
+                      //   ),
+                      // )
                     ],
                   ),
                 ),
               ),
-              expandedHeight: 220,
+              expandedHeight: 140,
             ),
           ],
           body: !intial
               ? intialSetupWidget()
               : PageView(
+                  onPageChanged: (index) {
+                    setState(() {
+                      currentTab = index;
+                    });
+                  },
                   controller: _pageController,
                   physics: NeverScrollableScrollPhysics(),
                   children: <Widget>[
@@ -468,8 +456,16 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                           }
                         }
                         return Material(
-                          child: Center(
-                            child: CircularProgressIndicator(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Center(
+                              child: Text(
+                                "Looking for a screenshot? Just try typing what was inside it above.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -477,31 +473,52 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                   ],
                 ),
         ),
-        floatingActionButton: StreamBuilder<SearchStates>(
-            stream: _bloc.streamofSearchResults,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (snapshot.data != SearchStates.searching)
-                  return FloatingActionButton(
-                    heroTag: null,
-                    onPressed: () {
-                      if (_pageController.page == 1) {
-                        _pageController.previousPage(
-                            duration: Duration(milliseconds: 400),
-                            curve: Curves.easeIn);
-                      } else {
-                        _pageController.nextPage(
-                            duration: Duration(milliseconds: 400),
-                            curve: Curves.easeIn);
-                      }
-                    },
-                    child: Icon(Icons.grid_on),
-                  );
-                else
-                  return Container();
-              }
-              return Container();
-            }),
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            FloatingActionButton(
+              backgroundColor: Colors.deepPurpleAccent,
+              mini: true,
+              elevation: 9,
+              heroTag: null,
+              onPressed: () {
+                _bloc.handleManualUpload(_scaffold);
+              },
+              child: Icon(Icons.file_upload),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            FloatingActionButton(
+              backgroundColor: Colors.deepPurpleAccent,
+              mini: true,
+              elevation: 9,
+              heroTag: null,
+              onPressed: () async {
+                _bloc.handleTextView(context);
+              },
+              child: Icon(Icons.text_fields),
+            ),
+          ],
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: BottomNavigationBar(
+            currentIndex: currentTab,
+            onTap: (index) {
+              _pageController.animateToPage(index,
+                  duration: Duration(milliseconds: 250), curve: Curves.easeIn);
+              setState(() {
+                currentTab = index;
+              });
+            },
+            selectedItemColor: Colors.pinkAccent,
+            unselectedItemColor: Colors.white,
+            items: [
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.grid_on), title: Text("Home")),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.search), title: Text("Search"))
+            ]),
       ),
     );
   }
@@ -522,7 +539,8 @@ class HelpFuction extends StatelessWidget {
               child: ListTile(
                 leading: Icon(Icons.file_upload),
                 title: Text("Manual Upload"),
-                subtitle: Text("Manually upload images to database."),
+                subtitle:
+                    Text("Want to just save a screenshot? Do a manual upload"),
               ),
             ),
             Divider(),
@@ -532,17 +550,7 @@ class HelpFuction extends StatelessWidget {
                 leading: Icon(Icons.text_fields),
                 title: Text("Text View"),
                 subtitle: Text(
-                    "Extracts text from an image but doesn't saves it to database"),
-              ),
-            ),
-            Divider(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                leading: Icon(Icons.sync),
-                title: Text("Sync"),
-                subtitle: Text(
-                    "Once you have specified the default directory. You can start background sync."),
+                    "You this when you just want to extract the text from an image"),
               ),
             ),
             Divider(),
@@ -553,10 +561,57 @@ class HelpFuction extends StatelessWidget {
                 title: Text(
                   "Settings",
                 ),
-                subtitle: Text("You can set your default directory here"),
+                subtitle: Text(
+                    "Here you can modfiy your setting and reconfigure Ural"),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class QA {
+  final String question, answer;
+  QA(this.question, this.answer);
+}
+
+class FaqsWidget extends StatelessWidget {
+  final List<QA> faqs = [
+    QA("I can't see my images?",
+        "First make sure your default directory contains screenshots.\n\nIt takes sometimes to automatically sync.\n\nTry re-configuring Ural from settings."),
+    QA("Can't grant permission",
+        "Please close the app and re try. If it still doesn't work give permissions manually from settings."),
+    QA("How frequent are background syncs?", "Every 2 hours"),
+    QA("I can't upload an image",
+        "Make sure you have configured Ural properly. Incase you're getting an error then the image already exist."),
+    QA("It won't recognize text properly",
+        "Sadly this a limitation that can't be much improved. It depends on things like quality of image, what fonts are used etc."),
+    QA("What languages are currently supported?",
+        "English but you can try if it works"),
+    QA("My search results are empty", "Try different search queries.")
+  ];
+  FaqsWidget({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Card(
+        child: ListView.builder(
+          physics: ClampingScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: faqs.length,
+          itemBuilder: (context, index) => ExpansionTile(
+            title: Text(faqs[index].question),
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(faqs[index].answer),
+              )
+            ],
+          ),
         ),
       ),
     );

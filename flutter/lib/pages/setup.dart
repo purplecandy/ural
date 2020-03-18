@@ -23,7 +23,6 @@ class _SetupState extends State<Setup> {
   bool backgroundSync = false;
 
   void buildSteps() {
-    var resp;
     setupSteps = [
       Step(
         isActive: true,
@@ -120,6 +119,11 @@ class _SetupState extends State<Setup> {
     });
     scaffoldSuccessMessage("Background sync initialized");
     return AsyncResponse(ResponseStatus.success, null);
+  }
+
+  void handleFinalStep() async {
+    final pref = await SharedPreferences.getInstance();
+    pref.setBool("ural_initial_setup", true);
   }
 
   String currentControlTitle() {
