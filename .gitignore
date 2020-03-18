@@ -4,6 +4,7 @@ django/media/
 
 flutter/build/
 *key.properties
+*google-services.json
 *pubspec.lock
 
 #PyCache
