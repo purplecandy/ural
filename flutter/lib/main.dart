@@ -1,60 +1,15 @@
-import 'package:after_layout/after_layout.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ural/blocs/screen_bloc.dart';
-import 'package:ural/database.dart';
-import 'package:ural/models/screen_model.dart';
-import 'package:ural/pages/setup.dart';
-import 'package:ural/utils/bloc_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:workmanager/workmanager.dart';
-import 'dart:io';
 import 'dart:async';
 
-import 'package:ural/pages/home_body.dart';
-import 'package:ural/utils/async.dart';
-
-Future<bool> uploadImagesInBackground() async {
-  final pref = await SharedPreferences.getInstance();
-  if (pref.containsKey("ural_default_folder")) {
-    final dir = Directory(pref.getString("ural_default_folder"));
-    final textRecognizer = FirebaseVision.instance.textRecognizer();
-    final ScreenshotListDatabase _slDB = ScreenshotListDatabase();
-    await _slDB.initDB();
-    try {
-      List<FileSystemEntity> fileEntities = dir.listSync(recursive: true);
-      for (FileSystemEntity entity in fileEntities) {
-        if (entity is File) {
-          //identify if the file is an image format
-          String ext =
-              entity.path.substring(entity.path.length - 3, entity.path.length);
-          if (["jpg", "png"].contains(ext)) {
-            /// Check if the image already exist
-            final bool exist = await _slDB.exist(entity.path.hashCode);
-
-            /// Skip if true
-            if (exist) continue;
-            final visionImage = FirebaseVisionImage.fromFile(entity);
-            String text = "";
-            await textRecognizer.processImage(visionImage).then((vt) {
-              text = vt.text;
-            });
-            ScreenshotModel model =
-                ScreenshotModel(entity.path.hashCode, entity.path, text);
-            _slDB.insert(model);
-            print("Success uploaded");
-          }
-        }
-      }
-      return true;
-    } catch (e) {
-      print("Exception from background task: $e");
-      return false;
-    }
-  }
-  return false;
-}
+import 'widgets/all.dart' show FaqsWidget, HelpFuctionWidget, HomeBodyWidget;
+import 'package:ural/utils/bloc_provider.dart';
+import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/pages/setup.dart';
+import 'background_tasks.dart';
 
 void callbackDispatcher() {
   print("CallBackDispacther RUNNING");
@@ -97,7 +52,7 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with AfterLayoutMixin {
+class _HomeState extends State<Home> {
   ScreenBloc _bloc = ScreenBloc();
 
   final PageController _pageController = PageController();
@@ -126,11 +81,6 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
   void dispose() {
     _bloc.dispose();
     super.dispose();
-  }
-
-  @override
-  void afterFirstLayout(BuildContext context) async {
-    // await getPermissionStatus();
   }
 
   void refresh() {
@@ -174,7 +124,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                   textAlign: TextAlign.center,
                 ),
               ),
-              HelpFuction(),
+              HelpFuctionWidget(),
               Container(
                 padding: EdgeInsets.only(top: 20),
                 width: MediaQuery.of(context).size.width,
@@ -358,7 +308,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                             );
                           } else {
                             if (_bloc.recentScreenshots.length > 0) {
-                              return HomeBody(
+                              return HomeBodyWidget(
                                 title: "Recent Screenshots",
                                 screenshots: _bloc.recentScreenshots,
                               );
@@ -402,7 +352,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           if (snapshot.data == SearchStates.finished) {
-                            return HomeBody(
+                            return HomeBodyWidget(
                               title: "Search results",
                               screenshots: _bloc.searchResults,
                             );
@@ -482,102 +432,6 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
               BottomNavigationBarItem(
                   icon: Icon(Icons.search), title: Text("Search"))
             ]),
-      ),
-    );
-  }
-}
-
-class HelpFuction extends StatelessWidget {
-  const HelpFuction({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Card(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                leading: Icon(Icons.file_upload),
-                title: Text("Manual Upload"),
-                subtitle:
-                    Text("Want to just save a screenshot? Do a manual upload"),
-              ),
-            ),
-            Divider(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                leading: Icon(Icons.text_fields),
-                title: Text("Text View"),
-                subtitle: Text(
-                    "Use this when you just want to extract texts from an image"),
-              ),
-            ),
-            Divider(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                leading: Icon(Icons.settings),
-                title: Text(
-                  "Settings",
-                ),
-                subtitle: Text(
-                    "Here you can modfiy your setting and reconfigure Ural"),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class QA {
-  final String question, answer;
-  QA(this.question, this.answer);
-}
-
-class FaqsWidget extends StatelessWidget {
-  final List<QA> faqs = [
-    QA("I can't see my images?",
-        "First make sure your default directory contains screenshots.\n\nIt takes sometimes to automatically sync.\n\nTry re-configuring Ural from settings."),
-    QA("I'm unable to grant permission?",
-        "Please close the app and re-try. If it still doesn't work give permissions manually from settings."),
-    QA("How frequent are background syncs?", "Every 2 hours"),
-    QA("I can't manually upload an image?",
-        "Make sure you have configured Ural properly. Incase you're getting an error then the image already exist."),
-    QA("It won't recognize text properly",
-        "It depends on things like quality of image, what fonts are used etc."),
-    QA("What languages are currently supported?",
-        "English but you can try if it works"),
-    QA("My search results are empty", "Try different search queries."),
-    QA("Is Ural making copies of my screenshots?",
-        "No, Ural only links your screenshots available on your device")
-  ];
-  FaqsWidget({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Card(
-        child: ListView.builder(
-          physics: ClampingScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: faqs.length,
-          itemBuilder: (context, index) => ExpansionTile(
-            title: Text(faqs[index].question),
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(faqs[index].answer),
-              )
-            ],
-          ),
-        ),
       ),
     );
   }

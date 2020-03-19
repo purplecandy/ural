@@ -9,16 +9,16 @@ import 'dart:io';
 import 'package:ural/pages/textview.dart';
 import 'package:ural/utils/bloc_provider.dart';
 
-class HomeBody extends StatefulWidget {
+class HomeBodyWidget extends StatefulWidget {
   final String title;
   final List<ScreenshotModel> screenshots;
-  HomeBody({Key key, this.screenshots, this.title}) : super(key: key);
+  HomeBodyWidget({Key key, this.screenshots, this.title}) : super(key: key);
 
   @override
-  _HomeBodyState createState() => _HomeBodyState();
+  _HomeBodyWidgetState createState() => _HomeBodyWidgetState();
 }
 
-class _HomeBodyState extends State<HomeBody> {
+class _HomeBodyWidgetState extends State<HomeBodyWidget> {
   List<ScreenshotModel> get screenshots => widget.screenshots;
   String get title => widget.title;
   @override

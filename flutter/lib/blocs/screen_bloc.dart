@@ -13,6 +13,9 @@ import 'dart:io';
 import 'package:ural/pages/textview.dart';
 import 'package:workmanager/workmanager.dart';
 
+enum StreamEvents { update, loading, done }
+enum SearchStates { searching, finished, empty }
+
 class ScreenBloc extends BlocBase {
   final ScreenshotListDatabase _slDB = ScreenshotListDatabase();
 
