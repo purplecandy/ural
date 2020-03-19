@@ -6,10 +6,18 @@ import 'models/screen_model.dart';
 import 'database.dart';
 
 Future<bool> uploadImagesInBackground() async {
+  /// We need to first check if the user has specified any default-folder
+  /// If there is any default folder
+  /// We will simple abondon everything and return false
+  /// which just tells the WorkManager plugin that the task failed
+  /// It's handy in debugging to understand wheather your tasks are running properly
   final pref = await SharedPreferences.getInstance();
   if (pref.containsKey("ural_default_folder")) {
+    // set default directory
     final dir = Directory(pref.getString("ural_default_folder"));
+    // initialize a textrecognizer
     final textRecognizer = FirebaseVision.instance.textRecognizer();
+    // initialize our database
     final ScreenshotListDatabase _slDB = ScreenshotListDatabase();
     await _slDB.initDB();
     try {

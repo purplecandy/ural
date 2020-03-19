@@ -21,6 +21,19 @@ class HomeBodyWidget extends StatefulWidget {
 class _HomeBodyWidgetState extends State<HomeBodyWidget> {
   List<ScreenshotModel> get screenshots => widget.screenshots;
   String get title => widget.title;
+
+  void handleTextView(File imageFile) async {
+    final textBlocs = await recognizeImage(
+        imageFile, FirebaseVision.instance.textRecognizer(),
+        getBlocks: true);
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => TextView(
+                  textBlocks: textBlocs,
+                )));
+  }
+
   @override
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
@@ -84,16 +97,8 @@ class _HomeBodyWidgetState extends State<HomeBodyWidget> {
                         FractionalTranslation(
                           translation: Offset(3, 0.2),
                           child: FloatingActionButton(
-                            onPressed: () async {
-                              final textBlocs = await recognizeImage(file,
-                                  FirebaseVision.instance.textRecognizer(),
-                                  getBlocks: true);
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => TextView(
-                                            textBlocks: textBlocs,
-                                          )));
+                            onPressed: () {
+                              handleTextView(file);
                             },
                             elevation: 0,
                             heroTag: null,

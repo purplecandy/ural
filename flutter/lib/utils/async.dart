@@ -1,3 +1,4 @@
+/// ResponseStatus for [AsyncResponse]
 enum ResponseStatus {
   success,
   failed, //known exception i.e SocketIo
@@ -7,6 +8,8 @@ enum ResponseStatus {
   idle // idle or not ready
 }
 
+/// Repsents any async response
+/// Object can be set as null if you don't want pass anything
 class AsyncResponse<T> {
   final ResponseStatus state;
   final T object;

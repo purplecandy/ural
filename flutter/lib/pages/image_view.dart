@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:open_file/open_file.dart';
+
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 
@@ -29,6 +30,7 @@ class _ImageViewState extends State<ImageView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
+            // TODO: implement a share function
             // IconButton(
             //     icon: Icon(
             //       Icons.share,

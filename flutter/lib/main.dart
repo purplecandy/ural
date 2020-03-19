@@ -296,11 +296,11 @@ class _HomeState extends State<Home> {
                   controller: _pageController,
                   physics: NeverScrollableScrollPhysics(),
                   children: <Widget>[
-                    StreamBuilder<StreamEvents>(
+                    StreamBuilder<RecentScreenStates>(
                       stream: _bloc.streamOfRecentScreens,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          if (snapshot.data == StreamEvents.loading) {
+                          if (snapshot.data == RecentScreenStates.loading) {
                             return Material(
                               child: Center(
                                 child: CircularProgressIndicator(),

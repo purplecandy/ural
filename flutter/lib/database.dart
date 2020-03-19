@@ -24,7 +24,7 @@ class ScreenshotListDatabase {
     Directory directory = await getApplicationDocumentsDirectory();
     String path = join(directory.path, 'screenshotListDB.db');
 
-    /// Opens if the database if it exists
+    /// Opens the database if it exists
     /// else it creates new automatically
     database = await openDatabase(path, version: 1, onCreate: _createTables,
         onOpen: (db) async {
@@ -33,7 +33,7 @@ class ScreenshotListDatabase {
   }
 
   Future _createTables(Database db, int version) async {
-    ///sql query for creating table
+    //sql query for creating table
     // String sql = '''CREATE TABLE $screenshotlist(
     //   ${this.hash} INTEGER PRIMARY KEY,
     //   ${this.imagePath} TEXT,
@@ -69,8 +69,6 @@ class ScreenshotListDatabase {
 
   ///Check if image already exist
   Future<bool> exist(int hash) async {
-    // final records =
-    //     await database.query(vtable, where: "$hash = ?", whereArgs: [hash]);
     final records =
         await database.rawQuery('SELECT hash FROM $vtable WHERE hash = $hash');
     if (records == null) return false;
@@ -100,7 +98,7 @@ class ScreenshotListDatabase {
   }
 
   Future<List<ScreenshotModel>> find(String query) async {
-    final String sql = '''SELECT * FROM $vtable WHERE $vtable MATCH "$query"''';
+    final String sql = 'SELECT * FROM $vtable WHERE $vtable MATCH "$query"';
     List<ScreenshotModel> screenshots = [];
     try {
       List<Map> records = await database.rawQuery(sql);

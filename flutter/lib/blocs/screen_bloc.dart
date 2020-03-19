@@ -1,22 +1,26 @@
-import 'package:ural/database.dart';
-import 'package:ural/pages/setup.dart';
-import 'package:ural/utils/async.dart';
-import 'package:ural/utils/bloc_provider.dart';
-import 'package:ural/models/screen_model.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:ural/widgets/all.dart';
 import 'dart:io';
-import 'package:ural/pages/textview.dart';
 import 'package:workmanager/workmanager.dart';
 
-enum StreamEvents { update, loading, done }
+import 'package:ural/pages/textview.dart';
+import 'package:ural/database.dart';
+import 'package:ural/utils/async.dart';
+import 'package:ural/utils/bloc_provider.dart';
+import 'package:ural/models/screen_model.dart';
+
+// I do not prefer the approach of passing data through streams
+// The States represents the state of an entitiy
+// Widgets rebuild itself according to state
+enum RecentScreenStates { update, loading, done }
 enum SearchStates { searching, finished, empty }
 
 class ScreenBloc extends BlocBase {
+  // database
   final ScreenshotListDatabase _slDB = ScreenshotListDatabase();
 
   final textRecognizer = FirebaseVision.instance.textRecognizer();
@@ -24,37 +28,46 @@ class ScreenBloc extends BlocBase {
   List<ScreenshotModel> recentScreenshots = [];
   List<ScreenshotModel> searchResults = [];
 
+  //manages search events
   final BehaviorSubject<SearchStates> _searchSubject =
       BehaviorSubject<SearchStates>.seeded(SearchStates.searching);
 
-  final BehaviorSubject<StreamEvents> _rscreenSubject =
-      BehaviorSubject<StreamEvents>.seeded(StreamEvents.loading);
+  // manages recent screens events
+  final BehaviorSubject<RecentScreenStates> _rscreenSubject =
+      BehaviorSubject<RecentScreenStates>.seeded(RecentScreenStates.loading);
 
-  Observable<StreamEvents> get streamOfRecentScreens => _rscreenSubject.stream;
+  Observable<RecentScreenStates> get streamOfRecentScreens =>
+      _rscreenSubject.stream;
   Observable<SearchStates> get streamofSearchResults => _searchSubject.stream;
 
   Future<void> initializeDatabase() async {
     await _slDB.initDB();
   }
 
+  /// List all screenshots from the database
   void listAllScreens() async {
     recentScreenshots = await _slDB.list();
-    _rscreenSubject.add(StreamEvents.done);
+    //update the stream
+    _rscreenSubject.add(RecentScreenStates.done);
   }
 
+  /// Delete an Image from the database
   Future<void> delete(String path) async {
     await _slDB.delete(path.hashCode);
+    //rebuild the recent screens
     listAllScreens();
   }
 
+  /// Tells the workmanager to issue a new periodic task
   static void startBackGroundJob() async {
     await Workmanager.registerPeriodicTask(
         "uralfetchscreens", "ural_background",
-        frequency: Duration(hours: 2), initialDelay: Duration(seconds: 5));
+        frequency: Duration(hours: 2), initialDelay: Duration(seconds: 1));
   }
 
   void handleBackgroundSync(GlobalKey<ScaffoldState> scaffold) async {
     final pref = await SharedPreferences.getInstance();
+    // only thing prevents from background sync is an unset default folder
     if (pref.containsKey("ural_default_folder")) {
       startBackGroundJob();
       scaffold.currentState.showSnackBar(SnackBar(
@@ -110,6 +123,7 @@ class ScreenBloc extends BlocBase {
 
     final resp = await saveToDatabase(model);
 
+    /// I don't want upload the same image twice
     if (resp.state == ResponseStatus.success) {
       scaffoldState.currentState.showSnackBar(SnackBar(
         content: Text("Image uploaded successfully"),
@@ -124,6 +138,8 @@ class ScreenBloc extends BlocBase {
     }
   }
 
+  /// A future task that utilizes [AsyncResponse]
+  /// If the image already exist throw an InsertionError
   Future<AsyncResponse> saveToDatabase(ScreenshotModel model) async {
     try {
       bool exist = await _slDB.exist(model.hash);
@@ -156,95 +172,7 @@ class ScreenBloc extends BlocBase {
     showModalBottomSheet(
         context: context,
         builder: (context) => SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Card(
-                        child: ListTile(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) => Setup()));
-                          },
-                          leading: Icon(Icons.build),
-                          title: Text("Setup Ural"),
-                          subtitle: Text("Configure Ural settings"),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Card(
-                        child: ListTile(
-                            onTap: () async {
-                              const url =
-                                  "mailto:hellomr82k@gmail.com?subject=Feedback";
-                              if (await canLaunch(url)) {
-                                launch(url);
-                              }
-                            },
-                            leading: Icon(Icons.person),
-                            title: Text("Mohammed Nadeem"),
-                            subtitle: Text("Author of Ural"),
-                            trailing: Icon(
-                              Icons.mail,
-                              color: Colors.redAccent,
-                            )),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Card(
-                        child: ListTile(
-                          onTap: () async {
-                            const url =
-                                "https://play.google.com/store/apps/details?id=in.kibibyte.ural";
-                            if (await canLaunch(url)) {
-                              launch(url);
-                            }
-                          },
-                          leading: Icon(Icons.rate_review),
-                          title: Text("Rate and Review"),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Card(
-                        child: ListTile(
-                          onTap: () async {
-                            const url =
-                                "https://github.com/purplecandy/ural/tree/master/flutter";
-                            if (await canLaunch(url)) {
-                              launch(url);
-                            }
-                          },
-                          leading: Icon(Icons.archive),
-                          title: Text("Github Repository"),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              child: SettingsModalWidget(),
             ));
   }
 
