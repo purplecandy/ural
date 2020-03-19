@@ -24,7 +24,7 @@ class _HomeBodyState extends State<HomeBody> {
   @override
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
-    final ScreenBloc screenBloc = StaticBloc.of<ScreenBloc>(context);
+    final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
     return Material(
       child: Column(
         children: <Widget>[
@@ -64,7 +64,8 @@ class _HomeBodyState extends State<HomeBody> {
                         context,
                         MaterialPageRoute(
                             fullscreenDialog: true,
-                            builder: (context) => StaticBloc<ScreenBloc>(
+                            builder: (context) =>
+                                SingleBlocProvider<ScreenBloc>(
                                   bloc: screenBloc,
                                   child: ImageView(
                                     imageFile: file,

@@ -269,7 +269,7 @@ class _HomeState extends State<Home> with AfterLayoutMixin {
 
   @override
   Widget build(BuildContext context) {
-    return StaticBloc<ScreenBloc>(
+    return SingleBlocProvider<ScreenBloc>(
       bloc: _bloc,
       child: Scaffold(
         key: _scaffold,

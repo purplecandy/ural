@@ -16,7 +16,7 @@ class ImageView extends StatefulWidget {
 class _ImageViewState extends State<ImageView> {
   @override
   Widget build(BuildContext context) {
-    final ScreenBloc screenBloc = StaticBloc.of<ScreenBloc>(context);
+    final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
     return Scaffold(
       body: Container(
         padding: EdgeInsets.all(16),
