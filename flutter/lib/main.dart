@@ -4,11 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:async';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
-import 'widgets/all.dart' show FaqsWidget, HelpFuctionWidget, HomeBodyWidget;
+import 'widgets/all.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/pages/setup.dart';
+import 'package:ural/pages/textview.dart';
 import 'background_tasks.dart';
 
 void callbackDispatcher() {
@@ -217,6 +220,28 @@ class _HomeState extends State<Home> {
   void onSubmitTF() => _bloc.handleTextField(
       query: searchQuery.trim(), pageController: _pageController);
 
+  /// Handles Settings button events
+  void handleSettings() async {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) => SingleChildScrollView(
+              child: SettingsModalWidget(),
+            ));
+  }
+
+  ///Handle textView events
+  void handleTextView() async {
+    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    final blocks = await _bloc.recognizeImage(image, getBlocks: true);
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (context) => TextView(
+                  textBlocks: blocks,
+                )));
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleBlocProvider<ScreenBloc>(
@@ -239,7 +264,7 @@ class _HomeState extends State<Home> {
                 IconButton(
                     icon: Icon(Icons.settings),
                     onPressed: () {
-                      _bloc.handleSettings(context);
+                      handleSettings();
                     })
               ],
               pinned: true,
@@ -408,7 +433,7 @@ class _HomeState extends State<Home> {
               elevation: 9,
               heroTag: null,
               onPressed: () async {
-                _bloc.handleTextView(context);
+                handleTextView();
               },
               child: Icon(Icons.text_fields),
             ),

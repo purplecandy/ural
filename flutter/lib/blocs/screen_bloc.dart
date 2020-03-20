@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ural/widgets/all.dart';
+
 import 'dart:io';
 import 'package:workmanager/workmanager.dart';
 
-import 'package:ural/pages/textview.dart';
 import 'package:ural/database.dart';
 import 'package:ural/utils/async.dart';
 import 'package:ural/utils/bloc_provider.dart';
@@ -101,19 +100,6 @@ class ScreenBloc extends BlocBase {
     }
   }
 
-  ///Handle textView events
-  void handleTextView(BuildContext context) async {
-    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
-    final blocks = await recognizeImage(image, getBlocks: true);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (context) => TextView(
-                  textBlocks: blocks,
-                )));
-  }
-
   /// Gets called when manual-upload button called
   void handleManualUpload(GlobalKey<ScaffoldState> scaffoldState) async {
     File image = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -165,15 +151,6 @@ class ScreenBloc extends BlocBase {
     if (getBlocks) return visionText.blocks;
     //reutrn text
     return visionText.text;
-  }
-
-  /// Handles Settings button events
-  void handleSettings(BuildContext context) async {
-    showModalBottomSheet(
-        context: context,
-        builder: (context) => SingleChildScrollView(
-              child: SettingsModalWidget(),
-            ));
   }
 
   void setDefaultFolder(String path) async {
