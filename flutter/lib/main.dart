@@ -29,11 +29,12 @@ class App extends StatelessWidget {
         primaryColorLight: Color(0xFF6d6d6d),
         primaryColorDark: Color(0xFF1b1b1b),
         accentColor: Color(0xFFe91e63),
-        scaffoldBackgroundColor: Color(0xFF6d6d6d),
+        // scaffoldBackgroundColor: Color(0xFF6d6d6d),
+        scaffoldBackgroundColor: Color(0xFF1b1b1b),
         canvasColor: Color(0xFF1b1b1b),
         backgroundColor: Color(0xFF1b1b1b),
       ),
-      routes: {"/": (context) => Home()},
+      routes: {"/": (context) => HomePage()},
     );
   }
 }
