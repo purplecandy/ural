@@ -16,7 +16,7 @@ import 'package:ural/models/screen_model.dart';
 // The States represents the state of an entitiy
 // Widgets rebuild itself according to state
 enum RecentScreenStates { update, loading, done }
-enum SearchStates { searching, finished, empty }
+enum SearchStates { idle, searching, done, empty }
 
 class ScreenBloc extends BlocBase {
   // database
@@ -29,7 +29,7 @@ class ScreenBloc extends BlocBase {
 
   //manages search events
   final BehaviorSubject<SearchStates> _searchSubject =
-      BehaviorSubject<SearchStates>.seeded(SearchStates.searching);
+      BehaviorSubject<SearchStates>.seeded(SearchStates.idle);
 
   // manages recent screens events
   final BehaviorSubject<RecentScreenStates> _rscreenSubject =
@@ -48,6 +48,10 @@ class ScreenBloc extends BlocBase {
     recentScreenshots = await _slDB.list();
     //update the stream
     _rscreenSubject.add(RecentScreenStates.done);
+  }
+
+  Future<void> hardReset() async {
+    await _slDB.reset();
   }
 
   /// Delete an Image from the database
@@ -92,7 +96,7 @@ class ScreenBloc extends BlocBase {
     _searchSubject.add(SearchStates.searching);
     searchResults = await _slDB.find(query);
     if (searchResults.length > 0) {
-      _searchSubject.add(SearchStates.finished);
+      _searchSubject.add(SearchStates.done);
     } else {
       _searchSubject.add(SearchStates.empty);
     }

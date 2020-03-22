@@ -4,6 +4,7 @@ import 'package:path/path.dart' show join;
 import 'dart:io';
 import 'dart:async';
 import 'package:ural/models/screen_model.dart';
+import 'package:ural/utils/async.dart';
 
 class InsertionError implements Exception {
   final message;
@@ -57,6 +58,17 @@ class ScreenshotListDatabase {
     // await db.execute(sql).then((val) {
     //   print("Trigger created successfully");
     // });
+  }
+
+  Future<AsyncResponse> reset() async {
+    try {
+      await database.execute('DELETE FROM $vtable');
+      AsyncResponse(ResponseStatus.success, null);
+    } catch (e) {
+      print(e);
+      AsyncResponse(ResponseStatus.failed, null);
+    }
+    return AsyncResponse(ResponseStatus.unkown, null);
   }
 
   Future<void> delete(int hash) async {

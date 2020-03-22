@@ -1,11 +1,15 @@
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
+import 'package:ural/pages/help.dart';
 import 'dart:io';
 
+import 'settings.dart';
 import 'package:ural/widgets/all.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
@@ -22,8 +26,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   ScreenBloc _bloc = ScreenBloc();
-  TabController _tabController;
-  final PageController _pageController = PageController();
+  // TabController _tabController;
+  // final PageController _pageController = PageController();
   final _scaffold = GlobalKey<ScaffoldState>();
   final recognizer = FirebaseVision.instance.textRecognizer();
   final FocusNode focusNode = FocusNode();
@@ -36,7 +40,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // _tabController = TabController(length: 2, vsync: this);
     startup();
   }
 
@@ -106,6 +110,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 )));
   }
 
+  void showAlert() {
+    showDialog(context: context, builder: (context) => ImageDialog());
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -133,9 +141,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Visibility(
                     visible: searchStack,
                     child: Container(
+                      color: Theme.of(context).backgroundColor,
                       height: MediaQuery.of(context).size.height,
                       width: MediaQuery.of(context).size.width,
-                      color: Colors.yellow,
                       child: SearchBodyWidget(),
                     ),
                   ),
@@ -162,14 +170,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           onSubmitted: (val) {
                             onSubmitTF();
                           },
+                          style: TextStyle(color: Colors.black),
                           decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.search),
+                              hintStyle: TextStyle(color: Colors.black),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.black,
+                              ),
                               border: InputBorder.none,
                               hintText: "Type what you're looking for here"),
                         ),
                       ),
                     ),
                   ),
+                  //BOTTOM BUTTONS
                   Positioned(
                     left: MediaQuery.of(context).size.width * 0.25,
                     bottom: 40,
@@ -185,33 +199,73 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
-                              IconButton(
-                                  splashColor: Colors.white,
-                                  icon: Icon(Feather.image),
-                                  color: Colors.deepPurple,
+                              SizedBox(
+                                width: 40,
+                                child: RawMaterialButton(
+                                  shape: CircleBorder(),
                                   onPressed: () {
-                                    print("object");
-                                  }),
+                                    // handleSettings();
+                                    showAlert();
+                                  },
+                                  child: Icon(
+                                    Feather.image,
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+                              ),
                               Separator(),
-                              IconButton(
-                                  splashColor: Colors.white,
-                                  icon: Icon(Feather.file_text),
-                                  color: Colors.deepPurple,
+                              SizedBox(
+                                width: 40,
+                                child: RawMaterialButton(
+                                  shape: CircleBorder(),
                                   onPressed: () {
-                                    print("object");
-                                  }),
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => TextScan());
+                                  },
+                                  child: Icon(
+                                    Feather.file_text,
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+                              ),
                               Separator(),
-                              IconButton(
-                                  splashColor: Colors.white,
-                                  icon: Icon(Feather.menu),
-                                  color: Colors.deepPurple,
+                              SizedBox(
+                                width: 40,
+                                child: RawMaterialButton(
+                                  shape: CircleBorder(),
                                   onPressed: () {
-                                    handleSettings();
-                                  }),
+                                    // handleSettings();
+                                  },
+                                  child: Icon(
+                                    Feather.tag,
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+                              ),
+                              Separator(),
+                              SizedBox(
+                                width: 40,
+                                child: RawMaterialButton(
+                                  shape: CircleBorder(),
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) =>
+                                            SingleBlocProvider<ScreenBloc>(
+                                                bloc: _bloc,
+                                                child: MenuDialog()));
+                                  },
+                                  child: Icon(
+                                    Feather.menu,
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+                              ),
                             ],
                           )),
                     ),
-                  )
+                  ),
                 ],
               ),
             )),
@@ -229,6 +283,253 @@ class Separator extends StatelessWidget {
       margin: EdgeInsets.only(top: 10, bottom: 10),
       width: 1,
       color: Colors.white.withOpacity(0.8),
+    );
+  }
+}
+
+class HorizontalSeprator extends StatelessWidget {
+  const HorizontalSeprator({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(left: 16, right: 16),
+      height: 0.3,
+      color: Colors.white.withOpacity(0.3),
+    );
+  }
+}
+
+class MenuDialog extends StatefulWidget {
+  MenuDialog({Key key}) : super(key: key);
+
+  @override
+  _MenuDialogState createState() => _MenuDialogState();
+}
+
+class _MenuDialogState extends State<MenuDialog> {
+  @override
+  Widget build(BuildContext context) {
+    final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
+    return Dialog(
+      elevation: 10,
+      // color: Colors.transparent,
+      // textStyle: TextStyle(color: Colors.white),
+      backgroundColor: Colors.transparent,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.3,
+        width: MediaQuery.of(context).size.width * 0.9,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Theme.of(context).backgroundColor),
+        child: Column(
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                SizedBox(
+                  width: 40,
+                  child: RawMaterialButton(
+                    shape: CircleBorder(),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Icon(
+                      Feather.x,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // HorizontalSeprator(),
+            MenuTile(Feather.settings, "Settings", () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SingleBlocProvider<ScreenBloc>(
+                          bloc: screenBloc, child: SettingsPage())));
+            }),
+            HorizontalSeprator(),
+            MenuTile(Feather.help_circle, "Help", () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => HelpPage()));
+            }),
+            HorizontalSeprator(),
+            MenuTile(Feather.mail, "Feedback", () {}),
+            HorizontalSeprator(),
+            MenuTile(Feather.info, "More Information", () {}),
+            // HorizontalSeprator()
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ImageDialog extends StatefulWidget {
+  const ImageDialog({Key key}) : super(key: key);
+
+  @override
+  _ImageDialogState createState() => _ImageDialogState();
+}
+
+class _ImageDialogState extends State<ImageDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      elevation: 10,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.22,
+        width: MediaQuery.of(context).size.width * 0.9,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Theme.of(context).backgroundColor),
+        child: Column(
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                SizedBox(
+                  width: 40,
+                  child: RawMaterialButton(
+                    shape: CircleBorder(),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Icon(
+                      Feather.x,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "You will have to pick a screenshot from below to save it manually.",
+                textAlign: TextAlign.center,
+                // style: TextStyle(color: Colors.white),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            FlatButton(
+              onPressed: () {},
+              child: Text("UPLOAD & SAVE"),
+              shape: RoundedRectangleBorder(),
+              textColor: Colors.white,
+              highlightColor: Colors.deepPurpleAccent,
+              color: Colors.deepPurple,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class TextScan extends StatefulWidget {
+  TextScan({Key key}) : super(key: key);
+
+  @override
+  _TextScanState createState() => _TextScanState();
+}
+
+class _TextScanState extends State<TextScan> {
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      elevation: 10,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.22,
+        width: MediaQuery.of(context).size.width * 0.9,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Theme.of(context).backgroundColor),
+        child: Column(
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                SizedBox(
+                  width: 40,
+                  child: RawMaterialButton(
+                    shape: CircleBorder(),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Icon(
+                      Feather.x,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "You will have to pick a screenshot from below to view extracts the text from it..",
+                textAlign: TextAlign.center,
+                // style: TextStyle(color: Colors.white),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            FlatButton(
+              onPressed: () {},
+              child: Text("UPLOAD & SCAN"),
+              shape: RoundedRectangleBorder(),
+              textColor: Colors.white,
+              highlightColor: Colors.deepPurpleAccent,
+              color: Colors.deepPurple,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MenuTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback callback;
+  MenuTile(this.icon, this.title, this.callback);
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      child: InkWell(
+        onTap: callback,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 16),
+          child: Container(
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  icon,
+                  color: Colors.white,
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                Text(
+                  title,
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w300),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

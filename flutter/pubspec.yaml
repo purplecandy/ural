@@ -17,6 +17,7 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
+  page_transition: ^1.1.5
   flutter_icons: ^1.0.0+1
   open_file: ^3.0.1
   photo_view: ^0.9.2

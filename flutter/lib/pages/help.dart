@@ -7,8 +7,11 @@ class HelpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Help"),
+      ),
+      body: SingleChildScrollView(
         child: Container(
           width: MediaQuery.of(context).size.width,
           child: Column(

@@ -72,100 +72,110 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
         stream: screenBloc.streamofSearchResults,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            if (snapshot.data == SearchStates.empty) {
+            if (snapshot.data == SearchStates.idle) {
               return _EmptyListWidget(
                 message:
-                    "Couldn't find anything. Please trying typing something else",
+                    "Looking for a screenshot? Just try searchin what was inside it.",
+              );
+            } else if (snapshot.data == SearchStates.searching) {
+              return Center(
+                child: CircularProgressIndicator(),
               );
             } else {
-              return Material(
-                color: Colors.transparent,
-                child: Column(
-                  children: <Widget>[
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * heightFactor,
-                    ),
-                    Expanded(
-                      child: GridView.builder(
-                          controller: _scrollController,
-                          shrinkWrap: true,
-                          itemCount: screenBloc.searchResults.length,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount:
-                                      (orientation == Orientation.portrait)
-                                          ? 2
-                                          : 3),
-                          itemBuilder: (context, index) {
-                            File file;
-                            try {
-                              file = File(
-                                  screenBloc.searchResults[index].imagePath);
-                              if (!file.existsSync()) {
-                                throw Exception("Image does not exist");
+              // search is complete
+              if (snapshot.data == SearchStates.empty) {
+                return _EmptyListWidget(
+                  message:
+                      "Couldn't find anything. Please trying typing something else",
+                );
+              } else {
+                return Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(
+                        height:
+                            MediaQuery.of(context).size.height * heightFactor,
+                      ),
+                      Expanded(
+                        child: GridView.builder(
+                            controller: _scrollController,
+                            shrinkWrap: true,
+                            itemCount: screenBloc.searchResults.length,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount:
+                                        (orientation == Orientation.portrait)
+                                            ? 2
+                                            : 3),
+                            itemBuilder: (context, index) {
+                              File file;
+                              try {
+                                file = File(
+                                    screenBloc.searchResults[index].imagePath);
+                                if (!file.existsSync()) {
+                                  throw Exception("Image does not exist");
+                                }
+                              } catch (e) {
+                                return Container(
+                                  child: Center(
+                                    child: Icon(Icons.broken_image),
+                                  ),
+                                );
                               }
-                            } catch (e) {
-                              return Container(
-                                child: Center(
-                                  child: Icon(Icons.broken_image),
-                                ),
-                              );
-                            }
-                            return InkWell(
-                              onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      fullscreenDialog: true,
-                                      builder: (context) =>
-                                          SingleBlocProvider<ScreenBloc>(
-                                            bloc: screenBloc,
-                                            child: ImageView(
-                                              imageFile: file,
-                                            ),
-                                          ))),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20)),
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.all(8),
-                                      width: double.infinity,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.file(
-                                          file,
-                                          // color: Colors.black.withOpacity(0.2),
-                                          // colorBlendMode: BlendMode.luminosity,
-                                          fit: BoxFit.cover,
+                              return InkWell(
+                                onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        fullscreenDialog: true,
+                                        builder: (context) =>
+                                            SingleBlocProvider<ScreenBloc>(
+                                              bloc: screenBloc,
+                                              child: ImageView(
+                                                imageFile: file,
+                                              ),
+                                            ))),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20)),
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.all(8),
+                                        width: double.infinity,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Image.file(
+                                            file,
+                                            // color: Colors.black.withOpacity(0.2),
+                                            // colorBlendMode: BlendMode.luminosity,
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    // FractionalTranslation(
-                                    //   translation: Offset(3, 3),
-                                    //   child: IconButton(
-                                    //       color: Colors.white,
-                                    //       icon: Icon(Feather.more_horizontal),
-                                    //       onPressed: () {
-                                    //         handleTextView(file);
-                                    //       }),
-                                    // )
-                                  ],
+                                      // FractionalTranslation(
+                                      //   translation: Offset(3, 3),
+                                      //   child: IconButton(
+                                      //       color: Colors.white,
+                                      //       icon: Icon(Feather.more_horizontal),
+                                      //       onPressed: () {
+                                      //         handleTextView(file);
+                                      //       }),
+                                      // )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          }),
-                    ),
-                  ],
-                ),
-              );
+                              );
+                            }),
+                      ),
+                    ],
+                  ),
+                );
+              }
             }
           }
-
-          return _EmptyListWidget(
-            message:
-                "Looking for a screenshot? Just try searchin what was inside it.",
-          );
+          return Container();
         });
   }
 }
