@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:ural/background_tasks.dart';
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/file_browser.dart';
+import 'package:ural/prefrences.dart';
 import 'package:ural/utils/bloc_provider.dart';
+import 'package:ural/utils/file_utils.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({Key key}) : super(key: key);
@@ -11,6 +15,29 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  final UralPrefrences uralPref = UralPrefrences();
+  bool syncStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    syncStatus = uralPref.getSyncStatus();
+  }
+
+  void handleSyncStatus(bool val) {
+    setState(() {
+      syncStatus = val;
+    });
+    uralPref.setSyncStatus(syncStatus);
+    if (syncStatus) {
+      ScreenBloc.startBackGroundJob();
+      print("Background job started");
+    } else {
+      ScreenBloc.cancelBackGroundJob();
+      print("Background job cancelled");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
@@ -32,6 +59,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: () {
               showDialog(
                   context: context,
+                  barrierDismissible: false,
                   builder: (context) => ListDirectoryDialog());
             },
           ),
@@ -60,8 +88,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 "If disable sync then you will have to manually turn it on.",
                 style: TextStyle(color: Colors.white),
               ),
-              value: true,
-              onChanged: (b) {}),
+              value: syncStatus,
+              onChanged: (val) {
+                handleSyncStatus(val);
+              }),
           Divider(
             color: Colors.grey,
           ),
@@ -146,6 +176,33 @@ class ListDirectoryDialog extends StatefulWidget {
 }
 
 class _ListDirectoryDialogState extends State<ListDirectoryDialog> {
+  UralPrefrences uralPref = UralPrefrences();
+  List<String> directories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    directories = uralPref.getDirectories();
+  }
+
+  void handleSaveDirectory(String path) {
+    directories.add(path);
+    uralPref.setDirectories(directories);
+    setState(() {
+      directories = directories;
+    });
+    print(uralPref.getDirectories());
+  }
+
+  void handleRemoveDirectory(int index) {
+    uralPref.removeDirectory(directories[index]);
+    directories.removeAt(index);
+    setState(() {
+      directories = directories;
+    });
+    print(uralPref.getDirectories());
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -153,23 +210,41 @@ class _ListDirectoryDialogState extends State<ListDirectoryDialog> {
       content: Container(
         height: MediaQuery.of(context).size.height * 0.3,
         width: MediaQuery.of(context).size.width * 0.9,
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: 10,
-          itemBuilder: (context, index) => ListTile(
-            title: Text("$index"),
-            trailing: IconButton(
-                icon: Icon(
-                  Feather.trash,
-                  color: Colors.redAccent,
+        child: directories.isEmpty
+            ? Text("You don't have any directories saved")
+            : ListView.builder(
+                shrinkWrap: true,
+                itemCount: directories.length,
+                itemBuilder: (context, index) => ListTile(
+                  title: Text(FileUtils.getEntityName(directories[index])),
+                  trailing: IconButton(
+                      icon: Icon(
+                        Feather.trash,
+                        color: Colors.redAccent,
+                      ),
+                      onPressed: () {
+                        handleRemoveDirectory(index);
+                      }),
                 ),
-                onPressed: () {}),
-          ),
-        ),
+              ),
       ),
       actions: <Widget>[
-        FlatButton(onPressed: () {}, child: Text("Close")),
-        FlatButton(onPressed: () {}, child: Text("Add"))
+        FlatButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text("Close")),
+        FlatButton(
+            onPressed: () async {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => FileBrowser(
+                            title: "Pick a folder",
+                            action: handleSaveDirectory,
+                          )));
+            },
+            child: Text("Add"))
       ],
     );
   }

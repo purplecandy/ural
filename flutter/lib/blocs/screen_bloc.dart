@@ -68,6 +68,10 @@ class ScreenBloc extends BlocBase {
         frequency: Duration(hours: 2), initialDelay: Duration(seconds: 1));
   }
 
+  static void cancelBackGroundJob() async {
+    await Workmanager.cancelByUniqueName("uralfetchscreens");
+  }
+
   void handleBackgroundSync(GlobalKey<ScaffoldState> scaffold) async {
     final pref = await SharedPreferences.getInstance();
     // only thing prevents from background sync is an unset default folder

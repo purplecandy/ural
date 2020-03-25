@@ -66,18 +66,21 @@ class _HomeBodyWidgetState extends State<HomeBodyWidget> {
       SizedBox(
         height: 60,
         child: ListTile(
-          title: LinearProgressIndicator(
-            backgroundColor: Colors.grey,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.lightGreen),
-            value: 0.75,
-          ),
-          subtitle: Text("28 synced out of 99"),
-          trailing: Icon(Feather.refresh_ccw),
-        ),
+            title: Text("ALL SCREENSHOTS"),
+            subtitle:
+                Text("${screenBloc.recentScreenshots.length} items sycned"),
+            trailing: IconButton(
+              icon: Icon(
+                Feather.refresh_ccw,
+              ),
+              onPressed: () {
+                screenBloc.listAllScreens();
+              },
+            )),
       ),
       StreamBuilder<RecentScreenStates>(
           stream: screenBloc.streamOfRecentScreens,
-          builder: (context, snapshot) {
+          builder: (context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data == RecentScreenStates.loading) {
                 return Material(

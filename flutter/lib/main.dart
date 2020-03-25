@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ural/prefrences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'background_tasks.dart';
 
@@ -13,13 +14,28 @@ void callbackDispatcher() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Workmanager.initialize(callbackDispatcher, isInDebugMode: false);
+  await Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
 
   runApp(App());
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({Key key}) : super(key: key);
+
+  @override
+  _AppState createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  @override
+  void initState() {
+    super.initState();
+    // loadUralPrefrences();
+  }
+
+  // void loadUralPrefrences() async {
+  //   await UralPrefrences().getInstance();
+  // }
 
   @override
   Widget build(BuildContext context) {

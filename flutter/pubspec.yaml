@@ -17,6 +17,9 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
+  fluttertoast: ^4.0.1
+  intl: ^0.16.1
+  mime_type: ^0.2.4
   page_transition: ^1.1.5
   flutter_icons: ^1.0.0+1
   open_file: ^3.0.1

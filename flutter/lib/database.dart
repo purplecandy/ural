@@ -18,7 +18,12 @@ class ScreenshotListDatabase {
   /// table name
   final String screenshotlist = "screenshotlist";
   final String vtable = "virtualscreenshotlist";
+
   static Database database;
+
+  static final ScreenshotListDatabase _instance = ScreenshotListDatabase._();
+  factory ScreenshotListDatabase() => _instance;
+  ScreenshotListDatabase._();
 
   /// Initialize database
   Future<void> initDB() async {
