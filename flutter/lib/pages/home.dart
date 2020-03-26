@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ural/controllers/permission_handler.dart';
 import 'package:ural/pages/help.dart';
 import 'package:ural/prefrences.dart';
+import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/async.dart';
 import 'dart:io';
 
@@ -30,6 +31,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   ScreenBloc _bloc = ScreenBloc();
+  final SearchFieldBloc _searchFieldBloc = SearchFieldBloc();
+  final TextEditingController _searchFieldController = TextEditingController();
+
   UralPrefrences uralPref = UralPrefrences();
   // TabController _tabController;
   // final PageController _pageController = PageController();
@@ -50,11 +54,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void startup() async {
+    //initialize our controller
+    _searchFieldBloc.initialize(_searchFieldController);
+
     intialSetup();
+
     //gotta wait for database to get initialized
     await _bloc.initializeDatabase();
     //then lazily load all the screens
-    _bloc.listAllScreens();
+    // _bloc.listAllScreens();
     focusNode.addListener(() {
       if (focusNode.hasPrimaryFocus) {
         setState(() {
@@ -128,150 +136,156 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       },
       child: SingleBlocProvider<ScreenBloc>(
         bloc: _bloc,
-        child: Scaffold(
-            key: _scaffold,
-            body: Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              child: Stack(
-                children: <Widget>[
-                  Container(
-                    height: MediaQuery.of(context).size.height,
-                    width: MediaQuery.of(context).size.width,
-                    child: HomeBodyWidget(),
-                  ),
-
-                  Visibility(
-                    visible: searchStack,
-                    child: Container(
-                      color: Theme.of(context).backgroundColor,
+        child: SingleBlocProvider<SearchFieldBloc>(
+          bloc: _searchFieldBloc,
+          child: Scaffold(
+              key: _scaffold,
+              body: Container(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                child: Stack(
+                  children: <Widget>[
+                    Container(
                       height: MediaQuery.of(context).size.height,
                       width: MediaQuery.of(context).size.width,
-                      child: SearchBodyWidget(),
+                      child: HomeBodyWidget(),
                     ),
-                  ),
-                  Positioned(
-                    top: 40,
-                    left: 50,
-                    child: Material(
-                      elevation: 20,
-                      color: Colors.transparent,
+
+                    Visibility(
+                      visible: searchStack,
                       child: Container(
-                        height: 40,
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: TextField(
-                          focusNode: focusNode,
-                          onChanged: (val) {
-                            searchQuery = val;
-                          },
-                          onEditingComplete: () {
-                            print("IM CLOSING");
-                          },
-                          onSubmitted: (val) {
-                            onSubmitTF();
-                          },
-                          style: TextStyle(color: Colors.black),
-                          decoration: InputDecoration(
-                              hintStyle: TextStyle(color: Colors.black),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.black,
-                              ),
-                              border: InputBorder.none,
-                              hintText: "Type what you're looking for here"),
+                        color: Theme.of(context).backgroundColor,
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        child: SearchBodyWidget(),
+                      ),
+                    ),
+                    Positioned(
+                      top: 40,
+                      left: 50,
+                      child: Material(
+                        elevation: 20,
+                        color: Colors.transparent,
+                        child: Container(
+                          height: 40,
+                          width: MediaQuery.of(context).size.width * 0.8,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20)),
+                          child: TextField(
+                            controller: _searchFieldController,
+                            focusNode: focusNode,
+                            onChanged: (val) {
+                              searchQuery = val;
+                            },
+                            onEditingComplete: () {
+                              print("IM CLOSING");
+                            },
+                            onSubmitted: (val) {
+                              if (val.length > 0)
+                                _searchFieldBloc
+                                    .dispatch(SearchFieldState.change);
+                            },
+                            style: TextStyle(color: Colors.black),
+                            decoration: InputDecoration(
+                                hintStyle: TextStyle(color: Colors.black),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Colors.black,
+                                ),
+                                border: InputBorder.none,
+                                hintText: "Type what you're looking for here"),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  //BOTTOM BUTTONS
-                  Positioned(
-                    left: MediaQuery.of(context).size.width * 0.25,
-                    bottom: 40,
-                    child: Material(
-                      elevation: 10,
-                      color: Colors.transparent,
-                      child: Container(
-                          height: 40,
-                          width: MediaQuery.of(context).size.width * 0.5,
-                          decoration: BoxDecoration(
-                              color: Theme.of(context).backgroundColor,
-                              borderRadius: BorderRadius.circular(20)),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              SizedBox(
-                                width: 40,
-                                child: RawMaterialButton(
-                                  shape: CircleBorder(),
-                                  onPressed: () {
-                                    // handleSettings();
-                                    showAlert();
-                                  },
-                                  child: Icon(
-                                    Feather.image,
-                                    color: Colors.deepPurple,
+                    //BOTTOM BUTTONS
+                    Positioned(
+                      left: MediaQuery.of(context).size.width * 0.25,
+                      bottom: 40,
+                      child: Material(
+                        elevation: 10,
+                        color: Colors.transparent,
+                        child: Container(
+                            height: 40,
+                            width: MediaQuery.of(context).size.width * 0.5,
+                            decoration: BoxDecoration(
+                                color: Theme.of(context).backgroundColor,
+                                borderRadius: BorderRadius.circular(20)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                SizedBox(
+                                  width: 40,
+                                  child: RawMaterialButton(
+                                    shape: CircleBorder(),
+                                    onPressed: () {
+                                      // handleSettings();
+                                      showAlert();
+                                    },
+                                    child: Icon(
+                                      Feather.image,
+                                      color: Colors.deepPurple,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Separator(),
-                              SizedBox(
-                                width: 40,
-                                child: RawMaterialButton(
-                                  shape: CircleBorder(),
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) => TextScan());
-                                  },
-                                  child: Icon(
-                                    Feather.file_text,
-                                    color: Colors.deepPurple,
+                                Separator(),
+                                SizedBox(
+                                  width: 40,
+                                  child: RawMaterialButton(
+                                    shape: CircleBorder(),
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) => TextScan());
+                                    },
+                                    child: Icon(
+                                      Feather.file_text,
+                                      color: Colors.deepPurple,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Separator(),
-                              SizedBox(
-                                width: 40,
-                                child: RawMaterialButton(
-                                  shape: CircleBorder(),
-                                  onPressed: () {
-                                    // handleSettings();
-                                  },
-                                  child: Icon(
-                                    Feather.tag,
-                                    color: Colors.deepPurple,
+                                Separator(),
+                                SizedBox(
+                                  width: 40,
+                                  child: RawMaterialButton(
+                                    shape: CircleBorder(),
+                                    onPressed: () {
+                                      // handleSettings();
+                                    },
+                                    child: Icon(
+                                      Feather.tag,
+                                      color: Colors.deepPurple,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Separator(),
-                              SizedBox(
-                                width: 40,
-                                child: RawMaterialButton(
-                                  shape: CircleBorder(),
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) =>
-                                            SingleBlocProvider<ScreenBloc>(
-                                                bloc: _bloc,
-                                                child: MenuDialog()));
-                                  },
-                                  child: Icon(
-                                    Feather.menu,
-                                    color: Colors.deepPurple,
+                                Separator(),
+                                SizedBox(
+                                  width: 40,
+                                  child: RawMaterialButton(
+                                    shape: CircleBorder(),
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) =>
+                                              SingleBlocProvider<ScreenBloc>(
+                                                  bloc: _bloc,
+                                                  child: MenuDialog()));
+                                    },
+                                    child: Icon(
+                                      Feather.menu,
+                                      color: Colors.deepPurple,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          )),
+                              ],
+                            )),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )),
+                  ],
+                ),
+              )),
+        ),
       ),
     );
   }

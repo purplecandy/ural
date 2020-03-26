@@ -4,10 +4,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/controllers/image_handler.dart';
+import 'package:ural/database.dart';
 import 'package:ural/pages/image_view.dart';
 import 'package:ural/models/screen_model.dart';
 import 'dart:io';
-
+import 'package:ural/repository/database_repo.dart';
 import 'package:ural/pages/textview.dart';
 import 'package:ural/utils/bloc_provider.dart';
 
@@ -19,6 +20,7 @@ class HomeBodyWidget extends StatefulWidget {
 }
 
 class _HomeBodyWidgetState extends State<HomeBodyWidget> {
+  final RecentScreenBloc _rscreenBloc = RecentScreenBloc();
   ScrollController _scrollController = ScrollController();
 
   double heightFactor = 0.1;
@@ -38,6 +40,7 @@ class _HomeBodyWidgetState extends State<HomeBodyWidget> {
   @override
   void initState() {
     super.initState();
+    startup();
     _scrollController.addListener(() {
       if (_scrollController.position.userScrollDirection ==
               ScrollDirection.reverse &&
@@ -55,6 +58,20 @@ class _HomeBodyWidgetState extends State<HomeBodyWidget> {
     });
   }
 
+  void startup() async {
+    final repo = MultiRepositoryProvider.of<DatabaseRepository>(context);
+    repo.addListeners(() {
+      _rscreenBloc.initializeDatabase(repo.slDB);
+      _rscreenBloc.dispatch(RecentScreenAction.fetch);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _rscreenBloc.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
@@ -67,29 +84,37 @@ class _HomeBodyWidgetState extends State<HomeBodyWidget> {
         height: 60,
         child: ListTile(
             title: Text("ALL SCREENSHOTS"),
-            subtitle:
-                Text("${screenBloc.recentScreenshots.length} items sycned"),
+            subtitle: StreamBuilder(
+                stream: _rscreenBloc.state.stream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData)
+                    return Text(
+                        "${_rscreenBloc.state.data.length} items sycned");
+                  return Container();
+                }),
             trailing: IconButton(
               icon: Icon(
                 Feather.refresh_ccw,
               ),
               onPressed: () {
-                screenBloc.listAllScreens();
+                _rscreenBloc.dispatch(RecentScreenAction.fetch);
               },
             )),
       ),
-      StreamBuilder<RecentScreenStates>(
-          stream: screenBloc.streamOfRecentScreens,
-          builder: (context, AsyncSnapshot snapshot) {
+      StreamBuilder<SubState<RecentScreenStates, List<ScreenshotModel>>>(
+          stream: _rscreenBloc.state.stream,
+          builder: (context,
+              AsyncSnapshot<SubState<RecentScreenStates, List<ScreenshotModel>>>
+                  snapshot) {
             if (snapshot.hasData) {
-              if (snapshot.data == RecentScreenStates.loading) {
+              if (snapshot.data.state == RecentScreenStates.loading) {
                 return Material(
                   child: Center(
                     child: CircularProgressIndicator(),
                   ),
                 );
               } else {
-                if (screenBloc.recentScreenshots.length == 0) {
+                if (snapshot.data.object.length == 0) {
                   return _EmptyListWidget(
                     callback: screenBloc.listAllScreens,
                   );
@@ -100,15 +125,14 @@ class _HomeBodyWidgetState extends State<HomeBodyWidget> {
                         physics: ClampingScrollPhysics(),
                         controller: _scrollController,
                         shrinkWrap: true,
-                        itemCount: screenBloc.recentScreenshots.length,
+                        itemCount: snapshot.data.object.length,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount:
                                 (orientation == Orientation.portrait) ? 2 : 3),
                         itemBuilder: (context, index) {
                           File file;
                           try {
-                            file = File(
-                                screenBloc.recentScreenshots[index].imagePath);
+                            file = File(snapshot.data.object[index].imagePath);
                             if (!file.existsSync()) {
                               throw Exception("Image does not exist");
                             }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ural/utils/bloc_provider.dart';
 import 'dart:convert';
 
 import 'package:ural/utils/file_utils.dart';
@@ -16,7 +17,7 @@ class SavedDirectory {
   Map<String, dynamic> toMap() => {"path": path, "items_count": itemsCount};
 }
 
-class UralPrefrences {
+class UralPrefrences extends Repository {
   static final UralPrefrences _instance = UralPrefrences._();
   factory UralPrefrences() => _instance;
   UralPrefrences._();
@@ -25,6 +26,7 @@ class UralPrefrences {
   final String directoryKey = "ural_settings_directories";
   final String syncStatusKey = "ural_settings_sync_status";
   final String initialSetupKey = "ural_settings_initial_setup";
+  final String recentSearchesKey = "ural_settings_recent_search";
 
   Future<void> getInstance() async {
     _preferences = await SharedPreferences.getInstance();
@@ -41,6 +43,30 @@ class UralPrefrences {
     var bytes = base64.decode(base64Str);
     String result = utf8.decode(bytes);
     return result;
+  }
+
+  List<String> getRecentSearches() {
+    if (_preferences.containsKey(recentSearchesKey)) {
+      return _preferences.getString(recentSearchesKey).split(":");
+    }
+    return [];
+  }
+
+  void updateRecentSearches(String query) {
+    if (_preferences.containsKey(recentSearchesKey)) {
+      List<String> searches =
+          _preferences.getString(recentSearchesKey).split(":");
+      if (searches.length < 5) {
+        searches.add(query);
+        _preferences.setString(recentSearchesKey, searches.join(":"));
+      } else {
+        var temp = searches.sublist(1);
+        temp.add(query);
+        _preferences.setString(recentSearchesKey, temp.join(":"));
+      }
+    } else {
+      _preferences.setString(recentSearchesKey, query);
+    }
   }
 
   Future<void> findAndSaveDirectories() async {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ural/prefrences.dart';
+import 'package:ural/repository/database_repo.dart';
+import 'package:ural/utils/bloc_provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'background_tasks.dart';
 
@@ -39,19 +41,22 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      themeMode: ThemeMode.dark,
-      theme: ThemeData.dark().copyWith(
-        primaryColor: Color(0xFF424242),
-        primaryColorLight: Color(0xFF6d6d6d),
-        primaryColorDark: Color(0xFF1b1b1b),
-        accentColor: Color(0xFFe91e63),
-        // scaffoldBackgroundColor: Color(0xFF6d6d6d),
-        scaffoldBackgroundColor: Color(0xFF1b1b1b),
-        canvasColor: Color(0xFF1b1b1b),
-        backgroundColor: Color(0xFF1b1b1b),
+    return MultiRepositoryProvider(
+      repositories: [DatabaseRepository(), UralPrefrences()],
+      child: MaterialApp(
+        themeMode: ThemeMode.dark,
+        theme: ThemeData.dark().copyWith(
+          primaryColor: Color(0xFF424242),
+          primaryColorLight: Color(0xFF6d6d6d),
+          primaryColorDark: Color(0xFF1b1b1b),
+          accentColor: Color(0xFFe91e63),
+          // scaffoldBackgroundColor: Color(0xFF6d6d6d),
+          scaffoldBackgroundColor: Color(0xFF1b1b1b),
+          canvasColor: Color(0xFF1b1b1b),
+          backgroundColor: Color(0xFF1b1b1b),
+        ),
+        routes: {"/": (context) => HomePage()},
       ),
-      routes: {"/": (context) => HomePage()},
     );
   }
 }

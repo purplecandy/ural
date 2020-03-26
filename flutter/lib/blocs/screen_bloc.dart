@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ural/prefrences.dart';
 import 'package:ural/repository/database_repo.dart';
 
 import 'dart:io';
@@ -16,7 +17,6 @@ import 'package:ural/models/screen_model.dart';
 // I do not prefer the approach of passing data through streams
 // The States represents the state of an entitiy
 // Widgets rebuild itself according to state
-enum SearchStates { idle, searching, done, empty }
 
 enum RecentScreenStates { loading, done }
 enum RecentScreenAction { fetch }
@@ -60,6 +60,129 @@ class RecentScreenBloc extends BlocBase
   void dispose() {
     state.dispose();
   }
+}
+
+enum SearchStates { idle, searching, done, empty }
+enum SearchAction { fetch, reset }
+
+class SearchScreenBloc extends BlocBase
+    implements ActionReceiver<SearchAction> {
+  ScreenshotListDatabase _slDB;
+  StreamState<SearchStates, List<ScreenshotModel>> state;
+
+  SearchScreenBloc() {
+    state = StreamState<SearchStates, List<ScreenshotModel>>(
+        SubState<SearchStates, List<ScreenshotModel>>(
+            SearchStates.idle, List<ScreenshotModel>()));
+  }
+
+  /// Initialize database
+  void initializeDatabase(ScreenshotListDatabase db) {
+    _slDB = db;
+  }
+
+  @override
+  void dispose() {
+    state.dispose();
+  }
+
+  @override
+  void dispatch(SearchAction actionState, [Map<String, dynamic> data]) {
+    switch (actionState) {
+      case SearchAction.fetch:
+        _find(data["query"], data["ural_pref"]);
+        break;
+      case SearchAction.reset:
+        state.currentState = SearchStates.idle;
+        break;
+
+      default:
+    }
+  }
+
+  // int count = 0;
+  void _find(String query, UralPrefrences prefrences) async {
+    state.currentState = SearchStates.searching;
+    state.notifyListeners();
+
+    _slDB.find(query).then((screenshots) {
+      if (screenshots.length > 0) {
+        state.currentState = SearchStates.done;
+        prefrences.updateRecentSearches(query);
+      } else {
+        state.currentState = SearchStates.empty;
+      }
+      state.data = screenshots;
+      state.notifyListeners();
+      // count++;
+      // print("COUNT - $count");
+    });
+  }
+}
+
+enum SearchFieldState { change, reset, recent }
+
+class SearchFieldBloc extends BlocBase
+    implements ActionReceiver<SearchFieldState> {
+  TextEditingController _fieldController;
+  String _previousValue = "";
+
+  StreamState<SearchFieldState, String> state;
+
+  SearchFieldBloc() {
+    state = StreamState<SearchFieldState, String>(
+        SubState<SearchFieldState, String>(SearchFieldState.reset, ""));
+  }
+
+  void initialize(TextEditingController controller) {
+    _fieldController = controller;
+    _fieldController.addListener(handleTextField);
+  }
+
+  @override
+  void dispatch(SearchFieldState actionState, [Map<String, dynamic> data]) {
+    switch (actionState) {
+      case SearchFieldState.change:
+        state.data = _fieldController.text;
+        state.currentState = SearchFieldState.change;
+        state.notifyListeners();
+        break;
+      case SearchFieldState.reset:
+        state.data = _fieldController.text;
+        state.currentState = SearchFieldState.reset;
+        state.notifyListeners();
+        break;
+      case SearchFieldState.recent:
+        _recentSearch(data["recent_query"]);
+        break;
+      default:
+    }
+  }
+
+  @override
+  void dispose() {
+    state.dispose();
+  }
+
+  void handleTextField() {
+    if (_fieldController.text.length == 0) {
+      dispatch(SearchFieldState.reset);
+    } else {
+      if (_previousValue != _fieldController.text) {
+        dispatch(SearchFieldState.change);
+        _previousValue = _fieldController.text;
+      }
+    }
+  }
+
+  void _recentSearch(String query) {
+    _fieldController.text = query;
+    state.data = query;
+    state.currentState = SearchFieldState.change;
+    state.notifyListeners();
+  }
+
+  String getText() => _fieldController.text;
 }
 
 class ScreenBloc extends BlocBase {
