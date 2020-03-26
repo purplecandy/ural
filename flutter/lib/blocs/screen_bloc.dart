@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ural/repository/database_repo.dart';
 
 import 'dart:io';
 import 'package:workmanager/workmanager.dart';
@@ -15,8 +16,51 @@ import 'package:ural/models/screen_model.dart';
 // I do not prefer the approach of passing data through streams
 // The States represents the state of an entitiy
 // Widgets rebuild itself according to state
-enum RecentScreenStates { update, loading, done }
 enum SearchStates { idle, searching, done, empty }
+
+enum RecentScreenStates { loading, done }
+enum RecentScreenAction { fetch }
+
+class RecentScreenBloc extends BlocBase
+    implements ActionReceiver<RecentScreenAction> {
+  ScreenshotListDatabase _slDB;
+  StreamState<RecentScreenStates, List<ScreenshotModel>> state;
+
+  RecentScreenBloc() {
+    state = StreamState<RecentScreenStates, List<ScreenshotModel>>(
+        SubState<RecentScreenStates, List<ScreenshotModel>>(
+            RecentScreenStates.loading, List<ScreenshotModel>()));
+  }
+
+  @override
+  void dispatch(RecentScreenAction actionState, [Map<String, dynamic> data]) {
+    switch (actionState) {
+      case RecentScreenAction.fetch:
+        _getAllScreens();
+        break;
+      default:
+    }
+  }
+
+  /// List all screenshots from the database
+  void _getAllScreens() async {
+    //update the data
+    state.data = await _slDB.list();
+    //update the state
+    state.currentState = RecentScreenStates.done;
+    //notifiy listeners
+    state.notifyListeners();
+  }
+
+  /// Initialize database
+  void initializeDatabase(ScreenshotListDatabase db) {
+    _slDB = db;
+  }
+
+  void dispose() {
+    state.dispose();
+  }
+}
 
 class ScreenBloc extends BlocBase {
   // database
