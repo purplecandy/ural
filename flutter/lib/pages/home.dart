@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -513,6 +515,7 @@ class _InitialSetupDialogState extends State<InitialSetupDialog> {
                       msg: "Permission Granted",
                       backgroundColor: Colors.greenAccent,
                       textColor: Colors.white);
+                  compute(findDirectories, null);
                   await uralPref.findAndSaveDirectories();
                   ScreenBloc.startBackGroundJob();
                   uralPref.setSyncStatus(true);

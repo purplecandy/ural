@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -137,4 +138,35 @@ class UralPrefrences extends Repository {
   void setInitialSetupStatus(bool status) {
     _preferences.setBool(initialSetupKey, status);
   }
+}
+
+void findDirectories(var r) {
+  //finds internal and external storage list
+  // final List<Directory> dirs = await FileUtils.getStorageList();
+
+  // //list for screenshot directories
+  // List<String> paths = List<String>();
+
+  // RegExp reg = RegExp(r"\w*Screenshot(s?)$", caseSensitive: true);
+
+  // //loop in each storage
+  // for (var dir in dirs) {
+  //   List<FileSystemEntity> entities =
+  //       Directory(dir.path).listSync(recursive: true);
+
+  //   //identify each entity is actually a screenshot folder
+  //   for (var item in entities) {
+  //     if (item is Directory) {
+  //       if (reg.hasMatch(item.path)) paths.add(item.path);
+  //     }
+  //   }
+  // }
+  // //save directories
+  // // setDirectories(paths);
+  // return "";
+}
+
+Future<int> calculate(int value) async {
+  // this runs on another isolate
+  return value * 2;
 }

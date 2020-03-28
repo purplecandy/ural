@@ -32,12 +32,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    // loadUralPrefrences();
   }
-
-  // void loadUralPrefrences() async {
-  //   await UralPrefrences().getInstance();
-  // }
 
   @override
   Widget build(BuildContext context) {
