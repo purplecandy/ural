@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ural/pages/tags.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/bloc_provider.dart';
@@ -50,7 +51,10 @@ class _AppState extends State<App> {
           canvasColor: Color(0xFF1b1b1b),
           backgroundColor: Color(0xFF1b1b1b),
         ),
-        routes: {"/": (context) => HomePage()},
+        routes: {
+          "/": (context) => HomePage(),
+          "/tags":(context) => TagsPage()
+        },
       ),
     );
   }

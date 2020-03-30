@@ -14,6 +14,7 @@ import 'package:ural/pages/help.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/async.dart';
+import 'package:ural/utils/file_utils.dart';
 import 'dart:io';
 
 import 'settings.dart';
@@ -253,7 +254,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   child: RawMaterialButton(
                                     shape: CircleBorder(),
                                     onPressed: () {
-                                      // handleSettings();
+                                      Navigator.pushNamed(context, '/tags');
                                     },
                                     child: Icon(
                                       Feather.tag,
@@ -400,12 +401,14 @@ class _ImageDialogState extends State<ImageDialog> {
       elevation: 10,
       backgroundColor: Colors.transparent,
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.22,
+        padding: EdgeInsets.all(8),
+        // height: MediaQuery.of(context).size.height * 0.22,
         width: MediaQuery.of(context).size.width * 0.9,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             color: Theme.of(context).backgroundColor),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -439,7 +442,7 @@ class _ImageDialogState extends State<ImageDialog> {
             FlatButton(
               onPressed: () {},
               child: Text("UPLOAD & SAVE"),
-              shape: RoundedRectangleBorder(),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
               textColor: Colors.white,
               highlightColor: Colors.deepPurpleAccent,
               color: Colors.deepPurple,
@@ -515,8 +518,8 @@ class _InitialSetupDialogState extends State<InitialSetupDialog> {
                       msg: "Permission Granted",
                       backgroundColor: Colors.greenAccent,
                       textColor: Colors.white);
-                  compute(findDirectories, null);
-                  await uralPref.findAndSaveDirectories();
+                  uralPref.setDirectories(await compute(findDirectories, await FileUtils.getStorageList()));
+                  // await uralPref.findAndSaveDirectories();
                   ScreenBloc.startBackGroundJob();
                   uralPref.setSyncStatus(true);
                   uralPref.setInitialSetupStatus(true);

@@ -203,7 +203,7 @@ class _SingleBlocProviderState<T> extends State<SingleBlocProvider<T>> {
 
   @override
   Widget build(BuildContext context) {
-    print(context.widget);
+    // print(context.widget);
     return widget.child;
   }
 }
@@ -274,7 +274,7 @@ class MultiBlocProvider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(context.widget);
+    // print(context.widget);
     return child;
   }
 }

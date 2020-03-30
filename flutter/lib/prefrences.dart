@@ -140,30 +140,34 @@ class UralPrefrences extends Repository {
   }
 }
 
-void findDirectories(var r) {
-  //finds internal and external storage list
+Future<List<String>> findDirectories(List<Directory> dirs) async{
+  // finds internal and external storage list
   // final List<Directory> dirs = await FileUtils.getStorageList();
 
-  // //list for screenshot directories
-  // List<String> paths = List<String>();
+  //list for screenshot directories
+  List<String> paths = List<String>();
 
-  // RegExp reg = RegExp(r"\w*Screenshot(s?)$", caseSensitive: true);
+  RegExp reg = RegExp(r"\w*Screenshot(s?)$", caseSensitive: true);
+  //loop in each storage
+  for (var dir in dirs) {
+    List<FileSystemEntity> entities =
+        Directory(dir.path).listSync(recursive: true);
 
-  // //loop in each storage
-  // for (var dir in dirs) {
-  //   List<FileSystemEntity> entities =
-  //       Directory(dir.path).listSync(recursive: true);
-
-  //   //identify each entity is actually a screenshot folder
-  //   for (var item in entities) {
-  //     if (item is Directory) {
-  //       if (reg.hasMatch(item.path)) paths.add(item.path);
-  //     }
-  //   }
+    //identify each entity is actually a screenshot folder
+    for (var item in entities) {
+      if (item is Directory) {
+        //add to path if match exist
+        if (reg.hasMatch(item.path)) paths.add(item.path);
+      }
+    }
+  }
+  return paths;
+  //save directories
+  // if(paths.length > 0){
+  //   SharedPreferences preferences = await SharedPreferences.getInstance();
+  //   String serialized = paths.join(":");
+  //   preferences.setString("ural_settings_directories", serialized);
   // }
-  // //save directories
-  // // setDirectories(paths);
-  // return "";
 }
 
 Future<int> calculate(int value) async {
