@@ -159,6 +159,24 @@ class ScreenshotListDatabase {
     }
     return screenshots;
   }
+
+  Future<AsyncResponse> removeBatch(List<ScreenshotModel> screens,
+      {
+
+      /// true - if you want to delete the files too
+      bool rmfile = false}) async {
+    try {
+      for (var item in screens) {
+        String sql = 'DELETE FROM $vtable WHERE hash = ${item.hash}';
+        await database.execute(sql);
+        if (rmfile) File(item.imagePath).delete();
+      }
+      return AsyncResponse(ResponseStatus.success, null);
+    } catch (e) {
+      print(e);
+      return AsyncResponse(ResponseStatus.failed, e);
+    }
+  }
 }
 
 class TagUtils {
