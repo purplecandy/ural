@@ -179,15 +179,14 @@ class TagUtils {
     try {
       List results =
           await db.rawQuery("SELECT * FROM ${ScreenshotListDatabase.tags}");
+      List<TagModel> tags = [];
       if (results.length > 0) {
-        List<TagModel> tags = [];
         for (var item in results) {
           TagModel model = TagModel.fromMap(item);
           tags.add(model);
         }
-        return AsyncResponse(ResponseStatus.success, tags);
       }
-      return AsyncResponse(ResponseStatus.success, results);
+      return AsyncResponse(ResponseStatus.success, tags);
     } catch (e) {
       return AsyncResponse(ResponseStatus.failed, e);
     }
