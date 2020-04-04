@@ -1,5 +1,7 @@
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:image/image.dart' as img;
 import 'dart:io';
 
 import 'models/screen_model.dart';
@@ -45,6 +47,7 @@ Future<bool> uploadImagesInBackground() async {
               ScreenshotModel model =
                   ScreenshotModel(entity.path.hashCode, entity.path, text);
               _slDB.insert(model);
+              generateThumb(entity.path);
               print("Success uploaded");
             }
           }
@@ -58,4 +61,15 @@ Future<bool> uploadImagesInBackground() async {
   }
 
   return false;
+}
+
+Future<void> generateThumb(String path) async {
+  Directory docs = await getApplicationDocumentsDirectory();
+  Directory temp = Directory(docs.path + '/thumbs');
+  if (!temp.existsSync()) temp.createSync();
+  File _thumb = File(temp.path + '/${path.hashCode}.png');
+  //generate and load the cache file
+  img.Image original = img.decodeImage(File(path).readAsBytesSync());
+  img.Image thumb = img.copyResize(original, width: 270);
+  _thumb.writeAsBytesSync(img.encodePng(thumb));
 }
