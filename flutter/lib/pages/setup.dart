@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:ural/background_tasks.dart';
+// import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import 'package:folder_picker/folder_picker.dart';
 
 import 'package:ural/utils/async.dart';
-import 'package:ural/blocs/screen_bloc.dart';
+// import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/controllers/permission_handler.dart';
 
 class Setup extends StatefulWidget {
@@ -115,7 +116,7 @@ class _SetupState extends State<Setup> {
   }
 
   Future<AsyncResponse> handleStepThree() async {
-    ScreenBloc.startBackGroundJob();
+    startBackGroundJob();
     setState(() {
       backgroundSync = true;
     });

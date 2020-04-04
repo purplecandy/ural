@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:open_file/open_file.dart';
 
-import 'package:ural/utils/bloc_provider.dart';
-import 'package:ural/blocs/screen_bloc.dart';
+// import 'package:ural/utils/bloc_provider.dart';
+// import 'package:ural/blocs/screen_bloc.dart';
 
 class ImageView extends StatefulWidget {
   final File imageFile;
@@ -17,7 +17,6 @@ class ImageView extends StatefulWidget {
 class _ImageViewState extends State<ImageView> {
   @override
   Widget build(BuildContext context) {
-    final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
     return Scaffold(
       body: Container(
         padding: EdgeInsets.all(16),
@@ -52,7 +51,8 @@ class _ImageViewState extends State<ImageView> {
                   color: Colors.white,
                 ),
                 onPressed: () async {
-                  await screenBloc.delete(widget.imageFile.path);
+                  /// TODO: Implement delete
+                  // await screenBloc.delete(widget.imageFile.path);
                   Navigator.pop(context);
                 })
           ],

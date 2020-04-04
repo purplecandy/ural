@@ -2,6 +2,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image/image.dart' as img;
+import 'package:workmanager/workmanager.dart';
 import 'dart:io';
 
 import 'models/screen_model.dart';
@@ -27,7 +28,14 @@ Future<bool> uploadImagesInBackground() async {
       final ScreenshotListDatabase _slDB = ScreenshotListDatabase();
       await _slDB.initDB();
       try {
-        List<FileSystemEntity> fileEntities = dir.listSync(recursive: true);
+        List<FileSystemEntity> fileEntities = dir.listSync(recursive: true)
+          ..sort((f1, f2) => FileSystemEntity.isFileSync(f1.path) &&
+                  FileSystemEntity.isFileSync(f2.path)
+              ? File(f1.path)
+                  .lastModifiedSync()
+                  .compareTo(File(f2.path).lastModifiedSync())
+              : 1);
+
         for (FileSystemEntity entity in fileEntities) {
           if (entity is File) {
             //identify if the file is an image format
@@ -47,8 +55,8 @@ Future<bool> uploadImagesInBackground() async {
               ScreenshotModel model =
                   ScreenshotModel(entity.path.hashCode, entity.path, text);
               _slDB.insert(model);
+              //asynchronosly generate the thumbnail
               generateThumb(entity.path);
-              print("Success uploaded");
             }
           }
         }
@@ -57,12 +65,14 @@ Future<bool> uploadImagesInBackground() async {
         return false;
       }
     }
+    print("Success uploaded");
     return true;
   }
 
   return false;
 }
 
+/// Generate thumbnail from image source
 Future<void> generateThumb(String path) async {
   Directory docs = await getApplicationDocumentsDirectory();
   Directory temp = Directory(docs.path + '/thumbs');
@@ -72,4 +82,21 @@ Future<void> generateThumb(String path) async {
   img.Image original = img.decodeImage(File(path).readAsBytesSync());
   img.Image thumb = img.copyResize(original, width: 270);
   _thumb.writeAsBytesSync(img.encodePng(thumb));
+}
+
+/// A one-of background task initializer it's executed almost instantly
+void restartBackgroundJob() async {
+  await cancelBackGroundJob();
+  startBackGroundJob();
+}
+
+/// The standard background job, only runs at specified frequiencies
+void startBackGroundJob() async {
+  await Workmanager.registerPeriodicTask("uralfetchscreens", "ural_background",
+      frequency: Duration(hours: 2), initialDelay: Duration(seconds: 1));
+}
+
+/// Removed the background job from the work-manager
+Future<void> cancelBackGroundJob() async {
+  await Workmanager.cancelByUniqueName("uralfetchscreens");
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'dart:convert';
@@ -28,10 +29,20 @@ class UralPrefrences extends Repository {
   final String syncStatusKey = "ural_settings_sync_status";
   final String initialSetupKey = "ural_settings_initial_setup";
   final String recentSearchesKey = "ural_settings_recent_search";
+  static Directory thumbsDir;
 
   Future<void> getInstance() async {
     _preferences = await SharedPreferences.getInstance();
+    getApplicationDocumentsDirectory().then((dir) {
+      final cache = Directory(dir.path + '/thumbs');
+      if (!cache.existsSync()) cache.createSync();
+      thumbsDir = cache;
+    });
   }
+
+  // void removeKey(String key) async => await SharedPreferences.getInstance()
+  //   ..remove(key);
+  void removeKey(String key) => _preferences.remove(key);
 
   String encodeJson(var object) {
     String result = json.encode(object);
@@ -140,7 +151,7 @@ class UralPrefrences extends Repository {
   }
 }
 
-Future<List<String>> findDirectories(List<Directory> dirs) async{
+Future<List<String>> findDirectories(List<Directory> dirs) async {
   // finds internal and external storage list
   // final List<Directory> dirs = await FileUtils.getStorageList();
 

@@ -5,24 +5,26 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:page_transition/page_transition.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:page_transition/page_transition.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'package:image_picker/image_picker.dart';
+// import 'package:image_picker/image_picker.dart';
+import 'package:ural/background_tasks.dart';
 import 'package:ural/controllers/permission_handler.dart';
+import 'package:ural/models/screen_model.dart';
 import 'package:ural/pages/help.dart';
 import 'package:ural/prefrences.dart';
-import 'package:ural/repository/database_repo.dart';
+// import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/async.dart';
 import 'package:ural/utils/file_utils.dart';
-import 'dart:io';
+// import 'dart:io';
 
 import 'settings.dart';
 import 'package:ural/widgets/all.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
-import 'package:ural/pages/setup.dart';
-import 'package:ural/pages/textview.dart';
+// import 'package:ural/pages/setup.dart';
+// import 'package:ural/pages/textview.dart';
 import 'package:ural/widgets/search_body.dart';
 
 class HomePage extends StatefulWidget {
@@ -33,9 +35,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  ScreenBloc _bloc = ScreenBloc();
+  // ScreenBloc _bloc = ScreenBloc();
   final SearchFieldBloc _searchFieldBloc = SearchFieldBloc();
   final TextEditingController _searchFieldController = TextEditingController();
+  final _selectionBloc = ScreenSelectionBloc();
 
   UralPrefrences uralPref = UralPrefrences();
   // TabController _tabController;
@@ -63,7 +66,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     intialSetup();
 
     //gotta wait for database to get initialized
-    await _bloc.initializeDatabase();
+    // await _bloc.initializeDatabase();
     //then lazily load all the screens
     // _bloc.listAllScreens();
     focusNode.addListener(() {
@@ -77,7 +80,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _bloc.dispose();
+    // _bloc.dispose();
     super.dispose();
   }
 
@@ -86,7 +89,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         content: Text(
       "Refreshing...",
     )));
-    _bloc.listAllScreens();
+    // _bloc.listAllScreens();
   }
 
   Future<void> intialSetup() async {
@@ -99,7 +102,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  void onSubmitTF() => _bloc.handleTextField(searchQuery.trim());
+  // void onSubmitTF() => _bloc.handleTextField(searchQuery.trim());
 
   /// Handles Settings button events
   void handleSettings() async {
@@ -111,17 +114,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   ///Handle textView events
-  void handleTextView() async {
-    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
-    final blocks = await _bloc.recognizeImage(image, getBlocks: true);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (context) => TextView(
-                  textBlocks: blocks,
-                )));
-  }
+  // void handleTextView() async {
+  //   File image = await ImagePicker.pickImage(source: ImageSource.gallery);
+  //   final blocks = await _bloc.recognizeImage(image, getBlocks: true);
+  //   Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //           fullscreenDialog: true,
+  //           builder: (context) => TextView(
+  //                 textBlocks: blocks,
+  //               )));
+  // }
 
   void showAlert() {
     showDialog(context: context, builder: (context) => ImageDialog());
@@ -137,10 +140,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         });
         return false;
       },
-      child: SingleBlocProvider<ScreenBloc>(
-        bloc: _bloc,
-        child: SingleBlocProvider<SearchFieldBloc>(
-          bloc: _searchFieldBloc,
+      child: SingleBlocProvider<SearchFieldBloc>(
+        bloc: _searchFieldBloc,
+        child: SingleBlocProvider<ScreenSelectionBloc>(
+          bloc: _selectionBloc,
           child: Scaffold(
               key: _scaffold,
               body: Container(
@@ -153,7 +156,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       width: MediaQuery.of(context).size.width,
                       child: HomeBodyWidget(),
                     ),
-
                     Visibility(
                       visible: searchStack,
                       child: Container(
@@ -270,10 +272,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     onPressed: () {
                                       showDialog(
                                           context: context,
-                                          builder: (context) =>
-                                              SingleBlocProvider<ScreenBloc>(
-                                                  bloc: _bloc,
-                                                  child: MenuDialog()));
+                                          builder: (context) => MenuDialog());
                                     },
                                     child: Icon(
                                       Feather.menu,
@@ -285,6 +284,47 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             )),
                       ),
                     ),
+                    StreamBuilder<
+                            SubState<SelectionStates,
+                                Map<int, ScreenshotModel>>>(
+                        stream: _selectionBloc.state.stream,
+                        builder: (context, snap) {
+                          if (snap.hasData) {
+                            if (snap.data.state != SelectionStates.empty) {
+                              return Container(
+                                height: 80,
+                                child: AppBar(
+                                  leading: IconButton(
+                                      icon: Icon(Icons.close),
+                                      onPressed: () {
+                                        _selectionBloc
+                                            .dispatch(SelectionAction.reset);
+                                      }),
+                                  title: Text(
+                                      "${snap.data.object.length} selected"),
+                                  actions: <Widget>[
+                                    IconButton(
+                                        icon: Icon(
+                                          Feather.tag,
+                                          size: 19,
+                                        ),
+                                        onPressed: () {}),
+                                    IconButton(
+                                        icon: Icon(
+                                          Feather.trash,
+                                          size: 19,
+                                        ),
+                                        onPressed: () {})
+                                  ],
+                                ),
+                              );
+                            }
+                          }
+                          return SizedBox(
+                            height: 0,
+                            width: 0,
+                          );
+                        }),
                   ],
                 ),
               )),
@@ -330,7 +370,6 @@ class MenuDialog extends StatefulWidget {
 class _MenuDialogState extends State<MenuDialog> {
   @override
   Widget build(BuildContext context) {
-    final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
     return Dialog(
       elevation: 10,
       // color: Colors.transparent,
@@ -364,11 +403,8 @@ class _MenuDialogState extends State<MenuDialog> {
             ),
             // HorizontalSeprator(),
             MenuTile(Feather.settings, "Settings", () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => SingleBlocProvider<ScreenBloc>(
-                          bloc: screenBloc, child: SettingsPage())));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()));
             }),
             HorizontalSeprator(),
             MenuTile(Feather.help_circle, "Help", () {
@@ -442,7 +478,8 @@ class _ImageDialogState extends State<ImageDialog> {
             FlatButton(
               onPressed: () {},
               child: Text("UPLOAD & SAVE"),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(19)),
               textColor: Colors.white,
               highlightColor: Colors.deepPurpleAccent,
               color: Colors.deepPurple,
@@ -518,9 +555,10 @@ class _InitialSetupDialogState extends State<InitialSetupDialog> {
                       msg: "Permission Granted",
                       backgroundColor: Colors.greenAccent,
                       textColor: Colors.white);
-                  uralPref.setDirectories(await compute(findDirectories, await FileUtils.getStorageList()));
+                  uralPref.setDirectories(await compute(
+                      findDirectories, await FileUtils.getStorageList()));
                   // await uralPref.findAndSaveDirectories();
-                  ScreenBloc.startBackGroundJob();
+                  startBackGroundJob();
                   uralPref.setSyncStatus(true);
                   uralPref.setInitialSetupStatus(true);
                   Navigator.pop(context);

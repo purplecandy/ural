@@ -4,7 +4,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/controllers/image_handler.dart';
-import 'package:ural/pages/image_view.dart';
+// import 'package:ural/pages/image_view.dart';
+import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
 import 'dart:io';
@@ -154,9 +155,9 @@ class ScreenshotListGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
-    final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
-    final SearchFieldBloc searchFieldBloc =
-        SingleBlocProvider.of<SearchFieldBloc>(context);
+    // final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
+    // final SearchFieldBloc searchFieldBloc =
+    SingleBlocProvider.of<SearchFieldBloc>(context);
     final SearchScreenBloc bloc =
         SingleBlocProvider.of<SearchScreenBloc>(context);
 
@@ -201,7 +202,7 @@ class ScreenshotListGrid extends StatelessWidget {
                                 File(snapshot.data.object[index].imagePath);
                             return file.existsSync()
                                 ? ImageGridTile(
-                                    bloc: screenBloc,
+                                    model: snapshot.data.object[index],
                                     file: file,
                                   )
                                 : Container(
@@ -216,48 +217,6 @@ class ScreenshotListGrid extends StatelessWidget {
               }
               return Container();
             }));
-  }
-}
-
-class ImageGridTile extends StatelessWidget {
-  final ScreenBloc bloc;
-  final File file;
-  const ImageGridTile({Key key, this.bloc, this.file}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              fullscreenDialog: true,
-              builder: (context) => SingleBlocProvider<ScreenBloc>(
-                    bloc: bloc,
-                    child: ImageView(
-                      imageFile: file,
-                    ),
-                  ))),
-      child: Container(
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-        child: Stack(
-          children: [
-            Container(
-              margin: EdgeInsets.all(8),
-              width: double.infinity,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  file,
-                  // color: Colors.black.withOpacity(0.2),
-                  // colorBlendMode: BlendMode.luminosity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

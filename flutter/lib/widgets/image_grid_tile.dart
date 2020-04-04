@@ -1,32 +1,48 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:path_provider/path_provider.dart';
+// import 'package:path_provider/path_provider.dart';
 import 'package:ural/background_tasks.dart';
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'dart:io';
 import 'package:ural/pages/image_view.dart';
 
 class ImageGridTile extends StatelessWidget {
-  final ScreenBloc bloc;
+  final ScreenshotModel model;
+  // final ScreenBloc bloc;
   final File file;
-  const ImageGridTile({Key key, this.bloc, this.file}) : super(key: key);
+  const ImageGridTile({Key key, this.file, this.model}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final ScreenSelectionBloc selectionBloc =
+        SingleBlocProvider.of<ScreenSelectionBloc>(context);
     return InkWell(
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              fullscreenDialog: true,
-              builder: (context) => SingleBlocProvider<ScreenBloc>(
-                    bloc: bloc,
-                    child: ImageView(
-                      imageFile: file,
-                    ),
-                  ))),
+      onLongPress: () {
+        if (selectionBloc.state.currentState == SelectionStates.empty)
+          selectionBloc.dispatch(SelectionAction.add, {"hash": model.hash});
+      },
+      onTap: () {
+        if (selectionBloc.state.currentState != SelectionStates.empty) {
+          selectionBloc.state.data.containsKey(model.hash)
+              ? selectionBloc
+                  .dispatch(SelectionAction.remove, {"hash": model.hash})
+              : selectionBloc
+                  .dispatch(SelectionAction.add, {"hash": model.hash});
+        } else {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                fullscreenDialog: true,
+                builder: (context) => ImageView(
+                  imageFile: file,
+                ),
+              ));
+        }
+      },
       child: Container(
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
         child: Stack(
@@ -42,18 +58,29 @@ class ImageGridTile extends StatelessWidget {
                     ),
                   )),
             ),
-            Visibility(
-              visible: file.path.hashCode % 2 == 0 ? true : false,
-              child: Container(
-                height: double.infinity,
-                width: double.infinity,
-                color: Colors.deepPurple.withOpacity(0.3),
-                child: Center(
-                    child: Icon(
-                  MaterialCommunityIcons.check_circle,
-                  // color: Colors.deepPurpleAccent,
-                )),
-              ),
+            StreamBuilder<SubState<SelectionStates, Map<int, ScreenshotModel>>>(
+              stream: selectionBloc.state.stream,
+              builder: (context, snap) {
+                if (snap.hasData) {
+                  return Visibility(
+                    visible: (snap.data.state != SelectionStates.empty &&
+                        snap.data.object.containsKey(model.hash)),
+                    child: Container(
+                      height: double.infinity,
+                      width: double.infinity,
+                      color: Colors.deepPurple.withOpacity(0.3),
+                      child: Center(
+                          child: Icon(
+                        MaterialCommunityIcons.check_circle,
+                      )),
+                    ),
+                  );
+                }
+                return SizedBox(
+                  height: 0,
+                  width: 0,
+                );
+              },
             )
           ],
         ),
