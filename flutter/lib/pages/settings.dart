@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ural/background_tasks.dart';
-import 'package:ural/blocs/screen_bloc.dart';
+// import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/file_browser.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/utils/file_utils.dart';
+import 'package:ural/repository/database_repo.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({Key key}) : super(key: key);
@@ -30,17 +32,16 @@ class _SettingsPageState extends State<SettingsPage> {
     });
     uralPref.setSyncStatus(syncStatus);
     if (syncStatus) {
-      ScreenBloc.startBackGroundJob();
+      startBackGroundJob();
       print("Background job started");
     } else {
-      ScreenBloc.cancelBackGroundJob();
+      cancelBackGroundJob();
       print("Background job cancelled");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text("Settings"),
@@ -95,24 +96,24 @@ class _SettingsPageState extends State<SettingsPage> {
           Divider(
             color: Colors.grey,
           ),
-          ListTile(
-            title: Text(
-              "Reset everything",
-              style: TextStyle(color: Colors.redAccent),
-            ),
-            subtitle: Text(
-              "Deletes everything and rebuild the database",
-              style: TextStyle(color: Colors.redAccent),
-            ),
-            onTap: () {
-              showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => ResetConfirmationDialog(
-                        callback: screenBloc.hardReset,
-                      ));
-            },
-          ),
+          // ListTile(
+          //   title: Text(
+          //     "Reset everything",
+          //     style: TextStyle(color: Colors.redAccent),
+          //   ),
+          //   subtitle: Text(
+          //     "Deletes everything and rebuild the database",
+          //     style: TextStyle(color: Colors.redAccent),
+          //   ),
+          //   onTap: () {
+          //     showDialog(
+          //         context: context,
+          //         barrierDismissible: false,
+          //         builder: (context) => ResetConfirmationDialog(
+          //               callback: () {},
+          //             ));
+          //   },
+          // ),
         ],
       ),
     );
@@ -131,6 +132,30 @@ class ResetConfirmationDialog extends StatefulWidget {
 }
 
 class _ResetConfirmationDialogState extends State<ResetConfirmationDialog> {
+  final UralPrefrences uralPref = UralPrefrences();
+  Future<void> handleReset() async {
+    //reset database
+    await MultiRepositoryProvider.of<DatabaseRepository>(context).hardReset();
+    print('DATABASE DELETED');
+    //reset preferences
+    uralPref.removeKey(uralPref.directoryKey);
+    print('SCREENSHOTS DIRECTORIES REMOVED');
+    uralPref.removeKey(uralPref.recentSearchesKey);
+    print('RECENT SEARCHES REMOVED');
+
+    //delete thumbnails
+    if (UralPrefrences.thumbsDir.existsSync())
+      UralPrefrences.thumbsDir.deleteSync(recursive: true);
+    print('THUMBNAILS DELETED');
+    //reset completed
+
+    //Now re-adding all configurations
+    //finding directories
+    uralPref.setDirectories(
+        await compute(findDirectories, await FileUtils.getStorageList()));
+    print('RE-ADDING DIRECTORIES');
+  }
+
   bool actionClicked = false;
   @override
   Widget build(BuildContext context) {
@@ -148,9 +173,6 @@ class _ResetConfirmationDialogState extends State<ResetConfirmationDialog> {
             if (!actionClicked) {
               setState(() {
                 actionClicked = true;
-              });
-              widget.callback().then((d) {
-                Navigator.pop(context);
               });
             }
           },
