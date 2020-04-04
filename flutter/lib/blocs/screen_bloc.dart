@@ -1,5 +1,6 @@
 // import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 // import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 // import 'package:image_picker/image_picker.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,7 @@ import 'package:ural/prefrences.dart';
 // import 'package:workmanager/workmanager.dart';
 
 import 'package:ural/database.dart';
+import 'package:ural/utils/async.dart';
 // import 'package:ural/utils/async.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/models/screen_model.dart';
@@ -55,6 +57,20 @@ class RecentScreenBloc extends BlocBase
   /// Initialize database
   void initializeDatabase(ScreenshotListDatabase db) {
     _slDB = db;
+  }
+
+  Future<bool> handleRemove(List<ScreenshotModel> selected) async {
+    final resp = await _slDB.removeBatch(selected);
+    dispatch(RecentScreenAction.fetch);
+    return resp.state == ResponseStatus.success;
+  }
+
+  void handleDeleteSuccess() {
+    Fluttertoast.showToast(msg: "Screenshots deleted");
+  }
+
+  void handleDeleteError() {
+    Fluttertoast.showToast(msg: "Couldn't delete screenshots");
   }
 
   void dispose() {
@@ -201,7 +217,7 @@ class ScreenSelectionBloc extends BlocBase
   void dispatch(SelectionAction actionState, [Map<String, dynamic> data]) {
     switch (actionState) {
       case SelectionAction.add:
-        _addItem(data["hash"]);
+        _addItem(data["model"]);
         break;
       case SelectionAction.remove:
         _removeItem(data["hash"]);
@@ -218,8 +234,8 @@ class ScreenSelectionBloc extends BlocBase
     state.dispose();
   }
 
-  void _addItem(int hash) {
-    state.data[hash] = null;
+  void _addItem(ScreenshotModel model) {
+    state.data[model.hash] = model;
     state.currentState = SelectionStates.contains;
     state.notifyListeners();
   }

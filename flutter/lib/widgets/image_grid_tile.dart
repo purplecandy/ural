@@ -23,15 +23,14 @@ class ImageGridTile extends StatelessWidget {
     return InkWell(
       onLongPress: () {
         if (selectionBloc.state.currentState == SelectionStates.empty)
-          selectionBloc.dispatch(SelectionAction.add, {"hash": model.hash});
+          selectionBloc.dispatch(SelectionAction.add, {"model": model});
       },
       onTap: () {
         if (selectionBloc.state.currentState != SelectionStates.empty) {
           selectionBloc.state.data.containsKey(model.hash)
               ? selectionBloc
                   .dispatch(SelectionAction.remove, {"hash": model.hash})
-              : selectionBloc
-                  .dispatch(SelectionAction.add, {"hash": model.hash});
+              : selectionBloc.dispatch(SelectionAction.add, {"model": model});
         } else {
           Navigator.push(
               context,
