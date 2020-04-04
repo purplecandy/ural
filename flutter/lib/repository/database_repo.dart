@@ -13,4 +13,6 @@ class DatabaseRepository extends Repository {
     await slDB.initDB();
     notifyListeners();
   }
+
+  Future<void> hardReset() async => await slDB.reset();
 }
