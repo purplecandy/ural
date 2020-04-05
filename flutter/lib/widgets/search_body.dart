@@ -22,41 +22,39 @@ class SearchBodyWidget extends StatefulWidget {
 }
 
 class _SearchBodyWidgetState extends State<SearchBodyWidget> {
-  SearchScreenBloc _searchBloc = SearchScreenBloc();
-
-  void handleTextView(File imageFile) async {
-    final textBlocs = await recognizeImage(
-        imageFile, FirebaseVision.instance.textRecognizer(),
-        getBlocks: true);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => TextView(
-                  textBlocks: textBlocs,
-                )));
-  }
+  // void handleTextView(File imageFile) async {
+  //   final textBlocs = await recognizeImage(
+  //       imageFile, FirebaseVision.instance.textRecognizer(),
+  //       getBlocks: true);
+  //   Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //           builder: (context) => TextView(
+  //                 textBlocks: textBlocs,
+  //               )));
+  // }
 
   @override
   void initState() {
     super.initState();
-    startup();
+    // startup();
   }
 
-  void startup() async {
-    final repo = MultiRepositoryProvider.of<DatabaseRepository>(context);
-    final uralPref = MultiRepositoryProvider.of<UralPrefrences>(context);
-    _searchBloc.initializeDatabase(repo.slDB);
-    final SearchFieldBloc searchFieldBloc =
-        SingleBlocProvider.of<SearchFieldBloc>(context);
-    searchFieldBloc.state.stream
-        .debounceTime(Duration(milliseconds: 300))
-        .listen((data) {
-      if (data.state != SearchFieldState.reset) {
-        _searchBloc.dispatch(
-            SearchAction.fetch, {"query": data.object, "ural_pref": uralPref});
-      }
-    });
-  }
+  // void startup() async {
+  //   final repo = MultiRepositoryProvider.of<DatabaseRepository>(context);
+  //   final uralPref = MultiRepositoryProvider.of<UralPrefrences>(context);
+  //   _searchBloc.initializeDatabase(repo.slDB);
+  //   final SearchFieldBloc searchFieldBloc =
+  //       SingleBlocProvider.of<SearchFieldBloc>(context);
+  //   searchFieldBloc.state.stream
+  //       .debounceTime(Duration(milliseconds: 300))
+  //       .listen((data) {
+  //     if (data.state != SearchFieldState.reset) {
+  //       _searchBloc.dispatch(
+  //           SearchAction.fetch, {"query": data.object, "ural_pref": uralPref});
+  //     }
+  //   });
+  // }
 
   List<Widget> buildSearchResults() {
     final UralPrefrences uralPref =
@@ -106,45 +104,42 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
   Widget build(BuildContext context) {
     final SearchFieldBloc searchFieldBloc =
         SingleBlocProvider.of<SearchFieldBloc>(context);
-    return SingleBlocProvider<SearchScreenBloc>(
-      bloc: _searchBloc,
-      child: ListView(
-        children: <Widget>[
-          SizedBox(
-            height: 40,
-          ),
-          StreamBuilder<SubState<SearchFieldState, String>>(
-              stream: searchFieldBloc.state.stream,
-              builder: (context,
-                  AsyncSnapshot<SubState<SearchFieldState, String>> snapshot) {
-                if (snapshot.hasData) {
-                  switch (snapshot.data.state) {
-                    case SearchFieldState.reset:
-                      return Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: buildSearchResults());
-                      break;
-                    case SearchFieldState.change:
-                      return Column(
-                        children: <Widget>[
-                          SizedBox(
-                            height: 60,
-                            child: ListTile(
-                              title: Text("SEARCH RESULTS FOR: " +
-                                  snapshot.data.object),
-                            ),
+    return ListView(
+      children: <Widget>[
+        SizedBox(
+          height: 40,
+        ),
+        StreamBuilder<SubState<SearchFieldState, String>>(
+            stream: searchFieldBloc.state.stream,
+            builder: (context,
+                AsyncSnapshot<SubState<SearchFieldState, String>> snapshot) {
+              if (snapshot.hasData) {
+                switch (snapshot.data.state) {
+                  case SearchFieldState.reset:
+                    return Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: buildSearchResults());
+                    break;
+                  case SearchFieldState.change:
+                    return Column(
+                      children: <Widget>[
+                        SizedBox(
+                          height: 60,
+                          child: ListTile(
+                            title: Text(
+                                "SEARCH RESULTS FOR: " + snapshot.data.object),
                           ),
-                          ScreenshotListGrid()
-                        ],
-                      );
-                    default:
-                  }
+                        ),
+                        ScreenshotListGrid()
+                      ],
+                    );
+                  default:
                 }
-                return Container();
-              }),
-        ],
-      ),
+              }
+              return Container();
+            }),
+      ],
     );
   }
 }

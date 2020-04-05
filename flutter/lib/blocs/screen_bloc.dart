@@ -1,18 +1,9 @@
-// import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-// import 'package:firebase_ml_vision/firebase_ml_vision.dart';
-// import 'package:image_picker/image_picker.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:ural/prefrences.dart';
-// import 'package:ural/repository/database_repo.dart';
-
-// import 'dart:io';
-// import 'package:workmanager/workmanager.dart';
-
 import 'package:ural/database.dart';
 import 'package:ural/utils/async.dart';
-// import 'package:ural/utils/async.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/models/screen_model.dart';
 
@@ -20,11 +11,18 @@ import 'package:ural/models/screen_model.dart';
 // The States represents the state of an entitiy
 // Widgets rebuild itself according to state
 
-enum RecentScreenStates { loading, done }
-enum RecentScreenAction { fetch }
-
-class RecentScreenBloc extends BlocBase
+abstract class AbstractScreenshots extends BlocBase
     implements ActionReceiver<RecentScreenAction> {
+  StreamState<RecentScreenStates, List<ScreenshotModel>> state;
+}
+
+enum RecentScreenStates { loading, done }
+enum RecentScreenAction {
+  /// Get all screenshots again
+  fetch
+}
+
+class RecentScreenBloc extends AbstractScreenshots {
   ScreenshotListDatabase _slDB;
   StreamState<RecentScreenStates, List<ScreenshotModel>> state;
 

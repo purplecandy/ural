@@ -3,11 +3,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
+import 'package:ural/prefrences.dart';
 import 'package:ural/pages/screens_view.dart';
-import 'package:ural/widgets/all.dart';
 import 'package:ural/widgets/dialogs/menu.dart';
 import 'package:ural/widgets/dialogs/image_upload.dart';
 import 'package:ural/widgets/dialogs/text_scan.dart';
+import 'package:ural/widgets/dialogs/initial_setup.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -16,10 +17,13 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class _HomePageState extends State<HomePage> {
+  UralPrefrences uralPref = UralPrefrences();
+
   @override
   void initState() {
     super.initState();
+    intialSetup();
   }
 
   @override
@@ -27,18 +31,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  /// Handles Settings button events
-  void handleSettings() async {
-    showModalBottomSheet(
-        context: context,
-        builder: (context) => SingleChildScrollView(
-              child: SettingsModalWidget(),
-            ));
+  Future<void> intialSetup() async {
+    await uralPref.getInstance();
+    // setState(() {
+    //   intial = uralPref.getInitalSetupStatus();
+    // });
+    if (!uralPref.getInitalSetupStatus()) {
+      showDialog(context: context, builder: (context) => InitialSetupDialog());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return ScreenView(
+      isStandalone: false,
       bottomButtons: BottomButtons(),
     );
   }
@@ -84,6 +90,23 @@ class BottomButtons extends StatelessWidget {
                 ),
                 Separator(),
                 RoundedSplashButton(dialog: MenuDialog(), icon: Feather.menu),
+                SizedBox(
+                  width: 40,
+                  child: RawMaterialButton(
+                    shape: CircleBorder(),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ScreenView(),
+                          ));
+                    },
+                    child: Icon(
+                      Feather.plus,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                ),
               ],
             )),
       ),

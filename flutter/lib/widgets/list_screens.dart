@@ -1,91 +1,34 @@
-import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:ural/blocs/screen_bloc.dart';
-import 'package:ural/controllers/image_handler.dart';
-import 'package:ural/widgets/image_grid_tile.dart';
-// import 'package:ural/pages/image_view.dart';
-import 'package:ural/models/screen_model.dart';
 import 'dart:io';
-import 'package:ural/repository/database_repo.dart';
-import 'package:ural/pages/textview.dart';
-import 'package:ural/utils/bloc_provider.dart';
-// import 'package:ural/widgets/search_body.dart';
 
-class HomeBodyWidget extends StatefulWidget {
-  HomeBodyWidget({Key key}) : super(key: key);
+import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/widgets/image_grid_tile.dart';
+import 'package:ural/models/screen_model.dart';
+import 'package:ural/utils/bloc_provider.dart';
+
+class ListScreenshotsWidget<T extends AbstractScreenshots>
+    extends StatefulWidget {
+  ListScreenshotsWidget({Key key}) : super(key: key);
 
   @override
-  _HomeBodyWidgetState createState() => _HomeBodyWidgetState();
+  _ListScreenshotsWidgetState createState() => _ListScreenshotsWidgetState<T>();
 }
 
-class _HomeBodyWidgetState extends State<HomeBodyWidget>
-    with AutomaticKeepAliveClientMixin<HomeBodyWidget> {
-  final RecentScreenBloc _rscreenBloc = RecentScreenBloc();
+class _ListScreenshotsWidgetState<T extends AbstractScreenshots>
+    extends State<ListScreenshotsWidget> {
   ScrollController _scrollController = ScrollController();
 
-  double heightFactor = 0.1;
-
-  @override
-  bool get wantKeepAlive => true;
-
-  void handleTextView(File imageFile) async {
-    final textBlocs = await recognizeImage(
-        imageFile, FirebaseVision.instance.textRecognizer(),
-        getBlocks: true);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => TextView(
-                  textBlocks: textBlocs,
-                )));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    startup();
-    _scrollController.addListener(() {
-      if (_scrollController.position.userScrollDirection ==
-              ScrollDirection.reverse &&
-          _scrollController.offset > 20) {
-        setState(() {
-          heightFactor = 0.0;
-        });
-      } else {
-        if (_scrollController.offset < 5) {
-          setState(() {
-            heightFactor = 0.1;
-          });
-        }
-      }
-    });
-  }
-
-  void startup() async {
-    final repo = MultiRepositoryProvider.of<DatabaseRepository>(context);
-    repo.addListeners(() {
-      _rscreenBloc.initializeDatabase(repo.slDB);
-      _rscreenBloc.dispatch(RecentScreenAction.fetch);
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _rscreenBloc.dispose();
-  }
-
   void refresh() {
-    _rscreenBloc.dispatch(RecentScreenAction.fetch);
+    SingleBlocProvider.of<RecentScreenBloc>(context)
+        .dispatch(RecentScreenAction.fetch);
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final Orientation orientation = MediaQuery.of(context).orientation;
-    // final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
+    final rscreenBloc = SingleBlocProvider.of<T>(context);
     return ListView(children: [
       SizedBox(
         height: 40,
@@ -95,11 +38,11 @@ class _HomeBodyWidgetState extends State<HomeBodyWidget>
         child: ListTile(
             title: Text("ALL SCREENSHOTS"),
             subtitle: StreamBuilder(
-                stream: _rscreenBloc.state.stream,
+                stream: rscreenBloc.state.stream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData)
                     return Text(
-                        "${_rscreenBloc.state.data.length} items sycned");
+                        "${rscreenBloc.state.data.length} items sycned");
                   return Container();
                 }),
             trailing: IconButton(
@@ -107,12 +50,12 @@ class _HomeBodyWidgetState extends State<HomeBodyWidget>
                 Feather.refresh_ccw,
               ),
               onPressed: () {
-                _rscreenBloc.dispatch(RecentScreenAction.fetch);
+                rscreenBloc.dispatch(RecentScreenAction.fetch);
               },
             )),
       ),
       StreamBuilder<SubState<RecentScreenStates, List<ScreenshotModel>>>(
-          stream: _rscreenBloc.state.stream,
+          stream: rscreenBloc.state.stream,
           builder: (context,
               AsyncSnapshot<SubState<RecentScreenStates, List<ScreenshotModel>>>
                   snapshot) {
