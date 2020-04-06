@@ -1,17 +1,12 @@
-import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+
 import 'package:ural/blocs/screen_bloc.dart';
-import 'package:ural/controllers/image_handler.dart';
-// import 'package:ural/pages/image_view.dart';
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
-import 'dart:io';
-
-import 'package:ural/repository/database_repo.dart';
-import 'package:ural/pages/textview.dart';
 import 'package:ural/utils/bloc_provider.dart';
 
 class SearchBodyWidget extends StatefulWidget {
@@ -22,39 +17,10 @@ class SearchBodyWidget extends StatefulWidget {
 }
 
 class _SearchBodyWidgetState extends State<SearchBodyWidget> {
-  // void handleTextView(File imageFile) async {
-  //   final textBlocs = await recognizeImage(
-  //       imageFile, FirebaseVision.instance.textRecognizer(),
-  //       getBlocks: true);
-  //   Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //           builder: (context) => TextView(
-  //                 textBlocks: textBlocs,
-  //               )));
-  // }
-
   @override
   void initState() {
     super.initState();
-    // startup();
   }
-
-  // void startup() async {
-  //   final repo = MultiRepositoryProvider.of<DatabaseRepository>(context);
-  //   final uralPref = MultiRepositoryProvider.of<UralPrefrences>(context);
-  //   _searchBloc.initializeDatabase(repo.slDB);
-  //   final SearchFieldBloc searchFieldBloc =
-  //       SingleBlocProvider.of<SearchFieldBloc>(context);
-  //   searchFieldBloc.state.stream
-  //       .debounceTime(Duration(milliseconds: 300))
-  //       .listen((data) {
-  //     if (data.state != SearchFieldState.reset) {
-  //       _searchBloc.dispatch(
-  //           SearchAction.fetch, {"query": data.object, "ural_pref": uralPref});
-  //     }
-  //   });
-  // }
 
   List<Widget> buildSearchResults() {
     final UralPrefrences uralPref =

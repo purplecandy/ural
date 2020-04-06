@@ -23,7 +23,8 @@ class ScreenView extends StatefulWidget {
   _ScreenViewState createState() => _ScreenViewState();
 }
 
-class _ScreenViewState extends State<ScreenView> {
+class _ScreenViewState extends State<ScreenView>
+    with SingleTickerProviderStateMixin {
   final _rscreenBloc = RecentScreenBloc();
   final _searchFieldBloc = SearchFieldBloc();
   final _selectionBloc = ScreenSelectionBloc();
@@ -32,8 +33,11 @@ class _ScreenViewState extends State<ScreenView> {
   final _searchFieldController = TextEditingController();
   final _scaffold = GlobalKey<ScaffoldState>();
   final focusNode = FocusNode();
+  AnimationController _animController;
+
   String searchQuery = "";
   bool searchStack = false;
+  double left = 50;
 
   Widget get buttomButtons => widget.bottomButtons;
   bool get isStandalone => widget.isStandalone;
@@ -45,6 +49,11 @@ class _ScreenViewState extends State<ScreenView> {
   }
 
   void startup() async {
+    _animController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 250),
+      reverseDuration: Duration(milliseconds: 250),
+    );
     _searchFieldBloc.initialize(_searchFieldController);
     final repo = MultiRepositoryProvider.of<DatabaseRepository>(context);
     final uralPref = MultiRepositoryProvider.of<UralPrefrences>(context);
@@ -78,11 +87,15 @@ class _ScreenViewState extends State<ScreenView> {
     focusNode.addListener(() {
       if (focusNode.hasPrimaryFocus) {
         setState(() {
+          left = 0;
           searchStack = true;
+          _animController.forward();
         });
       }
     });
   }
+
+  bool hasFocus() => searchStack;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +106,11 @@ class _ScreenViewState extends State<ScreenView> {
         if (!searchStack && isStandalone) return true;
         focusNode.unfocus();
         setState(() {
-          searchStack = false;
+          _animController.reverse().whenComplete(() {
+            setState(() {
+              searchStack = false;
+            });
+          });
         });
         return false;
       },
@@ -113,35 +130,45 @@ class _ScreenViewState extends State<ScreenView> {
                     margin: EdgeInsets.only(top: 10),
                     child: Stack(
                       children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.only(top: isStandalone ? 50 : 0),
-                          child: ListScreenshotsWidget<RecentScreenBloc>(),
+                        Visibility(
+                          visible: !searchStack,
+                          child: Container(
+                            margin: EdgeInsets.only(top: isStandalone ? 50 : 0),
+                            child: ListScreenshotsWidget<RecentScreenBloc>(),
+                          ),
                         ),
                         Visibility(
                           visible: searchStack,
-                          child: Container(
-                            color: Theme.of(context).backgroundColor,
-                            height: deviceHeight,
-                            width: deviceWidth,
-                            child: SearchBodyWidget(),
+                          child: SlideTransition(
+                            position:
+                                Tween(begin: Offset(0.0, 1.0), end: Offset.zero)
+                                    .animate(_animController),
+                            child: Container(
+                              color: Theme.of(context).backgroundColor,
+                              height: deviceHeight,
+                              width: deviceWidth,
+                              child: SearchBodyWidget(),
+                            ),
                           ),
                         ),
-                        Positioned(
-                            top: isStandalone ? 90 : 40,
-                            left: 50,
-                            child: SearchFieldWidget(
-                              hintText: "Type what you're looking for here",
-                              controller: _searchFieldController,
-                              focusNode: focusNode,
-                              onChanged: (val) {
-                                searchQuery = val;
-                              },
-                              onSubmitted: (val) {
-                                if (val.length > 0)
-                                  _searchFieldBloc
-                                      .dispatch(SearchFieldState.change);
-                              },
-                            )),
+                        Align(
+                          heightFactor: 2.5,
+                          alignment: Alignment.center,
+                          child: SearchFieldWidget(
+                            hintText: "Type what you're looking for here",
+                            controller: _searchFieldController,
+                            focusNode: focusNode,
+                            hasFocus: hasFocus,
+                            onChanged: (val) {
+                              searchQuery = val;
+                            },
+                            onSubmitted: (val) {
+                              if (val.length > 0)
+                                _searchFieldBloc
+                                    .dispatch(SearchFieldState.change);
+                            },
+                          ),
+                        ),
                         //BOTTOM BUTTONS PLACEHOLDER
                         buttomButtons ?? Container(),
                         //BOTTOM BUTTONS ENDS

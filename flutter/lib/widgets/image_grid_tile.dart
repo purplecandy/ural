@@ -1,32 +1,33 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-// import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+
 import 'package:ural/background_tasks.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/utils/bloc_provider.dart';
-import 'dart:io';
 import 'package:ural/pages/image_view.dart';
 
 class ImageGridTile extends StatelessWidget {
   final ScreenshotModel model;
-  // final ScreenBloc bloc;
   final File file;
   const ImageGridTile({Key key, this.file, this.model}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final ScreenSelectionBloc selectionBloc =
-        SingleBlocProvider.of<ScreenSelectionBloc>(context);
+    final selectionBloc = SingleBlocProvider.of<ScreenSelectionBloc>(context);
     return InkWell(
       onLongPress: () {
-        if (selectionBloc.state.currentState == SelectionStates.empty)
-          selectionBloc.dispatch(SelectionAction.add, {"model": model});
+        if (selectionBloc != null) {
+          if (selectionBloc.state.currentState == SelectionStates.empty)
+            selectionBloc.dispatch(SelectionAction.add, {"model": model});
+        }
       },
       onTap: () {
-        if (selectionBloc.state.currentState != SelectionStates.empty) {
+        if ((selectionBloc != null) &&
+            selectionBloc.state.currentState != SelectionStates.empty) {
           selectionBloc.state.data.containsKey(model.hash)
               ? selectionBloc
                   .dispatch(SelectionAction.remove, {"hash": model.hash})
@@ -57,30 +58,33 @@ class ImageGridTile extends StatelessWidget {
                     ),
                   )),
             ),
-            StreamBuilder<SubState<SelectionStates, Map<int, ScreenshotModel>>>(
-              stream: selectionBloc.state.stream,
-              builder: (context, snap) {
-                if (snap.hasData) {
-                  return Visibility(
-                    visible: (snap.data.state != SelectionStates.empty &&
-                        snap.data.object.containsKey(model.hash)),
-                    child: Container(
-                      height: double.infinity,
-                      width: double.infinity,
-                      color: Colors.deepPurple.withOpacity(0.3),
-                      child: Center(
-                          child: Icon(
-                        MaterialCommunityIcons.check_circle,
-                      )),
-                    ),
-                  );
-                }
-                return SizedBox(
-                  height: 0,
-                  width: 0,
-                );
-              },
-            )
+            selectionBloc == null
+                ? Container()
+                : StreamBuilder<
+                    SubState<SelectionStates, Map<int, ScreenshotModel>>>(
+                    stream: selectionBloc.state.stream,
+                    builder: (context, snap) {
+                      if (snap.hasData) {
+                        return Visibility(
+                          visible: (snap.data.state != SelectionStates.empty &&
+                              snap.data.object.containsKey(model.hash)),
+                          child: Container(
+                            height: double.infinity,
+                            width: double.infinity,
+                            color: Colors.deepPurple.withOpacity(0.3),
+                            child: Center(
+                                child: Icon(
+                              MaterialCommunityIcons.check_circle,
+                            )),
+                          ),
+                        );
+                      }
+                      return SizedBox(
+                        height: 0,
+                        width: 0,
+                      );
+                    },
+                  )
           ],
         ),
       ),
@@ -112,15 +116,6 @@ class _ThumbanailState extends State<Thumbanail> with TickerProviderStateMixin {
   }
 
   void startup() async {
-    // getApplicationSupportDirectory().then((d) => print("Support -> " + d.path));
-    // getApplicationDocumentsDirectory()
-    //     .then((d) => print("Document ->" + d.path));
-    // getTemporaryDirectory().then((temp) {
-    //   _thumb = File(temp.path + '/${widget.imagePath.hashCode}.png');
-    //   setState(() {
-    //     _thumbGenerated = true;
-    //   });
-    // });
     setState(() {
       _thumb = File(
           UralPrefrences.thumbsDir.path + '/${widget.imagePath.hashCode}.png');
