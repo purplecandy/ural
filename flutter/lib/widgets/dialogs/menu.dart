@@ -15,54 +15,27 @@ class MenuDialog extends StatefulWidget {
 class _MenuDialogState extends State<MenuDialog> {
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      elevation: 10,
-      // color: Colors.transparent,
-      // textStyle: TextStyle(color: Colors.white),
-      backgroundColor: Colors.transparent,
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.3,
-        width: MediaQuery.of(context).size.width * 0.9,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: Theme.of(context).backgroundColor),
-        child: Column(
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                SizedBox(
-                  width: 40,
-                  child: RawMaterialButton(
-                    shape: CircleBorder(),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Icon(
-                      Feather.x,
-                      color: Colors.redAccent,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // HorizontalSeprator(),
-            MenuTile(Feather.settings, "Settings", () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SettingsPage()));
-            }),
-            HorizontalSeprator(),
-            MenuTile(Feather.help_circle, "Help", () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => HelpPage()));
-            }),
-            HorizontalSeprator(),
-            MenuTile(Feather.mail, "Feedback", () {}),
-            HorizontalSeprator(),
-            MenuTile(Feather.info, "More Information", () {}),
-            // HorizontalSeprator()
-          ],
-        ),
+    return BaseDialog(
+      title: "Info",
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          // HorizontalSeprator(),
+          MenuTile(Feather.settings, "Settings", () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => SettingsPage()));
+          }),
+          HorizontalSeprator(),
+          MenuTile(Feather.help_circle, "Help", () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => HelpPage()));
+          }),
+          HorizontalSeprator(),
+          MenuTile(Feather.mail, "Feedback", () {}),
+          HorizontalSeprator(),
+          MenuTile(Feather.info, "More Information", () {}),
+          // HorizontalSeprator()
+        ],
       ),
     );
   }
@@ -80,7 +53,7 @@ class MenuTile extends StatelessWidget {
       child: InkWell(
         onTap: callback,
         child: Padding(
-          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 16),
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
           child: Container(
             child: Row(
               children: <Widget>[
