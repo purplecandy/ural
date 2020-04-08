@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:ural/blocs/tags_bloc.dart';
 import 'package:ural/models/tags_model.dart';
+import 'package:ural/pages/tagged_screens.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/repository/database_repo.dart';
+import 'package:ural/widgets/buttons.dart';
+import 'package:ural/widgets/dialogs/base.dart';
 
 class TagsPage extends StatefulWidget {
   TagsPage({Key key}) : super(key: key);
@@ -47,6 +50,12 @@ class _TagsPageState extends State<TagsPage> {
                     itemBuilder: (context, index) => Card(
                       color: Color(snapshot.data.object[index].colorCode),
                       child: ListTile(
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => TaggedScreen(
+                                      model: snapshot.data.object[index],
+                                    ))),
                         title: Text(snapshot.data.object[index].name),
                       ),
                     ),
@@ -95,95 +104,79 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
   @override
   Widget build(BuildContext context) {
     final TagsBloc bloc = SingleBlocProvider.of<TagsBloc>(context);
-    return Dialog(
-      child: Container(
-        padding: EdgeInsets.all(8),
-        width: MediaQuery.of(context).size.width * 0.9,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "New Tag",
-                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-              ),
-            ),
-            TextField(
-              controller: controller,
-              maxLength: 25,
-              decoration: InputDecoration(
-                  border: OutlineInputBorder(), labelText: "Name"),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Color"),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: colorShades.length,
-                  itemBuilder: (context, index) => InkWell(
-                    onTap: () {
-                      setState(() {
-                        _selectedColor = index;
-                      });
-                    },
-                    child: Container(
-                      height: 40,
-                      width: 40,
-                      child: Stack(
-                        children: <Widget>[
-                          ColorTile(
-                            color: colorShades[index],
-                          ),
-                          Align(
-                            alignment: Alignment.center,
-                            child: _selectedColor == index
-                                ? Icon(
-                                    Icons.done,
-                                    color: Colors.black,
-                                  )
-                                : Container(),
-                          )
-                        ],
-                      ),
+    return BaseDialog(
+      title: "Create Tag",
+      child: Column(
+        children: <Widget>[
+          TextField(
+            controller: controller,
+            maxLength: 25,
+            decoration: InputDecoration(
+                border: OutlineInputBorder(), labelText: "Name"),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text("Color"),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              height: 50,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: colorShades.length,
+                itemBuilder: (context, index) => InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedColor = index;
+                    });
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 40,
+                    child: Stack(
+                      children: <Widget>[
+                        ColorTile(
+                          color: colorShades[index],
+                        ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: _selectedColor == index
+                              ? Icon(
+                                  Icons.done,
+                                  color: Colors.black,
+                                )
+                              : Container(),
+                        )
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-            Center(
-              child: FlatButton(
-                onPressed: () {
-                  if (controller.text.length > 0 && _selectedColor != -1) {
-                    bloc.dispatch(TagAction.create, {
-                      "name": controller.text,
-                      "color": colorShades[_selectedColor].value
-                    });
-                  } else {
-                    Fluttertoast.showToast(
-                        msg: _selectedColor == -1
-                            ? "Please select a color"
-                            : "Name can't be blank",
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white);
-                  }
-                },
-                child: Text("CREATE"),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(19)),
-                textColor: Colors.white,
-                highlightColor: Colors.deepPurpleAccent,
-                color: Colors.deepPurple,
-              ),
-            )
-          ],
-        ),
+          ),
+          Center(
+            child: RoundedPurpleButton(
+              onPressed: (context) {
+                if (controller.text.length > 0 && _selectedColor != -1) {
+                  bloc.dispatch(TagAction.create, {
+                    "name": controller.text,
+                    "color": colorShades[_selectedColor].value
+                  });
+                  Navigator.pop(context);
+                } else {
+                  Fluttertoast.showToast(
+                      msg: _selectedColor == -1
+                          ? "Please select a color"
+                          : "Name can't be blank",
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white);
+                }
+              },
+              title: "Create",
+            ),
+          )
+        ],
       ),
     );
   }
@@ -204,7 +197,6 @@ class ColorTile extends StatelessWidget {
           shape: BoxShape.circle,
           color: color,
         ),
-        // child: Icon(Icons.done,color: Colors.black,),
       ),
     );
   }

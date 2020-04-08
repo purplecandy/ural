@@ -228,6 +228,8 @@ class _ListDirectoryDialogState extends State<ListDirectoryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: Theme.of(context).backgroundColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: Text("Directories"),
       content: Container(
         height: MediaQuery.of(context).size.height * 0.3,

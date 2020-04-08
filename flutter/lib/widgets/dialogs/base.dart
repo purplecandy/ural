@@ -20,7 +20,8 @@ class BaseDialog extends StatelessWidget {
   final String title;
   final CloseCallback onClose;
   final Widget child;
-  const BaseDialog({Key key, this.title, this.onClose, this.child})
+  const BaseDialog(
+      {Key key, @required this.title, this.onClose, @required this.child})
       : super(key: key);
 
   @override
