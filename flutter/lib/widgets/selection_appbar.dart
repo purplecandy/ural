@@ -4,12 +4,16 @@ import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/models/screen_model.dart';
 
+typedef List<Widget> ActionBuilder(BuildContext context);
+
 class SelectionAppBar extends StatelessWidget {
+  /// true - to keep the AppBar hidden initially
   final bool hideInital;
   final List<Widget> actions;
-  const SelectionAppBar({Key key, this.hideInital, this.actions})
-      : assert(actions != null),
-        super(key: key);
+  final ActionBuilder actionBuilder;
+  const SelectionAppBar(
+      {Key key, this.hideInital, this.actions, this.actionBuilder})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +29,12 @@ class SelectionAppBar extends StatelessWidget {
                   leading: IconButton(
                       icon: Icon(Icons.close),
                       onPressed: () {
+                        if (_selectionBloc.state.data.isEmpty)
+                          Navigator.pop(context);
                         _selectionBloc.dispatch(SelectionAction.reset);
                       }),
                   title: Text("${snap.data.object.length} selected"),
-                  actions: actions,
+                  actions: actionBuilder == null ? [] : actionBuilder(context),
                 ),
               );
             }

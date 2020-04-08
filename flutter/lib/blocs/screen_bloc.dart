@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:ural/models/tags_model.dart';
 
 import 'package:ural/prefrences.dart';
 import 'package:ural/database.dart';
@@ -13,7 +14,13 @@ import 'package:ural/models/screen_model.dart';
 
 abstract class AbstractScreenshots extends BlocBase
     implements ActionReceiver<RecentScreenAction> {
+  ScreenshotListDatabase _slDB;
   StreamState<RecentScreenStates, List<ScreenshotModel>> state;
+
+  /// Initialize database
+  void initializeDatabase(ScreenshotListDatabase db) {
+    _slDB = db;
+  }
 }
 
 enum RecentScreenStates { loading, done }
@@ -23,8 +30,8 @@ enum RecentScreenAction {
 }
 
 class RecentScreenBloc extends AbstractScreenshots {
-  ScreenshotListDatabase _slDB;
-  StreamState<RecentScreenStates, List<ScreenshotModel>> state;
+  // ScreenshotListDatabase _slDB;
+  // StreamState<RecentScreenStates, List<ScreenshotModel>> state;
 
   RecentScreenBloc() {
     state = StreamState<RecentScreenStates, List<ScreenshotModel>>(
@@ -52,11 +59,6 @@ class RecentScreenBloc extends AbstractScreenshots {
     state.notifyListeners();
   }
 
-  /// Initialize database
-  void initializeDatabase(ScreenshotListDatabase db) {
-    _slDB = db;
-  }
-
   Future<bool> handleRemove(List<ScreenshotModel> selected) async {
     final resp = await _slDB.removeBatch(selected);
     dispatch(RecentScreenAction.fetch);
@@ -73,6 +75,52 @@ class RecentScreenBloc extends AbstractScreenshots {
 
   void dispose() {
     state.dispose();
+  }
+}
+
+class TaggedScreenBloc extends AbstractScreenshots {
+  TagModel model;
+  TaggedScreenBloc() {
+    state = StreamState<RecentScreenStates, List<ScreenshotModel>>(
+        SubState<RecentScreenStates, List<ScreenshotModel>>(
+            RecentScreenStates.loading, List<ScreenshotModel>()));
+  }
+
+  void initializeModel(TagModel tagModel) {
+    model = tagModel;
+  }
+
+  @override
+  void dispose() {
+    state.dispose();
+  }
+
+  @override
+  void dispatch(RecentScreenAction actionState, [Map<String, dynamic> data]) {
+    switch (actionState) {
+      case RecentScreenAction.fetch:
+        _getAllScreens();
+        break;
+      default:
+    }
+  }
+
+  void _getAllScreens() async {
+    final resp = await TagUtils.getScreensByTag(_slDB.db, model.id);
+    if (resp.state == ResponseStatus.success) {
+      state.data = resp.object;
+      state.currentState = RecentScreenStates.done;
+      state.notifyListeners();
+    }
+  }
+
+  Future<void> handleAdd(List<int> docIds) async {
+    if (docIds != null) {
+      for (var id in docIds) {
+        await TagUtils.insert(_slDB.db, model.id, id);
+      }
+      dispatch(RecentScreenAction.fetch);
+    }
   }
 }
 

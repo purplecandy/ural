@@ -15,8 +15,13 @@ class ScreenView extends StatefulWidget {
   final List<Widget> actions;
   final bool isStandalone;
   final Widget bottomButtons;
+  final ActionBuilder actionBuilder;
   ScreenView(
-      {Key key, this.bottomButtons, this.isStandalone = true, this.actions})
+      {Key key,
+      this.bottomButtons,
+      this.isStandalone = true,
+      this.actions,
+      this.actionBuilder})
       : super(key: key);
 
   @override
@@ -103,7 +108,7 @@ class _ScreenViewState extends State<ScreenView>
     final deviceWidth = MediaQuery.of(context).size.width;
     return WillPopScope(
       onWillPop: () async {
-        if (!searchStack && isStandalone) return true;
+        if (!searchStack && isStandalone) return Navigator.pop(context);
         focusNode.unfocus();
         setState(() {
           _animController.reverse().whenComplete(() {
@@ -152,8 +157,10 @@ class _ScreenViewState extends State<ScreenView>
                           ),
                         ),
                         Align(
-                          heightFactor: 2.5,
-                          alignment: Alignment.center,
+                          heightFactor: isStandalone ? 19 : 2.5,
+                          alignment: isStandalone
+                              ? Alignment.bottomCenter
+                              : Alignment.center,
                           child: SearchFieldWidget(
                             hintText: "Type what you're looking for here",
                             controller: _searchFieldController,
@@ -173,7 +180,7 @@ class _ScreenViewState extends State<ScreenView>
                         buttomButtons ?? Container(),
                         //BOTTOM BUTTONS ENDS
                         SelectionAppBar(
-                          actions: <Widget>[],
+                          actionBuilder: widget.actionBuilder,
                           hideInital: isStandalone,
                         )
                       ],
