@@ -38,3 +38,27 @@ class FlatPurpleButton extends StatelessWidget {
     );
   }
 }
+
+class RoundedSplashButton extends StatelessWidget {
+  final Widget dialog;
+  final IconData icon;
+  const RoundedSplashButton({Key key, this.dialog, this.icon})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      child: RawMaterialButton(
+        shape: CircleBorder(),
+        onPressed: () {
+          showDialog(context: context, builder: (context) => dialog);
+        },
+        child: Icon(
+          icon,
+          color: Colors.deepPurple,
+        ),
+      ),
+    );
+  }
+}

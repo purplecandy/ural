@@ -42,18 +42,23 @@ class _AppState extends State<App> {
       child: MaterialApp(
         themeMode: ThemeMode.dark,
         theme: ThemeData.dark().copyWith(
-          primaryColor: Color(0xFF424242),
-          primaryColorLight: Color(0xFF6d6d6d),
-          primaryColorDark: Color(0xFF1b1b1b),
-          accentColor: Color(0xFFe91e63),
-          // scaffoldBackgroundColor: Color(0xFF6d6d6d),
-          scaffoldBackgroundColor: Color(0xFF1b1b1b),
-          canvasColor: Color(0xFF1b1b1b),
-          backgroundColor: Color(0xFF1b1b1b),
-        ),
+            primaryColor: Color(0xFF424242),
+            primaryColorLight: Color(0xFF6d6d6d),
+            primaryColorDark: Color(0xFF1b1b1b),
+            accentColor: Color(0xFFe91e63),
+            // scaffoldBackgroundColor: Color(0xFF6d6d6d),
+            scaffoldBackgroundColor: Color(0xFF1b1b1b),
+            canvasColor: Color(0xFF1b1b1b),
+            backgroundColor: Color(0xFF1b1b1b),
+            accentTextTheme:
+                ThemeData.dark().primaryTextTheme.apply(fontFamily: 'Inter'),
+            textTheme:
+                ThemeData.dark().primaryTextTheme.apply(fontFamily: 'Inter'),
+            primaryTextTheme:
+                ThemeData.dark().primaryTextTheme.apply(fontFamily: 'Inter')),
         routes: {
           "/": (context) => HomePage(),
-          "/tags":(context) => TagsPage()
+          "/tags": (context) => TagsPage()
         },
       ),
     );
