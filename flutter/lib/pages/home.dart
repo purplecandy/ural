@@ -5,6 +5,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:ural/prefrences.dart';
 import 'package:ural/pages/screens_view.dart';
+import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/dialogs/menu.dart';
 import 'package:ural/widgets/dialogs/image_upload.dart';
 import 'package:ural/widgets/dialogs/text_scan.dart';
@@ -90,23 +91,6 @@ class BottomButtons extends StatelessWidget {
                 ),
                 Separator(),
                 RoundedSplashButton(dialog: MenuDialog(), icon: Feather.menu),
-                SizedBox(
-                  width: 40,
-                  child: RawMaterialButton(
-                    shape: CircleBorder(),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ScreenView(),
-                          ));
-                    },
-                    child: Icon(
-                      Feather.plus,
-                      color: Colors.deepPurple,
-                    ),
-                  ),
-                ),
               ],
             )),
       ),
@@ -123,30 +107,6 @@ class Separator extends StatelessWidget {
       margin: EdgeInsets.only(top: 10, bottom: 10),
       width: 1,
       color: Colors.white.withOpacity(0.8),
-    );
-  }
-}
-
-class RoundedSplashButton extends StatelessWidget {
-  final Widget dialog;
-  final IconData icon;
-  const RoundedSplashButton({Key key, this.dialog, this.icon})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 40,
-      child: RawMaterialButton(
-        shape: CircleBorder(),
-        onPressed: () {
-          showDialog(context: context, builder: (context) => dialog);
-        },
-        child: Icon(
-          icon,
-          color: Colors.deepPurple,
-        ),
-      ),
     );
   }
 }
