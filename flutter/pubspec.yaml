@@ -17,6 +17,8 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
+  image: ^2.1.4
+  cached_network_image: ^2.0.0
   fluttertoast: ^4.0.1
   intl: ^0.16.1
   mime_type: ^0.2.4
@@ -29,7 +31,7 @@ dependencies:
   url_launcher: ^5.4.2
   folder_picker: ^0.3.0
   permission_handler: ^4.4.0+hotfix.2
-  workmanager: ^0.2.1
+  workmanager: ^0.2.2
   path_provider: ^1.6.5
   shared_preferences: ^0.5.6+2
   after_layout: ^1.0.7+2
@@ -70,12 +72,22 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Inter-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+          # style: italic
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf
