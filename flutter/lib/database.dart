@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
+import 'package:ural/config.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:ural/models/screen_model.dart';
@@ -31,8 +32,16 @@ class ScreenshotListDatabase {
 
   /// Initialize database
   Future<void> initDB() async {
-    Directory directory = await getApplicationDocumentsDirectory();
-    String path = join(directory.path, 'screenshotListDB.db');
+    Directory directory;
+    String path;
+    if ($debugMode) {
+      path = "/storage/emulated/0/screenshotListDB.db";
+    } else {
+      directory = await getApplicationDocumentsDirectory();
+      path = join(directory.path, 'screenshotListDB.db');
+    }
+    // File(path).copySync('/storage/emulated/0/screenshotListDB.db');
+    // print("COPIED");
 
     /// Opens the database if it exists
     /// else it creates new automatically
@@ -127,9 +136,8 @@ class ScreenshotListDatabase {
   Future<List<ScreenshotModel>> list() async {
     List<ScreenshotModel> screenshots = [];
     try {
-      List<Map> records =
-          await database.rawQuery("SELECT * FROM $vtable ORDER BY docid DESC");
-
+      List<Map> records = await database.rawQuery(
+          "SELECT $hash,$imagePath,$text,docid FROM $vtable ORDER BY docid DESC");
       for (var record in records) {
         ScreenshotModel model = ScreenshotModel.fromMap(record);
         screenshots.add(model);
@@ -192,6 +200,17 @@ class TagUtils {
     }
   }
 
+  static Future<AsyncResponse> insert(Database db, int tagId, int docId) async {
+    try {
+      await db.rawInsert(
+          "INSERT INTO ${ScreenshotListDatabase.taggedScreens} ('tid','docid') VALUES($tagId,$docId)");
+      return AsyncResponse(ResponseStatus.success, null);
+    } catch (e) {
+      print(e);
+      return AsyncResponse(ResponseStatus.failed, null);
+    }
+  }
+
   static Future<AsyncResponse> getTags(Database db) async {
     try {
       List results =
@@ -213,19 +232,18 @@ class TagUtils {
     try {
       if (tagId == null) throw Exception("tagId is null");
       String sql =
-          """SELECT * FROM ${ScreenshotListDatabase.vtable} WHERE docid IN (
-        SELECT docid FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid=$tagId
-        )""";
-      List results = await db.rawQuery(sql) ?? [];
+          """SELECT * FROM ${ScreenshotListDatabase.vtable} WHERE docid IN (SELECT docid FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid=$tagId)""";
+
+      List<Map> results = await db.rawQuery(sql);
+      List<ScreenshotModel> screens = [];
       if (results.length > 0) {
-        List<ScreenshotModel> screens = [];
         for (var item in results) {
           ScreenshotModel model = ScreenshotModel.fromMap(item);
           screens.add(model);
         }
         return AsyncResponse(ResponseStatus.success, screens);
       }
-      return AsyncResponse(ResponseStatus.success, results);
+      return AsyncResponse(ResponseStatus.success, screens);
     } catch (e) {
       print(e);
       return AsyncResponse(ResponseStatus.failed, e);
