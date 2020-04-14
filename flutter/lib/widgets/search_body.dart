@@ -63,6 +63,7 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
         ),
       ));
     }
+    searchResults.add(FilterByTagsWidget());
     return searchResults;
   }
 
@@ -194,9 +195,29 @@ class _EmptyListWidget extends StatelessWidget {
           child: Text(
             message,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, color: Colors.white),
+            style: TextStyle(fontSize: 18),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class FilterByTagsWidget extends StatefulWidget {
+  final String title;
+  FilterByTagsWidget({Key key, this.title}) : super(key: key);
+
+  @override
+  _FilterTagsWidgetState createState() => _FilterTagsWidgetState();
+}
+
+class _FilterTagsWidgetState extends State<FilterByTagsWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(8),
+      child: Row(
+        children: <Widget>[Text(widget.title ?? "Filter by tags")],
       ),
     );
   }

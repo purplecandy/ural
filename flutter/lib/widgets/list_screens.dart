@@ -4,6 +4,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'dart:io';
 
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/widgets/buttons.dart' show FlatPurpleButton;
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/utils/bloc_provider.dart';
@@ -138,18 +139,17 @@ class _EmptyListWidget extends StatelessWidget {
           children: <Widget>[
             Text(
               "You don't have any screenshots synced.",
-              style: TextStyle(fontSize: 18, color: Colors.white),
+              style: TextStyle(fontSize: 18),
             ),
             SizedBox(
               height: 40,
             ),
-            FlatButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: Colors.pinkAccent, width: 1)),
-                textColor: Colors.white,
-                onPressed: callback,
-                child: Text("Refresh"))
+            FlatPurpleButton(
+              onPressed: (_) {
+                callback();
+              },
+              title: "Refresh",
+            )
           ],
         ),
       ),

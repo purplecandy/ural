@@ -26,6 +26,10 @@ class SelectionAppBar extends StatelessWidget {
               return Container(
                 height: 80,
                 child: AppBar(
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  textTheme: Theme.of(context).textTheme,
+                  iconTheme: Theme.of(context).iconTheme,
+                  actionsIconTheme: Theme.of(context).iconTheme,
                   leading: IconButton(
                       icon: Icon(Icons.close),
                       onPressed: () {

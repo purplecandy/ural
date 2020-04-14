@@ -1,1 +1,1 @@
-bool $debugMode = true;
+bool $debugMode = false;

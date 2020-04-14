@@ -85,7 +85,6 @@ class _InitialSetupDialogState extends State<InitialSetupDialog> {
                 : Text("Grant Permisson"),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
-            textColor: Colors.white,
             highlightColor: Colors.deepPurpleAccent,
             color: Colors.deepPurple,
           )

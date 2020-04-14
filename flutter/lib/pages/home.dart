@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:ural/app.dart';
 
 import 'package:ural/prefrences.dart';
 import 'package:ural/pages/screens_view.dart';
@@ -106,7 +107,9 @@ class Separator extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(top: 10, bottom: 10),
       width: 1,
-      color: Colors.white.withOpacity(0.8),
+      color: AppTheme.isDark(context)
+          ? Colors.white.withOpacity(0.8)
+          : Colors.black.withOpacity(0.8),
     );
   }
 }

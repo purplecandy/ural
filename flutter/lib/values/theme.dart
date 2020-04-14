@@ -17,12 +17,18 @@ _textThemeLight() => ThemeData.light().textTheme.apply(fontFamily: "Inter");
 _textThemeDark() => ThemeData.dark().textTheme.apply(fontFamily: "Inter");
 
 ThemeData lightThemeData() => ThemeData.light().copyWith(
-      accentColor: Colors.deepPurple,
+      accentColor: LighTheme.backgroundOne,
       primaryColor: LighTheme.backgroundTwo,
       scaffoldBackgroundColor: LighTheme.backgrounZero,
-      backgroundColor: LighTheme.backgroundTwo,
+      backgroundColor: LighTheme.backgrounZero,
       appBarTheme: ThemeData.light().appBarTheme.copyWith(
-          textTheme: _textThemeLight(),
+          color: LighTheme.backgroundTwo,
+          textTheme: TextTheme(
+              title: TextStyle(
+                  color: Colors.black,
+                  fontSize: 21,
+                  fontFamily: "Inter",
+                  fontWeight: FontWeight.w700)),
           iconTheme: ThemeData.light().iconTheme,
           actionsIconTheme: ThemeData.light().accentIconTheme),
       textTheme: _textThemeLight(),
@@ -36,7 +42,13 @@ ThemeData darkThemeData() => ThemeData.dark().copyWith(
       canvasColor: DarkTheme.backgroundOne,
       backgroundColor: DarkTheme.backgroundOne,
       appBarTheme: ThemeData.dark().appBarTheme.copyWith(
-          textTheme: _textThemeDark(),
+          color: DarkTheme.backgroundOne,
+          textTheme: TextTheme(
+              title: TextStyle(
+                  color: Colors.white,
+                  fontSize: 21,
+                  fontFamily: "Inter",
+                  fontWeight: FontWeight.w700)),
           iconTheme: ThemeData.dark().iconTheme,
           actionsIconTheme: ThemeData.dark().accentIconTheme),
       textTheme: _textThemeDark(),

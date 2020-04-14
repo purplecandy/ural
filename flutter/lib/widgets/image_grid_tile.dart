@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:ural/app.dart';
 import 'dart:io';
 
 import 'package:ural/background_tasks.dart';
@@ -73,9 +74,8 @@ class ImageGridTile extends StatelessWidget {
                             width: double.infinity,
                             color: Colors.deepPurple.withOpacity(0.3),
                             child: Center(
-                                child: Icon(
-                              MaterialCommunityIcons.check_circle,
-                            )),
+                                child: Icon(Icons.check_circle,
+                                    color: Colors.white)),
                           ),
                         );
                       }

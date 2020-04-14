@@ -6,6 +6,7 @@ import 'package:ural/pages/screens_view.dart';
 import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/list_screens.dart';
 
 class TaggedScreen extends StatefulWidget {
@@ -60,8 +61,9 @@ class _TaggedScreenState extends State<TaggedScreen> {
                             actions.add(Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: FlatButton(
-                                  onPressed: () async {
+                                child: FlatPurpleButton(
+                                  title: "ADD",
+                                  onPressed: (_) async {
                                     final docIds = List<int>.from(
                                         SingleBlocProvider.of<
                                                 ScreenSelectionBloc>(_)
@@ -78,14 +80,6 @@ class _TaggedScreenState extends State<TaggedScreen> {
                                       Navigator.pop(_);
                                     });
                                   },
-                                  child: Text(
-                                    "ADD",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  highlightColor: Colors.deepPurpleAccent,
-                                  color: Colors.deepPurple,
-                                  hoverColor: Colors.transparent,
-                                  splashColor: Colors.transparent,
                                 ),
                               ),
                             ));

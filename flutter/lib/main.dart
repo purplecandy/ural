@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ural/config.dart';
 import 'package:workmanager/workmanager.dart';
 import 'background_tasks.dart';
 import 'app.dart';
@@ -12,7 +13,7 @@ void callbackDispatcher() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
+  await Workmanager.initialize(callbackDispatcher, isInDebugMode: $debugMode);
 
   runApp(App());
 }

@@ -111,7 +111,6 @@ class _DeleteItemDialogState extends State<DeleteItemDialog> {
                     : Text("Confirm"),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(19)),
-                textColor: Colors.white,
                 highlightColor: Colors.deepPurpleAccent,
                 color: Colors.deepPurple,
               ),

@@ -181,7 +181,7 @@ class SingleBlocProvider<T> extends StatefulWidget {
   static T of<T extends BlocBase>(BuildContext context) {
     final provider =
         context.findAncestorWidgetOfExactType<SingleBlocProvider<T>>();
-    return provider.bloc;
+    return provider == null ? null : provider.bloc;
   }
 
   @override

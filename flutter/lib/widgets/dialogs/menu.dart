@@ -50,6 +50,7 @@ class MenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
+      color: Theme.of(context).backgroundColor,
       child: InkWell(
         onTap: callback,
         child: Padding(
@@ -59,15 +60,14 @@ class MenuTile extends StatelessWidget {
               children: <Widget>[
                 Icon(
                   icon,
-                  color: Colors.white,
+                  // color: Colors.white,
                 ),
                 SizedBox(
                   width: 10,
                 ),
                 Text(
                   title,
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w300),
+                  style: TextStyle(fontWeight: FontWeight.w300),
                 )
               ],
             ),

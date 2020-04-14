@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ural/app.dart';
 import 'package:ural/background_tasks.dart';
 // import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/file_browser.dart';
@@ -51,11 +52,9 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             title: Text(
               "Modify screenshot directories",
-              style: TextStyle(color: Colors.white),
             ),
             subtitle: Text(
               "Add or Remove directories",
-              style: TextStyle(color: Colors.white),
             ),
             onTap: () {
               showDialog(
@@ -68,13 +67,15 @@ class _SettingsPageState extends State<SettingsPage> {
             color: Colors.grey,
           ),
           ListTile(
+            onTap: () => showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => SwitchThemeDialog()),
             title: Text(
               "Change theme settings",
-              style: TextStyle(color: Colors.white),
             ),
             subtitle: Text(
               "Current theme dark",
-              style: TextStyle(color: Colors.white),
             ),
           ),
           Divider(
@@ -83,11 +84,9 @@ class _SettingsPageState extends State<SettingsPage> {
           SwitchListTile(
               title: Text(
                 "Background Sync",
-                style: TextStyle(color: Colors.white),
               ),
               subtitle: Text(
                 "If disable sync then you will have to manually turn it on.",
-                style: TextStyle(color: Colors.white),
               ),
               value: syncStatus,
               onChanged: (val) {
@@ -116,6 +115,70 @@ class _SettingsPageState extends State<SettingsPage> {
           // ),
         ],
       ),
+    );
+  }
+}
+
+class SwitchThemeDialog extends StatefulWidget {
+  const SwitchThemeDialog({Key key}) : super(key: key);
+
+  @override
+  _SwitchThemeDialogState createState() => _SwitchThemeDialogState();
+}
+
+class _SwitchThemeDialogState extends State<SwitchThemeDialog> {
+  ThemeMode _mode;
+
+  @override
+  void initState() {
+    super.initState();
+    setMode();
+  }
+
+  void setMode() {
+    _mode = AppTheme.mode(context);
+  }
+
+  void handleRadioChange(ThemeMode tmode) {
+    setState(() {
+      _mode = tmode;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Theme.of(context).backgroundColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      title: Text("App Theme"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          RadioListTile(
+            value: ThemeMode.light,
+            groupValue: _mode,
+            onChanged: handleRadioChange,
+            title: Text("Light"),
+          ),
+          RadioListTile(
+            value: ThemeMode.dark,
+            groupValue: _mode,
+            onChanged: handleRadioChange,
+            title: Text("Dark"),
+          )
+        ],
+      ),
+      actions: <Widget>[
+        FlatButton(
+            onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+        FlatButton(
+            onPressed: () {
+              if (_mode != AppTheme.mode(context))
+                AppTheme.toggleTheme(context);
+              Navigator.pop(context);
+            },
+            child: Text("Apply"))
+      ],
     );
   }
 }

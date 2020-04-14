@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ural/app.dart';
 
 typedef void VoidCallback(BuildContext context);
 
@@ -15,8 +16,13 @@ class RoundedPurpleButton extends StatelessWidget {
       child: Text(title),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
       textColor: Colors.white,
-      highlightColor: Colors.deepPurpleAccent,
-      color: Colors.deepPurple,
+      colorBrightness: Brightness.dark,
+      highlightColor: AppTheme.isDark(context)
+          ? Colors.deepPurpleAccent.shade400
+          : Colors.deepPurpleAccent,
+      color: AppTheme.isDark(context)
+          ? Colors.deepPurple.shade300
+          : Colors.deepPurple,
     );
   }
 }
@@ -33,8 +39,12 @@ class FlatPurpleButton extends StatelessWidget {
       onPressed: () => onPressed(context),
       child: Text(title),
       textColor: Colors.white,
-      highlightColor: Colors.deepPurpleAccent,
-      color: Colors.deepPurple,
+      highlightColor: AppTheme.isDark(context)
+          ? Colors.deepPurpleAccent.shade400
+          : Colors.deepPurpleAccent,
+      color: AppTheme.isDark(context)
+          ? Colors.deepPurple.shade300
+          : Colors.deepPurple,
     );
   }
 }
