@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:ural/database.dart';
-import 'package:ural/utils/bloc_provider.dart';
+// import 'package:ural/utils/bloc_provider.dart';
 
-class DatabaseRepository extends Repository {
+class DatabaseRepository extends ChangeNotifier {
   ScreenshotListDatabase slDB = ScreenshotListDatabase();
 
   DatabaseRepository() {

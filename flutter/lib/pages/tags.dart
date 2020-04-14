@@ -27,7 +27,7 @@ class _TagsPageState extends State<TagsPage> {
   }
 
   void startup() {
-    final repo = MultiRepositoryProvider.of<DatabaseRepository>(context);
+    final repo = Provider.of<DatabaseRepository>(context, listen: false);
     if (repo.slDB != null) _tagsBloc.initializeDatabase(repo.slDB);
     _tagsBloc.dispatch(TagAction.fetch);
   }

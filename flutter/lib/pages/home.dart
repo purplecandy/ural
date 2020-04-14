@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
 import 'package:ural/app.dart';
 
 import 'package:ural/prefrences.dart';
@@ -20,12 +21,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  UralPrefrences uralPref = UralPrefrences();
+  // UralPrefrences uralPref = UralPrefrences();
 
   @override
   void initState() {
     super.initState();
-    intialSetup();
   }
 
   @override
@@ -33,13 +33,22 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> intialSetup() async {
-    await uralPref.getInstance();
-    // setState(() {
-    //   intial = uralPref.getInitalSetupStatus();
-    // });
-    if (!uralPref.getInitalSetupStatus()) {
-      showDialog(context: context, builder: (context) => InitialSetupDialog());
+  @override
+  void didChangeDependencies() {
+    intialSetup(Provider.of<UralPrefrences>(context, listen: true));
+    super.didChangeDependencies();
+  }
+
+  Future<void> intialSetup(UralPrefrences uralPref) async {
+    if (uralPref.initialized) {
+      // await uralPref.getInstance();
+      // setState(() {
+      //   intial = uralPref.getInitalSetupStatus();
+      // });
+      if (!uralPref.getInitalSetupStatus()) {
+        showDialog(
+            context: context, builder: (context) => InitialSetupDialog());
+      }
     }
   }
 

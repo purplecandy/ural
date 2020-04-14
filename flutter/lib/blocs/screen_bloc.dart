@@ -168,9 +168,8 @@ class SearchScreenBloc
         break;
       case SearchAction.reset:
         // state.currentState = SearchStates.idle;
-
+        // updateState(SearchStates.idle, event.object);
         break;
-
       default:
     }
   }
@@ -233,7 +232,7 @@ class SearchFieldBloc
         // state.data = _fieldController.text;
         // state.currentState = SearchFieldState.reset;
         // state.notifyListeners();
-        updateState(SearchFieldState.change, _fieldController.text);
+        updateState(SearchFieldState.reset, _fieldController.text);
         break;
       case SearchFieldState.recent:
         _recentSearch(data["recent_query"]);

@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ural/utils/bloc_provider.dart';
+// import 'package:ural/utils/bloc_provider.dart';
 import 'dart:convert';
 
 import 'package:ural/utils/file_utils.dart';
@@ -19,10 +20,16 @@ class SavedDirectory {
   Map<String, dynamic> toMap() => {"path": path, "items_count": itemsCount};
 }
 
-class UralPrefrences extends Repository {
-  static final UralPrefrences _instance = UralPrefrences._();
-  factory UralPrefrences() => _instance;
-  UralPrefrences._();
+class UralPrefrences extends ChangeNotifier {
+  // static final UralPrefrences _instance = UralPrefrences._();
+  // factory UralPrefrences() => _instance;
+  // UralPrefrences._();
+
+  bool get initialized => _preferences != null;
+
+  UralPrefrences() {
+    getInstance();
+  }
 
   SharedPreferences _preferences;
   final String directoryKey = "ural_settings_directories";
@@ -37,6 +44,7 @@ class UralPrefrences extends Repository {
       final cache = Directory(dir.path + '/thumbs');
       if (!cache.existsSync()) cache.createSync();
       thumbsDir = cache;
+      notifyListeners();
     });
   }
 

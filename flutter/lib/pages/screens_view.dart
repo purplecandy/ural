@@ -9,7 +9,6 @@ import 'package:ural/widgets/searchfield.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/repository/database_repo.dart';
 import 'package:ural/widgets/all.dart';
-import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/widgets/search_body.dart';
 
@@ -55,6 +54,46 @@ class _ScreenViewState extends State<ScreenView>
     startup();
   }
 
+  @override
+  void didChangeDependencies() {
+    dependencies();
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void dependencies() {
+    final repo = Provider.of<DatabaseRepository>(context, listen: true);
+    final uralPref = Provider.of<UralPrefrences>(context, listen: true);
+
+    /// Incase if the database hasn't been initialized subscribe to changes
+    if (repo.slDB.db != null) {
+      _rscreenBloc.initializeDatabase(repo.slDB);
+      _searchBloc.initializeDatabase(repo.slDB);
+      _rscreenBloc.dispatch(RecentScreenAction.fetch);
+      // repo.addListeners(() {
+      //   _rscreenBloc.initializeDatabase(repo.slDB);
+      //   _searchBloc.initializeDatabase(repo.slDB);
+      //   _rscreenBloc.dispatch(RecentScreenAction.fetch);
+      // });
+    }
+
+    if (uralPref.initialized) {
+      /// Delaying the stream to not make continousl calls onChange
+      _searchFieldBloc.stream
+          .debounceTime(Duration(milliseconds: 300))
+          .listen((data) {
+        if (data.state != SearchFieldState.reset && data.object.isNotEmpty) {
+          _searchBloc.dispatch(SearchAction.fetch,
+              {"query": data.object, "ural_pref": uralPref});
+        }
+      });
+    }
+  }
+
   void startup() async {
     _animController = AnimationController(
       vsync: this,
@@ -62,31 +101,7 @@ class _ScreenViewState extends State<ScreenView>
       reverseDuration: Duration(milliseconds: 250),
     );
     _searchFieldBloc.initialize(_searchFieldController);
-    final repo = MultiRepositoryProvider.of<DatabaseRepository>(context);
-    final uralPref = MultiRepositoryProvider.of<UralPrefrences>(context);
 
-    /// Incase if the database hasn't been initialized subscribe to changes
-    if (repo.slDB.db == null) {
-      repo.addListeners(() {
-        _rscreenBloc.initializeDatabase(repo.slDB);
-        _searchBloc.initializeDatabase(repo.slDB);
-        _rscreenBloc.dispatch(RecentScreenAction.fetch);
-      });
-    } else {
-      _rscreenBloc.initializeDatabase(repo.slDB);
-      _searchBloc.initializeDatabase(repo.slDB);
-      _rscreenBloc.dispatch(RecentScreenAction.fetch);
-    }
-
-    /// Delaying the stream to not make continousl calls onChange
-    _searchFieldBloc.stream
-        .debounceTime(Duration(milliseconds: 300))
-        .listen((data) {
-      if (data.state != SearchFieldState.reset) {
-        _searchBloc.dispatch(
-            SearchAction.fetch, {"query": data.object, "ural_pref": uralPref});
-      }
-    });
     //gotta wait for database to get initialized
     // await _bloc.initializeDatabase();
     //then lazily load all the screens

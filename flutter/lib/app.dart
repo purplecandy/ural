@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ural/pages/tags.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/repository/database_repo.dart';
@@ -15,9 +16,12 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiRepositoryProvider(
-      repositories: [DatabaseRepository(), UralPrefrences()],
-      child: AppTheme(),
+    return ChangeNotifierProvider<UralPrefrences>(
+      create: (_) => UralPrefrences(),
+      child: ChangeNotifierProvider<DatabaseRepository>(
+        create: (_) => DatabaseRepository(),
+        child: AppTheme(),
+      ),
     );
   }
 }

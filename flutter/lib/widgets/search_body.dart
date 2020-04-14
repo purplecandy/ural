@@ -19,53 +19,62 @@ class SearchBodyWidget extends StatefulWidget {
 }
 
 class _SearchBodyWidgetState extends State<SearchBodyWidget> {
+  UralPrefrences uralPref;
   @override
   void initState() {
     super.initState();
   }
 
+  @override
+  void didChangeDependencies() {
+    uralPref = Provider.of<UralPrefrences>(context, listen: true);
+    super.didChangeDependencies();
+  }
+
   List<Widget> buildSearchResults() {
-    final UralPrefrences uralPref =
-        MultiRepositoryProvider.of<UralPrefrences>(context);
     final SearchFieldBloc searchFieldBloc =
         Provider.of<SearchFieldBloc>(context, listen: false);
     List<Widget> searchResults = [];
-    searchResults.add(SizedBox(
-      height: 50,
-      child: ListTile(
-        title: Text("RECENT SEARCHES"),
-      ),
-    ));
-    for (var item in uralPref.getRecentSearches()) {
-      searchResults.add(Material(
-        child: InkWell(
-          onTap: () {
-            searchFieldBloc
-                .dispatch(SearchFieldState.recent, {"recent_query": item});
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              padding: EdgeInsets.only(left: 10),
-              width: MediaQuery.of(context).size.width,
-              child: Row(
-                children: <Widget>[
-                  Icon(Feather.search),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text(
-                      item,
-                      textAlign: TextAlign.left,
-                    ),
-                  )
-                ],
+    if (uralPref.initialized) {
+      searchResults.add(SizedBox(
+        height: 50,
+        child: ListTile(
+          title: Text("RECENT SEARCHES"),
+        ),
+      ));
+      print(uralPref.getRecentSearches().length);
+      for (var item in uralPref.getRecentSearches()) {
+        searchResults.add(Material(
+          child: InkWell(
+            onTap: () {
+              searchFieldBloc
+                  .dispatch(SearchFieldState.recent, {"recent_query": item});
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                padding: EdgeInsets.only(left: 10),
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                  children: <Widget>[
+                    Icon(Feather.search),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Text(
+                        item,
+                        textAlign: TextAlign.left,
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ));
+        ));
+      }
     }
     searchResults.add(FilterByTagsWidget());
+
     return searchResults;
   }
 

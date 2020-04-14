@@ -29,7 +29,7 @@ class _TaggedScreenState extends State<TaggedScreen> {
   }
 
   void startup() async {
-    final dbRepo = MultiRepositoryProvider.of<DatabaseRepository>(context);
+    final dbRepo = Provider.of<DatabaseRepository>(context, listen: false);
     _tagBloc.initializeDatabase(dbRepo.slDB);
     _tagBloc.initializeModel(model);
     _tagBloc.dispatch(RecentScreenAction.fetch);

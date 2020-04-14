@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:ural/app.dart';
 import 'package:ural/background_tasks.dart';
 // import 'package:ural/blocs/screen_bloc.dart';
@@ -195,10 +196,10 @@ class ResetConfirmationDialog extends StatefulWidget {
 }
 
 class _ResetConfirmationDialogState extends State<ResetConfirmationDialog> {
-  final UralPrefrences uralPref = UralPrefrences();
   Future<void> handleReset() async {
     //reset database
-    await MultiRepositoryProvider.of<DatabaseRepository>(context).hardReset();
+    await Provider.of<DatabaseRepository>(context, listen: false).hardReset();
+    final uralPref = Provider.of<UralPrefrences>(context, listen: false);
     print('DATABASE DELETED');
     //reset preferences
     uralPref.removeKey(uralPref.directoryKey);
