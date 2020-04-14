@@ -5,17 +5,23 @@ import 'package:ural/models/tags_model.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/database.dart';
 import 'package:ural/utils/async.dart';
-import 'package:ural/utils/bloc_provider.dart';
+// import 'package:ural/utils/bloc_provider.dart';
+import 'package:ural/utils/bloc.dart';
 import 'package:ural/models/screen_model.dart';
 
 // I do not prefer the approach of passing data through streams
 // The States represents the state of an entitiy
 // Widgets rebuild itself according to state
 
-abstract class AbstractScreenshots extends BlocBase
-    implements ActionReceiver<RecentScreenAction> {
+abstract class AbstractScreenshots extends BlocBase<RecentScreenStates,
+    RecentScreenAction, List<ScreenshotModel>> {
   ScreenshotListDatabase _slDB;
-  StreamState<RecentScreenStates, List<ScreenshotModel>> state;
+
+  AbstractScreenshots()
+      : super(
+            state: RecentScreenStates.loading, object: List<ScreenshotModel>());
+
+  // StreamState<RecentScreenStates, List<ScreenshotModel>> state;
 
   /// Initialize database
   void initializeDatabase(ScreenshotListDatabase db) {
@@ -33,11 +39,10 @@ class RecentScreenBloc extends AbstractScreenshots {
   // ScreenshotListDatabase _slDB;
   // StreamState<RecentScreenStates, List<ScreenshotModel>> state;
 
-  RecentScreenBloc() {
-    state = StreamState<RecentScreenStates, List<ScreenshotModel>>(
-        SubState<RecentScreenStates, List<ScreenshotModel>>(
-            RecentScreenStates.loading, List<ScreenshotModel>()));
-  }
+  // RecentScreenBloc() {
+  //   state = StreamState<RecentScreenStates, List<ScreenshotModel>>(
+  //       SubState<RecentScreenStates, List<ScreenshotModel>>(
+  //           RecentScreenStates.loading, List<ScreenshotModel>()));
 
   @override
   void dispatch(RecentScreenAction actionState, [Map<String, dynamic> data]) {
@@ -52,11 +57,12 @@ class RecentScreenBloc extends AbstractScreenshots {
   /// List all screenshots from the database
   void _getAllScreens() async {
     //update the data
-    state.data = await _slDB.list();
+    // state.data = await _slDB.list();
     //update the state
-    state.currentState = RecentScreenStates.done;
+    // state.currentState = RecentScreenStates.done;
     //notifiy listeners
-    state.notifyListeners();
+    // state.notifyListeners();
+    updateState(RecentScreenStates.done, await _slDB.list());
   }
 
   Future<bool> handleRemove(List<ScreenshotModel> selected) async {
@@ -73,18 +79,19 @@ class RecentScreenBloc extends AbstractScreenshots {
     Fluttertoast.showToast(msg: "Couldn't delete screenshots");
   }
 
+  @override
   void dispose() {
-    state.dispose();
+    super.dispose();
   }
 }
 
 class TaggedScreenBloc extends AbstractScreenshots {
   TagModel model;
-  TaggedScreenBloc() {
-    state = StreamState<RecentScreenStates, List<ScreenshotModel>>(
-        SubState<RecentScreenStates, List<ScreenshotModel>>(
-            RecentScreenStates.loading, List<ScreenshotModel>()));
-  }
+  // TaggedScreenBloc() {
+  //   state = StreamState<RecentScreenStates, List<ScreenshotModel>>(
+  //       SubState<RecentScreenStates, List<ScreenshotModel>>(
+  //           RecentScreenStates.loading, List<ScreenshotModel>()));
+  // }
 
   void initializeModel(TagModel tagModel) {
     model = tagModel;
@@ -92,7 +99,7 @@ class TaggedScreenBloc extends AbstractScreenshots {
 
   @override
   void dispose() {
-    state.dispose();
+    super.dispose();
   }
 
   @override
@@ -108,9 +115,10 @@ class TaggedScreenBloc extends AbstractScreenshots {
   void _getAllScreens() async {
     final resp = await TagUtils.getScreensByTag(_slDB.db, model.id);
     if (resp.state == ResponseStatus.success) {
-      state.data = resp.object;
-      state.currentState = RecentScreenStates.done;
-      state.notifyListeners();
+      // state.data = resp.object;
+      // state.currentState = RecentScreenStates.done;
+      // state.notifyListeners();
+      updateState(RecentScreenStates.done, resp.object);
     }
   }
 
@@ -127,16 +135,20 @@ class TaggedScreenBloc extends AbstractScreenshots {
 enum SearchStates { idle, searching, done, empty }
 enum SearchAction { fetch, reset }
 
-class SearchScreenBloc extends BlocBase
-    implements ActionReceiver<SearchAction> {
+class SearchScreenBloc
+    extends BlocBase<SearchStates, SearchAction, List<ScreenshotModel>>
+// implements ActionReceiver<SearchAction>
+{
   ScreenshotListDatabase _slDB;
-  StreamState<SearchStates, List<ScreenshotModel>> state;
+  // StreamState<SearchStates, List<ScreenshotModel>> state;
 
-  SearchScreenBloc() {
-    state = StreamState<SearchStates, List<ScreenshotModel>>(
-        SubState<SearchStates, List<ScreenshotModel>>(
-            SearchStates.idle, List<ScreenshotModel>()));
-  }
+  // SearchScreenBloc() {
+  //   state = StreamState<SearchStates, List<ScreenshotModel>>(
+  //       SubState<SearchStates, List<ScreenshotModel>>(
+  //           SearchStates.idle, List<ScreenshotModel>()));
+  // }
+  SearchScreenBloc()
+      : super(state: SearchStates.idle, object: List<ScreenshotModel>());
 
   /// Initialize database
   void initializeDatabase(ScreenshotListDatabase db) {
@@ -145,7 +157,7 @@ class SearchScreenBloc extends BlocBase
 
   @override
   void dispose() {
-    state.dispose();
+    super.dispose();
   }
 
   @override
@@ -155,7 +167,8 @@ class SearchScreenBloc extends BlocBase
         _find(data["query"], data["ural_pref"]);
         break;
       case SearchAction.reset:
-        state.currentState = SearchStates.idle;
+        // state.currentState = SearchStates.idle;
+
         break;
 
       default:
@@ -164,18 +177,20 @@ class SearchScreenBloc extends BlocBase
 
   // int count = 0;
   void _find(String query, UralPrefrences prefrences) async {
-    state.currentState = SearchStates.searching;
-    state.notifyListeners();
-
+    // state.currentState = SearchStates.searching;
+    // state.notifyListeners();
+    updateState(SearchStates.searching, event.object);
+    var newState;
     _slDB.find(query).then((screenshots) {
       if (screenshots.length > 0) {
-        state.currentState = SearchStates.done;
+        newState = SearchStates.done;
         prefrences.updateRecentSearches(query);
       } else {
-        state.currentState = SearchStates.empty;
+        newState = SearchStates.empty;
       }
-      state.data = screenshots;
-      state.notifyListeners();
+      // state.data = screenshots;
+      // state.notifyListeners();
+      updateState(newState, screenshots);
       // count++;
       // print("COUNT - $count");
     });
@@ -184,17 +199,21 @@ class SearchScreenBloc extends BlocBase
 
 enum SearchFieldState { change, reset, recent }
 
-class SearchFieldBloc extends BlocBase
-    implements ActionReceiver<SearchFieldState> {
+class SearchFieldBloc
+    extends BlocBase<SearchFieldState, SearchFieldState, String>
+// implements ActionReceiver<SearchFieldState>
+{
   TextEditingController _fieldController;
   String _previousValue = "";
 
-  StreamState<SearchFieldState, String> state;
+  // StreamState<SearchFieldState, String> state;
 
-  SearchFieldBloc() {
-    state = StreamState<SearchFieldState, String>(
-        SubState<SearchFieldState, String>(SearchFieldState.reset, ""));
-  }
+  // SearchFieldBloc() {
+  //   state = StreamState<SearchFieldState, String>(
+  //       SubState<SearchFieldState, String>(SearchFieldState.reset, ""));
+  // }
+
+  SearchFieldBloc() : super(state: SearchFieldState.reset, object: "");
 
   void initialize(TextEditingController controller) {
     _fieldController = controller;
@@ -205,14 +224,16 @@ class SearchFieldBloc extends BlocBase
   void dispatch(SearchFieldState actionState, [Map<String, dynamic> data]) {
     switch (actionState) {
       case SearchFieldState.change:
-        state.data = _fieldController.text;
-        state.currentState = SearchFieldState.change;
-        state.notifyListeners();
+        // state.data = _fieldController.text;
+        // state.currentState = SearchFieldState.change;
+        // state.notifyListeners();
+        updateState(SearchFieldState.change, _fieldController.text);
         break;
       case SearchFieldState.reset:
-        state.data = _fieldController.text;
-        state.currentState = SearchFieldState.reset;
-        state.notifyListeners();
+        // state.data = _fieldController.text;
+        // state.currentState = SearchFieldState.reset;
+        // state.notifyListeners();
+        updateState(SearchFieldState.change, _fieldController.text);
         break;
       case SearchFieldState.recent:
         _recentSearch(data["recent_query"]);
@@ -223,7 +244,7 @@ class SearchFieldBloc extends BlocBase
 
   @override
   void dispose() {
-    state.dispose();
+    super.dispose();
   }
 
   void handleTextField() {
@@ -239,9 +260,10 @@ class SearchFieldBloc extends BlocBase
 
   void _recentSearch(String query) {
     _fieldController.text = query;
-    state.data = query;
-    state.currentState = SearchFieldState.change;
-    state.notifyListeners();
+    // state.data = query;
+    // state.currentState = SearchFieldState.change;
+    // state.notifyListeners();
+    updateState(SearchFieldState.change, query);
   }
 
   String getText() => _fieldController.text;
@@ -250,14 +272,17 @@ class SearchFieldBloc extends BlocBase
 enum SelectionStates { contains, empty, modified }
 enum SelectionAction { add, remove, reset }
 
-class ScreenSelectionBloc extends BlocBase
-    implements ActionReceiver<SelectionAction> {
-  StreamState<SelectionStates, Map<int, ScreenshotModel>> state;
+class ScreenSelectionBloc extends BlocBase<SelectionStates, SelectionAction,
+    Map<int, ScreenshotModel>>
+// implements ActionReceiver<SelectionAction>
+{
+  // StreamState<SelectionStates, Map<int, ScreenshotModel>> state;
 
-  ScreenSelectionBloc() {
-    state = StreamState<SelectionStates, Map<int, ScreenshotModel>>(
-        SubState(SelectionStates.empty, {}));
-  }
+  // ScreenSelectionBloc() {
+  //   state = StreamState<SelectionStates, Map<int, ScreenshotModel>>(
+  //       SubState(SelectionStates.empty, {}));
+  // }
+  ScreenSelectionBloc() : super(state: SelectionStates.empty, object: {});
 
   @override
   void dispatch(SelectionAction actionState, [Map<String, dynamic> data]) {
@@ -277,31 +302,42 @@ class ScreenSelectionBloc extends BlocBase
 
   @override
   void dispose() {
-    state.dispose();
+    super.dispose();
   }
 
   void _addItem(ScreenshotModel model) {
-    state.data[model.hash] = model;
-    state.currentState = SelectionStates.contains;
-    state.notifyListeners();
+    // state.data[model.hash] = model;
+    // state.currentState = SelectionStates.contains;
+    // state.notifyListeners();
+    event.object[model.hash] = model;
+    updateState(SelectionStates.contains, event.object);
   }
 
   void _removeItem(int hash) {
-    if (state.data.containsKey(hash)) {
-      state.data.remove(hash);
-      if (state.data.keys.isEmpty) {
-        state.currentState = SelectionStates.empty;
-      } else {
-        state.currentState = SelectionStates.modified;
-      }
-      state.notifyListeners();
+    // if (state.data.containsKey(hash)) {
+    //   state.data.remove(hash);
+    //   if (state.data.keys.isEmpty) {
+    //     state.currentState = SelectionStates.empty;
+    //   } else {
+    //     state.currentState = SelectionStates.modified;
+    //   }
+    //   state.notifyListeners();
+    // }
+    if (event.object.containsKey(hash)) {
+      event.object.remove(hash);
+      updateState(
+          event.object.isEmpty
+              ? SelectionStates.empty
+              : SelectionStates.modified,
+          event.object);
     }
   }
 
   void _reset() {
-    state.data = {};
-    state.currentState = SelectionStates.empty;
-    state.notifyListeners();
+    // state.data = {};
+    // state.currentState = SelectionStates.empty;
+    // state.notifyListeners();
+    updateState(SelectionStates.empty, {});
   }
 }
 

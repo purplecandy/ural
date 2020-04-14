@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:rxdart/transformers.dart';
+import 'package:provider/provider.dart';
 
 import 'package:ural/widgets/selection_appbar.dart';
 import 'package:ural/widgets/searchfield.dart';
@@ -77,7 +79,7 @@ class _ScreenViewState extends State<ScreenView>
     }
 
     /// Delaying the stream to not make continousl calls onChange
-    _searchFieldBloc.state.stream
+    _searchFieldBloc.stream
         .debounceTime(Duration(milliseconds: 300))
         .listen((data) {
       if (data.state != SearchFieldState.reset) {
@@ -119,14 +121,14 @@ class _ScreenViewState extends State<ScreenView>
         });
         return false;
       },
-      child: SingleBlocProvider<ScreenSelectionBloc>(
-        bloc: _selectionBloc,
-        child: SingleBlocProvider<SearchFieldBloc>(
-          bloc: _searchFieldBloc,
-          child: SingleBlocProvider<RecentScreenBloc>(
-            bloc: _rscreenBloc,
-            child: SingleBlocProvider<SearchScreenBloc>(
-              bloc: _searchBloc,
+      child: Provider<ScreenSelectionBloc>(
+        create: (_) => _selectionBloc,
+        child: Provider<SearchFieldBloc>(
+          create: (_) => _searchFieldBloc,
+          child: Provider<RecentScreenBloc>(
+            create: (_) => _rscreenBloc,
+            child: Provider<SearchScreenBloc>(
+              create: (_) => _searchBloc,
               child: Scaffold(
                   key: _scaffold,
                   body: Container(

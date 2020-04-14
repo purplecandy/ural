@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
 
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/utils/bloc.dart';
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
@@ -26,7 +28,7 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
     final UralPrefrences uralPref =
         MultiRepositoryProvider.of<UralPrefrences>(context);
     final SearchFieldBloc searchFieldBloc =
-        SingleBlocProvider.of<SearchFieldBloc>(context);
+        Provider.of<SearchFieldBloc>(context, listen: false);
     List<Widget> searchResults = [];
     searchResults.add(SizedBox(
       height: 50,
@@ -70,16 +72,16 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
   @override
   Widget build(BuildContext context) {
     final SearchFieldBloc searchFieldBloc =
-        SingleBlocProvider.of<SearchFieldBloc>(context);
+        Provider.of<SearchFieldBloc>(context, listen: false);
     return ListView(
       children: <Widget>[
         SizedBox(
           height: 40,
         ),
-        StreamBuilder<SubState<SearchFieldState, String>>(
-            stream: searchFieldBloc.state.stream,
+        StreamBuilder<Event<SearchFieldState, String>>(
+            stream: searchFieldBloc.stream,
             builder: (context,
-                AsyncSnapshot<SubState<SearchFieldState, String>> snapshot) {
+                AsyncSnapshot<Event<SearchFieldState, String>> snapshot) {
               if (snapshot.hasData) {
                 switch (snapshot.data.state) {
                   case SearchFieldState.reset:
@@ -119,15 +121,15 @@ class ScreenshotListGrid extends StatelessWidget {
     final Orientation orientation = MediaQuery.of(context).orientation;
     // final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
     // final SearchFieldBloc searchFieldBloc =
-    SingleBlocProvider.of<SearchFieldBloc>(context);
+    Provider.of<SearchFieldBloc>(context);
     final SearchScreenBloc bloc =
-        SingleBlocProvider.of<SearchScreenBloc>(context);
+        Provider.of<SearchScreenBloc>(context, listen: false);
 
     return Container(
-        child: StreamBuilder<SubState<SearchStates, List<ScreenshotModel>>>(
-            stream: bloc.state.stream,
+        child: StreamBuilder<Event<SearchStates, List<ScreenshotModel>>>(
+            stream: bloc.stream,
             builder: (context,
-                AsyncSnapshot<SubState<SearchStates, List<ScreenshotModel>>>
+                AsyncSnapshot<Event<SearchStates, List<ScreenshotModel>>>
                     snapshot) {
               if (snapshot.hasData) {
                 if (snapshot.data.state == SearchStates.idle) {

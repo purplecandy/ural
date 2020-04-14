@@ -15,7 +15,7 @@ class FileBrowserBloc extends BlocBase {
   BehaviorSubject<BrowserState> _browserSubject =
       BehaviorSubject.seeded(BrowserState.loading);
 
-  Observable<BrowserState> get streamOfPaths => _browserSubject.stream;
+  ValueStream<BrowserState> get streamOfPaths => _browserSubject.stream;
 
   void getInitialPath() async {
     currentDirectory = await FileUtils.getStorageList();

@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ural/background_tasks.dart';
 // import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
-import 'package:folder_picker/folder_picker.dart';
+// import 'package:folder_picker/folder_picker.dart';
 
 import 'package:ural/utils/async.dart';
 // import 'package:ural/blocs/screen_bloc.dart';
@@ -90,29 +90,29 @@ class _SetupState extends State<Setup> {
   }
 
   Future<AsyncResponse> handleStepTwo(BuildContext context) async {
-    final pref = await SharedPreferences.getInstance();
-    await Navigator.push(
-        context,
-        MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (context) => FolderPickerPage(
-                action: (context, directory) async {
-                  pref.setString("ural_default_folder", directory.path);
-                  Navigator.pop(context);
-                  setState(() {
-                    defaultDirectoryPath = directory.path;
-                    defaultDirectory = true;
-                  });
-                },
-                rootDirectory: Directory("/storage/emulated/0/"))));
-    if (defaultDirectoryPath.length > 0) {
-      scaffoldSuccessMessage("Default directory set");
+    // final pref = await SharedPreferences.getInstance();
+    // await Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //         fullscreenDialog: true,
+    //         builder: (context) => FolderPickerPage(
+    //             action: (context, directory) async {
+    //               pref.setString("ural_default_folder", directory.path);
+    //               Navigator.pop(context);
+    //               setState(() {
+    //                 defaultDirectoryPath = directory.path;
+    //                 defaultDirectory = true;
+    //               });
+    //             },
+    //             rootDirectory: Directory("/storage/emulated/0/"))));
+    // if (defaultDirectoryPath.length > 0) {
+    //   scaffoldSuccessMessage("Default directory set");
 
-      return AsyncResponse(ResponseStatus.success, null);
-    }
+    //   return AsyncResponse(ResponseStatus.success, null);
+    // }
 
-    scaffoldErrorMessage("No directory specified");
-    return AsyncResponse(ResponseStatus.failed, null);
+    // scaffoldErrorMessage("No directory specified");
+    // return AsyncResponse(ResponseStatus.failed, null);
   }
 
   Future<AsyncResponse> handleStepThree() async {

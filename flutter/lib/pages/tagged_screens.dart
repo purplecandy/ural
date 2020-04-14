@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
 
 import 'package:ural/models/tags_model.dart';
 import 'package:ural/pages/screens_view.dart';
@@ -36,8 +37,8 @@ class _TaggedScreenState extends State<TaggedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleBlocProvider<TaggedScreenBloc>(
-      bloc: _tagBloc,
+    return Provider<TaggedScreenBloc>(
+      create: (_) => _tagBloc,
       child: Scaffold(
           appBar: AppBar(
             title: Text(model.name),
@@ -65,10 +66,10 @@ class _TaggedScreenState extends State<TaggedScreen> {
                                   title: "ADD",
                                   onPressed: (_) async {
                                     final docIds = List<int>.from(
-                                        SingleBlocProvider.of<
-                                                ScreenSelectionBloc>(_)
-                                            .state
-                                            .data
+                                        Provider.of<ScreenSelectionBloc>(_,
+                                                listen: false)
+                                            .event
+                                            .object
                                             .values
                                             .map<int>((m) => m.docId));
                                     showDialog(
@@ -88,8 +89,8 @@ class _TaggedScreenState extends State<TaggedScreen> {
                         ))),
             child: Icon(Feather.plus),
           ),
-          body: SingleBlocProvider<TaggedScreenBloc>(
-            bloc: _tagBloc,
+          body: Provider<TaggedScreenBloc>(
+            create: (_) => _tagBloc,
             child: ListScreenshotsWidget<TaggedScreenBloc>(),
           )),
     );

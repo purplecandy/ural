@@ -59,7 +59,7 @@ class StreamState<S, T> {
   }
 
   /// Returs the stream of the subject
-  Observable<SubState<S, T>> get stream => _subject.stream;
+  ValueStream<SubState<S, T>> get stream => _subject.stream;
 
   /// Since the subState are nothing more than events for the StreamController
   /// It can also be called as event

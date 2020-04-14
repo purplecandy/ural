@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:ural/utils/bloc.dart';
 
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
@@ -17,9 +19,10 @@ class SelectionAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _selectionBloc = SingleBlocProvider.of<ScreenSelectionBloc>(context);
-    return StreamBuilder<SubState<SelectionStates, Map<int, ScreenshotModel>>>(
-        stream: _selectionBloc.state.stream,
+    final _selectionBloc =
+        Provider.of<ScreenSelectionBloc>(context, listen: false);
+    return StreamBuilder<Event<SelectionStates, Map<int, ScreenshotModel>>>(
+        stream: _selectionBloc.stream,
         builder: (context, snap) {
           if (snap.hasData) {
             if (snap.data.state != SelectionStates.empty || hideInital) {
@@ -33,7 +36,7 @@ class SelectionAppBar extends StatelessWidget {
                   leading: IconButton(
                       icon: Icon(Icons.close),
                       onPressed: () {
-                        if (_selectionBloc.state.data.isEmpty)
+                        if (_selectionBloc.event.object.isEmpty)
                           Navigator.pop(context);
                         _selectionBloc.dispatch(SelectionAction.reset);
                       }),

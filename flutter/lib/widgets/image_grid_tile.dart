@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:ural/app.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
 
 import 'package:ural/background_tasks.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
+import 'package:ural/utils/bloc.dart';
 import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/pages/image_view.dart';
 
@@ -18,18 +18,24 @@ class ImageGridTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectionBloc = SingleBlocProvider.of<ScreenSelectionBloc>(context);
+    var selectionBloc;
+    try {
+      selectionBloc = Provider.of<ScreenSelectionBloc>(context, listen: false);
+    } catch (e) {
+      selectionBloc = null;
+    }
+
     return InkWell(
       onLongPress: () {
         if (selectionBloc != null) {
-          if (selectionBloc.state.currentState == SelectionStates.empty)
+          if (selectionBloc.event.state == SelectionStates.empty)
             selectionBloc.dispatch(SelectionAction.add, {"model": model});
         }
       },
       onTap: () {
         if ((selectionBloc != null) &&
-            selectionBloc.state.currentState != SelectionStates.empty) {
-          selectionBloc.state.data.containsKey(model.hash)
+            selectionBloc.event.state != SelectionStates.empty) {
+          selectionBloc.event.object.containsKey(model.hash)
               ? selectionBloc
                   .dispatch(SelectionAction.remove, {"hash": model.hash})
               : selectionBloc.dispatch(SelectionAction.add, {"model": model});
@@ -62,8 +68,8 @@ class ImageGridTile extends StatelessWidget {
             selectionBloc == null
                 ? Container()
                 : StreamBuilder<
-                    SubState<SelectionStates, Map<int, ScreenshotModel>>>(
-                    stream: selectionBloc.state.stream,
+                    Event<SelectionStates, Map<int, ScreenshotModel>>>(
+                    stream: selectionBloc.stream,
                     builder: (context, snap) {
                       if (snap.hasData) {
                         return Visibility(

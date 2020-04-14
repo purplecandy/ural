@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
 
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/utils/bloc.dart';
 import 'package:ural/widgets/buttons.dart' show FlatPurpleButton;
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
@@ -22,14 +24,14 @@ class _ListScreenshotsWidgetState<T extends AbstractScreenshots>
   ScrollController _scrollController = ScrollController();
 
   void refresh() {
-    SingleBlocProvider.of<RecentScreenBloc>(context)
+    Provider.of<RecentScreenBloc>(context, listen: false)
         .dispatch(RecentScreenAction.fetch);
   }
 
   @override
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
-    final rscreenBloc = SingleBlocProvider.of<T>(context);
+    final rscreenBloc = Provider.of<T>(context, listen: false);
     return ListView(children: [
       SizedBox(
         height: 40,
@@ -39,11 +41,11 @@ class _ListScreenshotsWidgetState<T extends AbstractScreenshots>
         child: ListTile(
             title: Text("ALL SCREENSHOTS"),
             subtitle: StreamBuilder(
-                stream: rscreenBloc.state.stream,
+                stream: rscreenBloc.stream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData)
                     return Text(
-                        "${rscreenBloc.state.data.length} items sycned");
+                        "${rscreenBloc.event.object.length} items sycned");
                   return Container();
                 }),
             trailing: IconButton(
@@ -55,10 +57,10 @@ class _ListScreenshotsWidgetState<T extends AbstractScreenshots>
               },
             )),
       ),
-      StreamBuilder<SubState<RecentScreenStates, List<ScreenshotModel>>>(
-          stream: rscreenBloc.state.stream,
+      StreamBuilder<Event<RecentScreenStates, List<ScreenshotModel>>>(
+          stream: rscreenBloc.stream,
           builder: (context,
-              AsyncSnapshot<SubState<RecentScreenStates, List<ScreenshotModel>>>
+              AsyncSnapshot<Event<RecentScreenStates, List<ScreenshotModel>>>
                   snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data.state == RecentScreenStates.loading) {

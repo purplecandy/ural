@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
+
 import 'package:ural/blocs/tags_bloc.dart';
 import 'package:ural/models/tags_model.dart';
 import 'package:ural/pages/tagged_screens.dart';
@@ -32,8 +34,8 @@ class _TagsPageState extends State<TagsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleBlocProvider<TagsBloc>(
-      bloc: _tagsBloc,
+    return Provider<TagsBloc>(
+      create: (_) => _tagsBloc,
       child: Scaffold(
         appBar: AppBar(
           title: Text("Tags"),
@@ -71,8 +73,8 @@ class _TagsPageState extends State<TagsPage> {
           onPressed: () {
             showDialog(
                 context: context,
-                builder: (context) => SingleBlocProvider<TagsBloc>(
-                    bloc: _tagsBloc, child: NewTagDialogue()));
+                builder: (context) => Provider<TagsBloc>(
+                    create: (_) => _tagsBloc, child: NewTagDialogue()));
           },
           child: Icon(Icons.add),
         ),
@@ -103,7 +105,7 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
 
   @override
   Widget build(BuildContext context) {
-    final TagsBloc bloc = SingleBlocProvider.of<TagsBloc>(context);
+    final TagsBloc bloc = Provider.of<TagsBloc>(context, listen: false);
     return BaseDialog(
       title: "Create Tag",
       child: Column(
