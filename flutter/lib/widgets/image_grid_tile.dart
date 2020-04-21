@@ -4,11 +4,10 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 
 import 'package:ural/background_tasks.dart';
-import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/blocs/selection_bloc.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/utils/bloc.dart';
-import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/pages/image_view.dart';
 
 class ImageGridTile extends StatelessWidget {

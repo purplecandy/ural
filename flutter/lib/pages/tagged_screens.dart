@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:ural/models/tags_model.dart';
 import 'package:ural/pages/screens_view.dart';
 import 'package:ural/repository/database_repo.dart';
-import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/blocs/selection_bloc.dart';
 import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/list_screens.dart';
 

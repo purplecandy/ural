@@ -4,13 +4,24 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
 
-import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/blocs/search_bloc.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
-import 'package:ural/utils/bloc_provider.dart';
 
+/// This widget has 2 stream that is SearchFieldBloc and SearchScreenBloc
+///
+/// SearchScreenBloc is dependent on SearchFieldBloc
+///
+/// SearchFieldBloc is switching between widgets depending upon the current value
+///
+/// SearchScreenBloc outputs the the search result
+///
+/// when the state of SearchFieldBloc is `SearchFieldStates.change` only then the SearchScreenBloc is displayed
+///
+/// everytime the query is changed a `SearchStates.fetch` is fired with the new query after a small delay
+/// then the stream displays [ScreenshotListBuilder()] which is basically listenting to search results
 class SearchBodyWidget extends StatefulWidget {
   SearchBodyWidget({Key key}) : super(key: key);
 
@@ -42,7 +53,6 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
           title: Text("RECENT SEARCHES"),
         ),
       ));
-      print(uralPref.getRecentSearches().length);
       for (var item in uralPref.getRecentSearches()) {
         searchResults.add(Material(
           child: InkWell(
@@ -74,7 +84,6 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
       }
     }
     searchResults.add(FilterByTagsWidget());
-
     return searchResults;
   }
 
@@ -129,8 +138,7 @@ class ScreenshotListGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
     // final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
-    // final SearchFieldBloc searchFieldBloc =
-    Provider.of<SearchFieldBloc>(context);
+    // final SearchFieldBloc searchFieldBloc = Provider.of<SearchFieldBloc>(context);
     final SearchScreenBloc bloc =
         Provider.of<SearchScreenBloc>(context, listen: false);
 

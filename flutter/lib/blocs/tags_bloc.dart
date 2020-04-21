@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:ural/database.dart';
 import 'package:ural/utils/async.dart';
-import 'package:ural/utils/bloc_provider.dart';
+// import 'package:ural/utils/bloc_provider.dart';
+import 'package:ural/utils/bloc.dart';
 import 'package:ural/models/tags_model.dart';
 
-enum TagAction { create, fetch }
+enum TagAction {
+  /// Create a new tag with a name and color code
+  ///
+  /// Requires: `String:name`, `int:color`
+  create,
+
+  /// Fetch all tags from the database
+  fetch
+}
 enum TagState { loading, completed }
 
-class TagsBloc extends BlocBase implements ActionReceiver<TagAction> {
+class TagsBloc extends BlocBase<TagState, TagAction, List<TagModel>> {
   ScreenshotListDatabase _slDB;
-  StreamState<TagState, List<TagModel>> state;
-
-  TagsBloc() {
-    state = StreamState<TagState, List<TagModel>>(
-        SubState<TagState, List<TagModel>>(TagState.loading, []));
-  }
+  TagsBloc() : super(state: TagState.loading, object: []);
 
   void initializeDatabase(ScreenshotListDatabase db) {
     _slDB = db;
@@ -23,7 +27,7 @@ class TagsBloc extends BlocBase implements ActionReceiver<TagAction> {
 
   @override
   void dispose() {
-    state.dispose();
+    super.dispose();
   }
 
   @override
@@ -56,9 +60,7 @@ class TagsBloc extends BlocBase implements ActionReceiver<TagAction> {
   void _getTags() async {
     final result = await TagUtils.getTags(_slDB.db);
     if (result.state == ResponseStatus.success) {
-      state.data = result.object;
-      state.currentState = TagState.completed;
-      state.notifyListeners();
+      updateState(TagState.completed, result.object);
     }
   }
 }

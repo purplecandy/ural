@@ -7,7 +7,6 @@ import 'package:ural/background_tasks.dart';
 // import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/file_browser.dart';
 import 'package:ural/prefrences.dart';
-import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/utils/file_utils.dart';
 import 'package:ural/repository/database_repo.dart';
 
@@ -19,13 +18,14 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final UralPrefrences uralPref = UralPrefrences();
+  UralPrefrences uralPref;
   bool syncStatus;
 
   @override
-  void initState() {
-    super.initState();
-    syncStatus = uralPref.getSyncStatus();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    uralPref = Provider.of<UralPrefrences>(context, listen: true);
+    if (uralPref.initialized) syncStatus = uralPref.getSyncStatus();
   }
 
   void handleSyncStatus(bool val) {
@@ -262,13 +262,14 @@ class ListDirectoryDialog extends StatefulWidget {
 }
 
 class _ListDirectoryDialogState extends State<ListDirectoryDialog> {
-  UralPrefrences uralPref = UralPrefrences();
+  UralPrefrences uralPref;
   List<String> directories = [];
 
   @override
-  void initState() {
-    super.initState();
-    directories = uralPref.getDirectories();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    uralPref = Provider.of<UralPrefrences>(context, listen: true);
+    if (uralPref.initialized) directories = uralPref.getDirectories();
   }
 
   void handleSaveDirectory(String path) {

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:ural/app.dart';
 
 import 'package:ural/blocs/tags_bloc.dart';
 import 'package:ural/models/tags_model.dart';
 import 'package:ural/pages/tagged_screens.dart';
-import 'package:ural/utils/bloc_provider.dart';
+import 'package:ural/utils/bloc.dart';
 import 'package:ural/repository/database_repo.dart';
+import 'package:ural/values/theme.dart';
 import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/dialogs/base.dart';
 
@@ -39,11 +41,16 @@ class _TagsPageState extends State<TagsPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text("Tags"),
+          actions: <Widget>[
+            IconButton(
+                icon: Icon(Icons.lightbulb_outline),
+                onPressed: () => AppTheme.toggleTheme(context))
+          ],
         ),
-        body: StreamBuilder<SubState<TagState, List<TagModel>>>(
-          stream: _tagsBloc.state.stream,
+        body: StreamBuilder<Event<TagState, List<TagModel>>>(
+          stream: _tagsBloc.stream,
           builder: (BuildContext context,
-              AsyncSnapshot<SubState<TagState, List<TagModel>>> snapshot) {
+              AsyncSnapshot<Event<TagState, List<TagModel>>> snapshot) {
             if (snapshot.hasData) {
               switch (snapshot.data.state) {
                 case TagState.completed:
@@ -114,7 +121,18 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
             controller: controller,
             maxLength: 25,
             decoration: InputDecoration(
-                border: OutlineInputBorder(), labelText: "Name"),
+                focusColor: Theme.of(context).accentColor,
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                  width: 1,
+                  style: BorderStyle.solid,
+                  color: AppTheme.isDark(context)
+                      ? DarkTheme.backgroundTwo
+                      : LighTheme.backgroundOne,
+                )),
+                border: OutlineInputBorder(),
+                // labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                labelText: "Name"),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),

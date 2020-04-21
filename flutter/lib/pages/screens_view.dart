@@ -10,6 +10,8 @@ import 'package:ural/prefrences.dart';
 import 'package:ural/repository/database_repo.dart';
 import 'package:ural/widgets/all.dart';
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/blocs/search_bloc.dart';
+import 'package:ural/blocs/selection_bloc.dart';
 import 'package:ural/widgets/search_body.dart';
 
 class ScreenView extends StatefulWidget {
@@ -62,6 +64,10 @@ class _ScreenViewState extends State<ScreenView>
 
   @override
   void dispose() {
+    _rscreenBloc.dispose();
+    _searchFieldBloc.dispose();
+    _selectionBloc.dispose();
+    _searchBloc.dispose();
     super.dispose();
   }
 
@@ -74,15 +80,11 @@ class _ScreenViewState extends State<ScreenView>
       _rscreenBloc.initializeDatabase(repo.slDB);
       _searchBloc.initializeDatabase(repo.slDB);
       _rscreenBloc.dispatch(RecentScreenAction.fetch);
-      // repo.addListeners(() {
-      //   _rscreenBloc.initializeDatabase(repo.slDB);
-      //   _searchBloc.initializeDatabase(repo.slDB);
-      //   _rscreenBloc.dispatch(RecentScreenAction.fetch);
-      // });
     }
 
     if (uralPref.initialized) {
       /// Delaying the stream to not make continousl calls onChange
+      /// ! Emitting data from searchfield to searchbody
       _searchFieldBloc.stream
           .debounceTime(Duration(milliseconds: 300))
           .listen((data) {
@@ -102,10 +104,7 @@ class _ScreenViewState extends State<ScreenView>
     );
     _searchFieldBloc.initialize(_searchFieldController);
 
-    //gotta wait for database to get initialized
-    // await _bloc.initializeDatabase();
-    //then lazily load all the screens
-    // _bloc.listAllScreens();
+    ///Attaching listener on the textfield
     focusNode.addListener(() {
       if (focusNode.hasPrimaryFocus) {
         setState(() {

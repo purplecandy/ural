@@ -131,29 +131,28 @@ class _EmptyListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Container(
-        height: 200,
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              "You don't have any screenshots synced.",
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(
-              height: 40,
-            ),
-            FlatPurpleButton(
-              onPressed: (_) {
-                callback();
-              },
-              title: "Refresh",
-            )
-          ],
-        ),
+    return Container(
+      // color: Theme.of(context).backgroundColor/\,
+      height: 200,
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            "You don't have any screenshots synced.",
+            style: TextStyle(fontSize: 18),
+          ),
+          SizedBox(
+            height: 40,
+          ),
+          FlatPurpleButton(
+            onPressed: (_) {
+              callback();
+            },
+            title: "Refresh",
+          )
+        ],
       ),
     );
   }

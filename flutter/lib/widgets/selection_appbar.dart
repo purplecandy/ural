@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ural/utils/bloc.dart';
 
-import 'package:ural/utils/bloc_provider.dart';
-import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/blocs/selection_bloc.dart';
 import 'package:ural/models/screen_model.dart';
 
 typedef List<Widget> ActionBuilder(BuildContext context);

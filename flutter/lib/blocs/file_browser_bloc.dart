@@ -6,7 +6,7 @@ import 'package:rxdart/rxdart.dart';
 
 enum BrowserState { intial, update, done, loading }
 
-class FileBrowserBloc extends BlocBase {
+class FileBrowserBloc {
   String currentPath = "";
   List<String> pathHistory = [];
 

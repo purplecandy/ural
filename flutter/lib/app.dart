@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:ural/pages/tags.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/repository/database_repo.dart';
-import 'package:ural/utils/bloc_provider.dart';
 import 'package:ural/values/theme.dart';
 import 'package:rxdart/subjects.dart' show BehaviorSubject;
 
