@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/transformers.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:provider/provider.dart';
 
 import 'package:ural/widgets/selection_appbar.dart';
@@ -37,10 +38,12 @@ class _ScreenViewState extends State<ScreenView>
   final _searchFieldBloc = SearchFieldBloc();
   final _selectionBloc = ScreenSelectionBloc();
   final _searchBloc = SearchScreenBloc();
+  final _filterBloc = FilterTagsBloc();
 
   final _searchFieldController = TextEditingController();
   final _scaffold = GlobalKey<ScaffoldState>();
   final focusNode = FocusNode();
+  bool listening = false;
   AnimationController _animController;
 
   String searchQuery = "";
@@ -85,12 +88,23 @@ class _ScreenViewState extends State<ScreenView>
     if (uralPref.initialized) {
       /// Delaying the stream to not make continousl calls onChange
       /// ! Emitting data from searchfield to searchbody
+      startListening(uralPref);
+    }
+  }
+
+  void startListening(UralPrefrences uralPref) {
+    if (!listening) {
+      listening = true;
+      // print("Listening");
       _searchFieldBloc.stream
           .debounceTime(Duration(milliseconds: 300))
           .listen((data) {
         if (data.state != SearchFieldState.reset && data.object.isNotEmpty) {
-          _searchBloc.dispatch(SearchAction.fetch,
-              {"query": data.object, "ural_pref": uralPref});
+          _searchBloc.dispatch(SearchAction.fetch, {
+            "query": data.object,
+            "ural_pref": uralPref,
+            "filters": _filterBloc.event.object
+          });
         }
       });
     }
@@ -143,65 +157,70 @@ class _ScreenViewState extends State<ScreenView>
             create: (_) => _rscreenBloc,
             child: Provider<SearchScreenBloc>(
               create: (_) => _searchBloc,
-              child: Scaffold(
-                  key: _scaffold,
-                  body: Container(
-                    height: deviceHeight,
-                    width: deviceWidth,
-                    margin: EdgeInsets.only(top: 10),
-                    child: Stack(
-                      children: <Widget>[
-                        Visibility(
-                          visible: !searchStack,
-                          child: Container(
-                            margin: EdgeInsets.only(top: isStandalone ? 50 : 0),
-                            child: ListScreenshotsWidget<RecentScreenBloc>(),
-                          ),
-                        ),
-                        Visibility(
-                          visible: searchStack,
-                          child: SlideTransition(
-                            position:
-                                Tween(begin: Offset(0.0, 1.0), end: Offset.zero)
-                                    .animate(_animController),
+              child: Provider<FilterTagsBloc>(
+                create: (_) => _filterBloc,
+                child: Scaffold(
+                    key: _scaffold,
+                    body: Container(
+                      height: deviceHeight,
+                      width: deviceWidth,
+                      margin: EdgeInsets.only(top: 10),
+                      child: Stack(
+                        children: <Widget>[
+                          Visibility(
+                            visible: !searchStack,
                             child: Container(
-                              color: Theme.of(context).backgroundColor,
-                              height: deviceHeight,
-                              width: deviceWidth,
-                              child: SearchBodyWidget(),
+                              margin:
+                                  EdgeInsets.only(top: isStandalone ? 50 : 0),
+                              child: ListScreenshotsWidget<RecentScreenBloc>(),
                             ),
                           ),
-                        ),
-                        Align(
-                          heightFactor: isStandalone ? 19 : 2.5,
-                          alignment: isStandalone
-                              ? Alignment.bottomCenter
-                              : Alignment.center,
-                          child: SearchFieldWidget(
-                            hintText: "Type what you're looking for here",
-                            controller: _searchFieldController,
-                            focusNode: focusNode,
-                            hasFocus: hasFocus,
-                            onChanged: (val) {
-                              searchQuery = val;
-                            },
-                            onSubmitted: (val) {
-                              if (val.length > 0)
-                                _searchFieldBloc
-                                    .dispatch(SearchFieldState.change);
-                            },
+                          Visibility(
+                            visible: searchStack,
+                            child: SlideTransition(
+                              position: Tween(
+                                      begin: Offset(0.0, 1.0), end: Offset.zero)
+                                  .animate(_animController),
+                              child: Container(
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                height: deviceHeight,
+                                width: deviceWidth,
+                                child: SearchBodyWidget(),
+                              ),
+                            ),
                           ),
-                        ),
-                        //BOTTOM BUTTONS PLACEHOLDER
-                        buttomButtons ?? Container(),
-                        //BOTTOM BUTTONS ENDS
-                        SelectionAppBar(
-                          actionBuilder: widget.actionBuilder,
-                          hideInital: isStandalone,
-                        )
-                      ],
-                    ),
-                  )),
+                          Align(
+                            heightFactor: isStandalone ? 19 : 2.5,
+                            alignment: isStandalone
+                                ? Alignment.bottomCenter
+                                : Alignment.center,
+                            child: SearchFieldWidget(
+                              hintText: "Type what you're looking for here",
+                              controller: _searchFieldController,
+                              focusNode: focusNode,
+                              hasFocus: hasFocus,
+                              onChanged: (val) {
+                                searchQuery = val;
+                              },
+                              onSubmitted: (val) {
+                                if (val.length > 0)
+                                  _searchFieldBloc
+                                      .dispatch(SearchFieldState.change);
+                              },
+                            ),
+                          ),
+                          //BOTTOM BUTTONS PLACEHOLDER
+                          buttomButtons ?? Container(),
+                          //BOTTOM BUTTONS ENDS
+                          SelectionAppBar(
+                            actionBuilder: widget.actionBuilder,
+                            hideInital: isStandalone,
+                          )
+                        ],
+                      ),
+                    )),
+              ),
             ),
           ),
         ),

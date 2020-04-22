@@ -21,7 +21,7 @@ enum SearchStates {
 enum SearchAction {
   /// Performs a search with the specified query on the database
   ///
-  /// Requires:  `String:query` and `UralPreferences:ural_pref`
+  /// Requires:  `String:query` and `UralPreferences:ural_pref` and `Set<int>:filters`
   fetch,
   reset
 }
@@ -42,11 +42,14 @@ class SearchScreenBloc
     super.dispose();
   }
 
+  int count = 0;
   @override
   void dispatch(SearchAction actionState, [Map<String, dynamic> data]) {
+    count++;
+    print(count);
     switch (actionState) {
       case SearchAction.fetch:
-        _find(data["query"], data["ural_pref"]);
+        _find(data["query"], data["ural_pref"], data["filters"] ?? Set<int>());
         break;
       case SearchAction.reset:
         // state.currentState = SearchStates.idle;
@@ -56,10 +59,11 @@ class SearchScreenBloc
     }
   }
 
-  void _find(String query, UralPrefrences prefrences) async {
+  void _find(String query, UralPrefrences prefrences,
+      [Set<int> filters]) async {
     updateState(SearchStates.searching, event.object);
     var newState;
-    _slDB.find(query).then((screenshots) {
+    _slDB.find(query, filter: filters).then((screenshots) {
       if (screenshots.length > 0) {
         newState = SearchStates.done;
         prefrences.updateRecentSearches(query);
@@ -136,4 +140,44 @@ class SearchFieldBloc
   }
 
   String getText() => _fieldController.text;
+}
+
+enum FilterState { contains, empty }
+enum FilterAction {
+  ///Requires: `int:id`
+  add,
+
+  ///Requires: `int:id`
+  del,
+
+  reset
+}
+
+class FilterTagsBloc extends BlocBase<FilterState, FilterAction, Set<int>> {
+  FilterTagsBloc() : super(state: FilterState.empty, object: Set());
+
+  @override
+  void dispatch(FilterAction actionState, [Map<String, dynamic> data]) {
+    switch (actionState) {
+      case FilterAction.add:
+        event.object.add(data["id"]);
+        updateState(FilterState.contains, event.object);
+        break;
+      case FilterAction.del:
+        event.object.remove(data["id"]);
+        updateState(
+            event.object.isEmpty ? FilterState.empty : FilterState.contains,
+            event.object);
+        break;
+      case FilterAction.reset:
+        updateState(FilterState.empty, Set<int>());
+        break;
+      default:
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 }

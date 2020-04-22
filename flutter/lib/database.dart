@@ -152,13 +152,29 @@ class ScreenshotListDatabase {
     await database.insert(vtable, model.toMap());
   }
 
-  Future<List<ScreenshotModel>> find(String query) async {
-    final String sql = 'SELECT * FROM $vtable WHERE $vtable MATCH "$query"';
+  Future<List<ScreenshotModel>> find(String query, {Set<int> filter}) async {
+    List<String> subSql = [];
+    String filterSQL = "";
+    if (filter != null) {
+      for (var id in filter) {
+        subSql.add(
+            "SELECT docid FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid=$id");
+      }
+      if (subSql.isNotEmpty) {
+        filterSQL = "AND docid IN (" +
+            (subSql.length > 1 ? subSql.join(" INTERSECT ") : subSql[0]) +
+            ")";
+      }
+    }
+    final String sql =
+        'SELECT * FROM $vtable WHERE $text MATCH "$query*" $filterSQL';
     List<ScreenshotModel> screenshots = [];
     try {
       List<Map> records = await database.rawQuery(sql);
+      // print("");
+      // print(records);
       for (var record in records) {
-        print(record);
+        // print(record);
         ScreenshotModel model = ScreenshotModel.fromMap(record);
         screenshots.add(model);
       }
