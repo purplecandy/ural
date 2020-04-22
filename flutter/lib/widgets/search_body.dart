@@ -1,11 +1,17 @@
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:ural/app.dart';
 
 import 'package:ural/blocs/search_bloc.dart';
+import 'package:ural/blocs/tags_bloc.dart';
+import 'package:ural/models/tags_model.dart';
+import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/bloc.dart';
+import 'package:ural/values/theme.dart';
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
@@ -55,6 +61,7 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
       ));
       for (var item in uralPref.getRecentSearches()) {
         searchResults.add(Material(
+          color: Theme.of(context).scaffoldBackgroundColor,
           child: InkWell(
             onTap: () {
               searchFieldBloc
@@ -83,7 +90,12 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
         ));
       }
     }
-    searchResults.add(FilterByTagsWidget());
+    // searchResults.add(Divider());
+    // searchResults.add(FilterByTagsWidget(
+    //   onApply: (ids) {
+    //     print(ids);
+    //   },
+    // ));
     return searchResults;
   }
 
@@ -207,36 +219,14 @@ class _EmptyListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18),
-          ),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
         ),
-      ),
-    );
-  }
-}
-
-class FilterByTagsWidget extends StatefulWidget {
-  final String title;
-  FilterByTagsWidget({Key key, this.title}) : super(key: key);
-
-  @override
-  _FilterTagsWidgetState createState() => _FilterTagsWidgetState();
-}
-
-class _FilterTagsWidgetState extends State<FilterByTagsWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(8),
-      child: Row(
-        children: <Widget>[Text(widget.title ?? "Filter by tags")],
       ),
     );
   }

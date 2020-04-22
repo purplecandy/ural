@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 export 'package:rxdart/transformers.dart';
 
@@ -33,4 +34,26 @@ abstract class BlocBase<S, A, T> {
   }
 
   void dispatch(A actionState, [Map<String, dynamic> data]);
+}
+
+typedef Widget SnapshopBuilder<A, K>(BuildContext context, Event<A, K> event);
+typedef Widget ErrorBuilder(BuildContext context, dynamic error);
+
+class BlocBuilder<A, K> extends StatelessWidget {
+  final SnapshopBuilder<A, K> onSuccess;
+  final ErrorBuilder onError;
+  final dynamic bloc;
+  const BlocBuilder({Key key, this.onSuccess, this.onError, this.bloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Event<A, K>>(
+      stream: bloc.stream,
+      initialData: bloc.event,
+      builder: (context, snap) => snap.hasError
+          ? onError(context, snap.error)
+          : onSuccess(context, snap.data),
+    );
+  }
 }

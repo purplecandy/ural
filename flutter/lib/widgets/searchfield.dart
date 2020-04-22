@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:ural/blocs/search_bloc.dart';
+import 'package:ural/utils/bloc.dart';
+import 'package:ural/widgets/filter_tag.dart';
+import 'package:ural/widgets/buttons.dart';
+import 'package:ural/widgets/dialogs/base.dart';
+import 'package:ural/widgets/search_body.dart';
 
 typedef void VoidCallBack(String val);
 typedef bool FocusCallBack();
@@ -41,13 +48,11 @@ class _SearchFieldWidgetState extends State<SearchFieldWidget> {
     factor = MediaQuery.of(context).size.width * 0.8;
     if (widget.hasFocus()) {
       setState(() {
-        factor = MediaQuery.of(context).size.width;
-        radius = 0;
+        factor = MediaQuery.of(context).size.width - 10;
       });
     } else {
       setState(() {
         factor = MediaQuery.of(context).size.width * 0.8;
-        radius = 20;
       });
     }
     return Material(
@@ -73,7 +78,31 @@ class _SearchFieldWidgetState extends State<SearchFieldWidget> {
                 color: Colors.black,
               ),
               border: InputBorder.none,
-              hintText: widget.hintText),
+              hintText: widget.hintText,
+              suffixIcon: Consumer<FilterTagsBloc>(
+                builder: (c, filterBloc, _) =>
+                    BlocBuilder<FilterState, Set<int>>(
+                  bloc: filterBloc,
+                  onSuccess: (c, e) => Material(
+                      color: Colors.transparent,
+                      child: IconButton(
+                          icon: Icon(
+                            Icons.filter_list,
+                            color: e.object.isEmpty
+                                ? Colors.grey
+                                : Theme.of(context).accentColor,
+                          ),
+                          onPressed: () {
+                            widget.focusNode.unfocus(focusPrevious: true);
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (context) =>
+                                    FilterByTagsWidget<FilterTagsBloc>(
+                                      bloc: filterBloc,
+                                    ));
+                          })),
+                ),
+              )),
         ),
       ),
     );
