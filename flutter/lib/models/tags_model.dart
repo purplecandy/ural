@@ -1,7 +1,9 @@
 class TagModel {
   final String name;
   int id, colorCode;
-  TagModel(this.id, this.name, this.colorCode) : assert(name.length <= 25);
+  TagModel(this.id, String name, this.colorCode)
+      : this.name = name.trim(),
+        assert(name.length <= 25);
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = Map<String, dynamic>();

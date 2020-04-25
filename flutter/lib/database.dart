@@ -286,6 +286,31 @@ class TagUtils {
     }
   }
 
+  static Future<AsyncResponse> delete(Database db, int id) async {
+    try {
+      String sql = 'DELETE FROM ${ScreenshotListDatabase.tags} WHERE id = $id';
+      db.execute(sql);
+      return AsyncResponse(ResponseStatus.success, "Deleted tag successfull");
+    } catch (e) {
+      print(e);
+      return AsyncResponse(ResponseStatus.failed, e);
+    }
+  }
+
+  static Future<AsyncResponse> update(
+      Database db, int id, String newName, int newColor) async {
+    try {
+      newName.trim();
+      String sql =
+          'UPDATE ${ScreenshotListDatabase.tags} SET name = "$newName",color = $newColor WHERE id = $id';
+      db.execute(sql);
+      return AsyncResponse(ResponseStatus.success, "Deleted tag successfull");
+    } catch (e) {
+      print(e);
+      return AsyncResponse(ResponseStatus.failed, e);
+    }
+  }
+
   static String _generateSQL(List<int> ids) {
     // get tagIds
     // parse Ids into sql queries

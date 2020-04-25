@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:open_file/open_file.dart';
+import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:ural/utils/file_utils.dart';
 
 // import 'package:ural/utils/bloc_provider.dart';
 // import 'package:ural/blocs/screen_bloc.dart';
@@ -30,13 +33,19 @@ class _ImageViewState extends State<ImageView> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             // TODO: implement a share function
-            // IconButton(
-            //     icon: Icon(
-            //       Icons.share,
-            //       color: Colors.white,
-            //     ),
-            //     onPressed: () async {
-            //     }),
+            IconButton(
+                icon: Icon(
+                  Icons.share,
+                  color: Colors.white,
+                ),
+                onPressed: () async {
+                  await Share.file(
+                      'esys image',
+                      'esys.png',
+                      widget.imageFile.readAsBytesSync(),
+                      FileUtils.getMime(widget.imageFile.path),
+                      text: 'Share image');
+                }),
             IconButton(
                 icon: Icon(
                   Icons.open_in_new,

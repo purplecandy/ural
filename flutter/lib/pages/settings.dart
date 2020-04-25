@@ -9,6 +9,7 @@ import 'package:ural/file_browser.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/utils/file_utils.dart';
 import 'package:ural/repository/database_repo.dart';
+import 'package:ural/values/theme.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({Key key}) : super(key: key);
@@ -149,7 +150,9 @@ class _SwitchThemeDialogState extends State<SwitchThemeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: AppTheme.isDark(context)
+          ? DarkTheme.backgroundOne
+          : LighTheme.backgroundTwo,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: Text("App Theme"),
       content: Column(
@@ -293,14 +296,17 @@ class _ListDirectoryDialogState extends State<ListDirectoryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: AppTheme.isDark(context)
+          ? DarkTheme.backgroundOne
+          : LighTheme.backgroundTwo,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: Text("Directories"),
       content: Container(
         height: MediaQuery.of(context).size.height * 0.3,
         width: MediaQuery.of(context).size.width * 0.9,
         child: directories.isEmpty
-            ? Text("You don't have any directories saved")
+            ? Text(
+                "You don't have any directories saved. Screenshots won't be synced in the background")
             : ListView.builder(
                 shrinkWrap: true,
                 itemCount: directories.length,

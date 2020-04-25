@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:ural/app.dart';
@@ -65,6 +66,51 @@ class _TagsPageState extends State<TagsPage> {
                                 builder: (context) => TaggedScreen(
                                       model: snapshot.data.object[index],
                                     ))),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            IconButton(
+                                icon: Icon(Feather.edit_2),
+                                onPressed: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => Provider<TagsBloc>(
+                                          create: (_) => _tagsBloc,
+                                          child: NewTagDialogue(
+                                            create: false,
+                                            tagModel:
+                                                snapshot.data.object[index],
+                                            index: index,
+                                          )));
+                                }),
+                            IconButton(
+                              icon: Icon(Feather.trash),
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) => ConfirmationDialog(
+                                          onConfirm: (_, c) {
+                                            Navigator.pop(_);
+                                            _tagsBloc.dispatch(
+                                                TagAction.delete, {
+                                              "index": index,
+                                              "model":
+                                                  snapshot.data.object[index]
+                                            });
+                                          },
+                                          title: "Delete Tag",
+                                          buttonText: "Confirm",
+                                          optionTitle:
+                                              "Do you want to remove the screenshots too?",
+                                          optionSubtitle:
+                                              "It will permanantely delete the screenshots from your phone.",
+                                        ));
+                              },
+                            )
+                          ],
+                        ),
                         title: Text(snapshot.data.object[index].name),
                       ),
                     ),
@@ -90,14 +136,71 @@ class _TagsPageState extends State<TagsPage> {
   }
 }
 
+class ConfirmationDialog extends StatefulWidget {
+  final String title, buttonText, optionTitle, optionSubtitle;
+  final void Function(BuildContext context, bool confirmed) onConfirm;
+  ConfirmationDialog(
+      {Key key,
+      this.title,
+      this.buttonText,
+      this.optionTitle,
+      this.optionSubtitle,
+      @required this.onConfirm})
+      : super(key: key);
+
+  @override
+  _ConfirmationDialogState createState() => _ConfirmationDialogState();
+}
+
+class _ConfirmationDialogState extends State<ConfirmationDialog> {
+  bool _confirmed = false;
+  @override
+  Widget build(BuildContext context) {
+    return BaseDialog(
+        title: widget.title,
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: CheckboxListTile(
+                value: _confirmed,
+                onChanged: (v) {
+                  setState(() {
+                    _confirmed = v;
+                  });
+                },
+                isThreeLine: true,
+                title: Text(widget.optionTitle),
+                subtitle: Text(widget.optionSubtitle),
+              ),
+            ),
+            RoundedPurpleButton(
+              title: widget.buttonText,
+              onPressed: (_) {
+                widget.onConfirm(_, _confirmed);
+              },
+            )
+          ],
+        ));
+  }
+}
+
 class NewTagDialogue extends StatefulWidget {
-  NewTagDialogue({Key key}) : super(key: key);
+  /// True to create a new tag. False to update an existing Tag
+  /// Default: `false`
+  final bool create;
+  final TagModel tagModel;
+  final int index;
+  NewTagDialogue({Key key, this.create = true, this.tagModel, this.index})
+      : super(key: key);
 
   @override
   _NewTagDialogueState createState() => _NewTagDialogueState();
 }
 
 class _NewTagDialogueState extends State<NewTagDialogue> {
+  bool get create => widget.create;
+  TagModel get model => widget.tagModel;
   TextEditingController controller = TextEditingController();
   int _selectedColor = -1;
   List<Color> colorShades = [
@@ -111,10 +214,59 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (create == false && model != null) {
+      controller.text = model.name;
+      for (var i = 0; i < colorShades.length; i++) {
+        if (colorShades[i].value == model.colorCode) {
+          _selectedColor = i;
+          break;
+        }
+      }
+    }
+  }
+
+  void handleCreate(TagsBloc bloc) {
+    if (controller.text.length > 0 && _selectedColor != -1) {
+      bloc.dispatch(TagAction.create, {
+        "name": controller.text,
+        "color": colorShades[_selectedColor].value
+      });
+      Navigator.pop(context);
+    } else {
+      Fluttertoast.showToast(
+          msg: _selectedColor == -1
+              ? "Please select a color"
+              : "Name can't be blank",
+          backgroundColor: Colors.red,
+          textColor: Colors.white);
+    }
+  }
+
+  void handleUpdate(TagsBloc bloc) {
+    if (controller.text.isNotEmpty && _selectedColor != -1) {
+      bloc.dispatch(TagAction.update, {
+        "index": widget.index,
+        "model": TagModel(
+            model.id, controller.text, colorShades[_selectedColor].value)
+      });
+      Navigator.pop(context);
+    } else {
+      Fluttertoast.showToast(
+          msg: _selectedColor == -1
+              ? "Please select a color"
+              : "Name can't be blank",
+          backgroundColor: Colors.red,
+          textColor: Colors.white);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final TagsBloc bloc = Provider.of<TagsBloc>(context, listen: false);
     return BaseDialog(
-      title: "Create Tag",
+      title: create ? "Create Tag" : "Update Tag",
       child: Column(
         children: <Widget>[
           TextField(
@@ -126,12 +278,10 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
                     borderSide: BorderSide(
                   width: 1,
                   style: BorderStyle.solid,
-                  color: AppTheme.isDark(context)
-                      ? DarkTheme.backgroundTwo
-                      : LighTheme.backgroundOne,
+                  color: Theme.of(context).accentColor,
                 )),
                 border: OutlineInputBorder(),
-                // labelStyle: TextStyle(color: Theme.of(context).accentColor),
+                labelStyle: TextStyle(color: Theme.of(context).accentColor),
                 labelText: "Name"),
           ),
           Padding(
@@ -178,22 +328,13 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
           Center(
             child: RoundedPurpleButton(
               onPressed: (context) {
-                if (controller.text.length > 0 && _selectedColor != -1) {
-                  bloc.dispatch(TagAction.create, {
-                    "name": controller.text,
-                    "color": colorShades[_selectedColor].value
-                  });
-                  Navigator.pop(context);
+                if (create) {
+                  handleCreate(bloc);
                 } else {
-                  Fluttertoast.showToast(
-                      msg: _selectedColor == -1
-                          ? "Please select a color"
-                          : "Name can't be blank",
-                      backgroundColor: Colors.red,
-                      textColor: Colors.white);
+                  handleUpdate(bloc);
                 }
               },
-              title: "Create",
+              title: create ? "Create" : "Update",
             ),
           )
         ],

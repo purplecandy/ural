@@ -17,6 +17,7 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
+  esys_flutter_share: ^1.0.2
   provider: ^4.0.5
   image: ^2.1.4
   fluttertoast: ^4.0.1

@@ -7,6 +7,7 @@ import 'package:ural/app.dart';
 
 import 'package:ural/prefrences.dart';
 import 'package:ural/pages/screens_view.dart';
+import 'package:ural/values/theme.dart';
 import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/dialogs/menu.dart';
 import 'package:ural/widgets/dialogs/image_upload.dart';
@@ -70,13 +71,16 @@ class BottomButtons extends StatelessWidget {
       left: MediaQuery.of(context).size.width * 0.25,
       bottom: 40,
       child: Material(
-        elevation: 10,
-        color: Colors.transparent,
+        elevation: 4,
+        color: Colors.black12,
+        borderRadius: BorderRadius.circular(20),
         child: Container(
             height: 40,
             width: MediaQuery.of(context).size.width * 0.5,
             decoration: BoxDecoration(
-                color: Theme.of(context).backgroundColor,
+                color: AppTheme.isDark(context)
+                    ? DarkTheme.backgroundOne
+                    : LighTheme.backgroundTwo,
                 borderRadius: BorderRadius.circular(20)),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

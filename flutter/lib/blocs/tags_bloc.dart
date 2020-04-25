@@ -13,7 +13,14 @@ enum TagAction {
   create,
 
   /// Fetch all tags from the database
-  fetch
+  fetch,
+
+  /// Requires: `int:index`,`TagModel:model`
+  update,
+
+  /// Delete the tag
+  /// Requires: `int:index`,`TagModel:model`
+  delete
 }
 enum TagState { loading, completed }
 
@@ -39,6 +46,12 @@ class TagsBloc extends BlocBase<TagState, TagAction, List<TagModel>> {
       case TagAction.create:
         _createTag(data["name"], data["color"]);
         break;
+      case TagAction.update:
+        _updateTag(data["index"], data["model"]);
+        break;
+      case TagAction.delete:
+        _deleteTag(data["index"], data["model"]);
+        break;
       default:
     }
   }
@@ -61,6 +74,23 @@ class TagsBloc extends BlocBase<TagState, TagAction, List<TagModel>> {
     final result = await TagUtils.getTags(_slDB.db);
     if (result.state == ResponseStatus.success) {
       updateState(TagState.completed, result.object);
+    }
+  }
+
+  void _updateTag(int index, TagModel model) async {
+    final result =
+        await TagUtils.update(_slDB.db, model.id, model.name, model.colorCode);
+    if (result.state == ResponseStatus.success) {
+      event.object[index] = model;
+      updateState(TagState.completed, event.object);
+    }
+  }
+
+  void _deleteTag(int index, TagModel model) async {
+    final result = await TagUtils.delete(_slDB.db, model.id);
+    if (result.state == ResponseStatus.success) {
+      event.object.removeAt(index);
+      updateState(TagState.completed, event.object);
     }
   }
 }
