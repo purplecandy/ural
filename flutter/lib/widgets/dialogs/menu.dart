@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:ural/app.dart';
+import 'package:ural/values/theme.dart';
 
 import 'base.dart';
 import 'package:ural/pages/settings.dart';
@@ -50,7 +52,9 @@ class MenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).backgroundColor,
+      color: AppTheme.isDark(context)
+          ? DarkTheme.backgroundOne
+          : LighTheme.backgroundTwo,
       child: InkWell(
         onTap: callback,
         child: Padding(

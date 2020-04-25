@@ -181,15 +181,18 @@ class ScreenshotListGrid extends StatelessWidget {
                     return Material(
                       color: Colors.transparent,
                       child: GridView.builder(
-                          // controller: _scrollController,
+                          physics: ClampingScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: snapshot.data.object.length,
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
+                                  mainAxisSpacing: 16,
+                                  crossAxisSpacing: 8,
+                                  childAspectRatio: (150 / 270),
                                   crossAxisCount:
                                       (orientation == Orientation.portrait)
-                                          ? 2
-                                          : 3),
+                                          ? 3
+                                          : 4),
                           itemBuilder: (context, index) {
                             File file =
                                 File(snapshot.data.object[index].imagePath);

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart' show Feather;
+import 'package:ural/app.dart';
+import 'package:ural/values/theme.dart';
 
 class HorizontalSeprator extends StatelessWidget {
   const HorizontalSeprator({Key key}) : super(key: key);
@@ -9,7 +11,9 @@ class HorizontalSeprator extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(left: 16, right: 16),
       height: 0.3,
-      color: Colors.white.withOpacity(0.3),
+      color: AppTheme.isDark(context)
+          ? Colors.white.withOpacity(0.3)
+          : LighTheme.backgroundOne,
     );
   }
 }
@@ -34,7 +38,9 @@ class BaseDialog extends StatelessWidget {
         width: MediaQuery.of(context).size.width * 0.9,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: Theme.of(context).backgroundColor),
+            color: AppTheme.isDark(context)
+                ? DarkTheme.backgroundOne
+                : LighTheme.backgroundTwo),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[

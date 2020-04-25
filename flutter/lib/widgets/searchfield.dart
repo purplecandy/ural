@@ -3,9 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:ural/blocs/search_bloc.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/widgets/filter_tag.dart';
-import 'package:ural/widgets/buttons.dart';
-import 'package:ural/widgets/dialogs/base.dart';
-import 'package:ural/widgets/search_body.dart';
 
 typedef void VoidCallBack(String val);
 typedef bool FocusCallBack();
@@ -56,8 +53,9 @@ class _SearchFieldWidgetState extends State<SearchFieldWidget> {
       });
     }
     return Material(
-      elevation: 20,
+      elevation: 4,
       color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
         duration: Duration(milliseconds: 250),
         height: 40,

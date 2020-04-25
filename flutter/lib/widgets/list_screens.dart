@@ -6,7 +6,8 @@ import 'package:provider/provider.dart';
 
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/utils/bloc.dart';
-import 'package:ural/widgets/buttons.dart' show FlatPurpleButton;
+import 'package:ural/widgets/buttons.dart'
+    show FlatPurpleButton, RoundedPurpleButton;
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/utils/bloc_provider.dart';
@@ -146,7 +147,7 @@ class _EmptyListWidget extends StatelessWidget {
           SizedBox(
             height: 40,
           ),
-          FlatPurpleButton(
+          RoundedPurpleButton(
             onPressed: (_) {
               callback();
             },
