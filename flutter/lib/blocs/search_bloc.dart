@@ -44,7 +44,8 @@ class SearchScreenBloc
 
   int count = 0;
   @override
-  void dispatch(SearchAction actionState, [Map<String, dynamic> data]) {
+  void dispatch(SearchAction actionState,
+      {Map<String, dynamic> data, VoidOnComplete onComplete}) {
     count++;
     print(count);
     switch (actionState) {
@@ -102,7 +103,8 @@ class SearchFieldBloc
   }
 
   @override
-  void dispatch(SearchFieldState actionState, [Map<String, dynamic> data]) {
+  void dispatch(SearchFieldState actionState,
+      {Map<String, dynamic> data, VoidOnComplete onComplete}) {
     switch (actionState) {
       case SearchFieldState.change:
         updateState(SearchFieldState.change, _fieldController.text);
@@ -157,7 +159,8 @@ class FilterTagsBloc extends BlocBase<FilterState, FilterAction, Set<int>> {
   FilterTagsBloc() : super(state: FilterState.empty, object: Set());
 
   @override
-  void dispatch(FilterAction actionState, [Map<String, dynamic> data]) {
+  void dispatch(FilterAction actionState,
+      {Map<String, dynamic> data, VoidOnComplete onComplete}) {
     switch (actionState) {
       case FilterAction.add:
         event.object.add(data["id"]);

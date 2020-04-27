@@ -1,5 +1,6 @@
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/models/screen_model.dart';
+import 'package:ural/utils/file_utils.dart';
 
 enum SelectionStates { contains, empty, modified }
 enum SelectionAction {
@@ -16,7 +17,8 @@ class ScreenSelectionBloc extends BlocBase<SelectionStates, SelectionAction,
   ScreenSelectionBloc() : super(state: SelectionStates.empty, object: {});
 
   @override
-  void dispatch(SelectionAction actionState, [Map<String, dynamic> data]) {
+  void dispatch(SelectionAction actionState,
+      {Map<String, dynamic> data, VoidOnComplete onComplete}) async {
     switch (actionState) {
       case SelectionAction.add:
         _addItem(data["model"]);
@@ -29,6 +31,7 @@ class ScreenSelectionBloc extends BlocBase<SelectionStates, SelectionAction,
         break;
       default:
     }
+    if (onComplete != null) onComplete();
   }
 
   @override

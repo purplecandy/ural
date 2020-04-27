@@ -6,8 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/utils/bloc.dart';
-import 'package:ural/widgets/buttons.dart'
-    show FlatPurpleButton, RoundedPurpleButton;
+import 'package:ural/widgets/buttons.dart' show RoundedPurpleButton;
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/utils/bloc_provider.dart';
@@ -25,8 +24,7 @@ class _ListScreenshotsWidgetState<T extends AbstractScreenshots>
   ScrollController _scrollController = ScrollController();
 
   void refresh() {
-    Provider.of<RecentScreenBloc>(context, listen: false)
-        .dispatch(RecentScreenAction.fetch);
+    Provider.of<T>(context, listen: false).dispatch(RecentScreenAction.fetch);
   }
 
   @override
@@ -148,7 +146,7 @@ class _EmptyListWidget extends StatelessWidget {
             height: 40,
           ),
           RoundedPurpleButton(
-            onPressed: (_) {
+            onPressed: () {
               callback();
             },
             title: "Refresh",

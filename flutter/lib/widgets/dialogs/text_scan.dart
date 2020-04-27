@@ -28,7 +28,7 @@ class _TextScanState extends State<TextScan> {
           ),
           RoundedPurpleButton(
             title: "Scan",
-            onPressed: (_) {},
+            onPressed: () {},
           )
         ],
       ),

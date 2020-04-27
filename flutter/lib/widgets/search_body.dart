@@ -64,8 +64,8 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
           color: Theme.of(context).scaffoldBackgroundColor,
           child: InkWell(
             onTap: () {
-              searchFieldBloc
-                  .dispatch(SearchFieldState.recent, {"recent_query": item});
+              searchFieldBloc.dispatch(SearchFieldState.recent,
+                  data: {"recent_query": item});
             },
             child: Padding(
               padding: const EdgeInsets.all(8.0),

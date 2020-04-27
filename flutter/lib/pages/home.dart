@@ -5,10 +5,14 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:ural/app.dart';
 
+import 'package:ural/blocs/screen_bloc.dart';
+
 import 'package:ural/prefrences.dart';
 import 'package:ural/pages/screens_view.dart';
 import 'package:ural/values/theme.dart';
 import 'package:ural/widgets/buttons.dart';
+import 'package:ural/widgets/delete_button.dart';
+
 import 'package:ural/widgets/dialogs/menu.dart';
 import 'package:ural/widgets/dialogs/image_upload.dart';
 import 'package:ural/widgets/dialogs/text_scan.dart';
@@ -58,6 +62,8 @@ class _HomePageState extends State<HomePage> {
     return ScreenView(
       isStandalone: false,
       bottomButtons: BottomButtons(),
+      actionBuilder: (context) =>
+          <Widget>[DeleteButtonWidget<RecentScreenBloc>()],
     );
   }
 }

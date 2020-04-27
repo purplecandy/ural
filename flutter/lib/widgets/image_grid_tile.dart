@@ -28,7 +28,7 @@ class ImageGridTile extends StatelessWidget {
       onLongPress: () {
         if (selectionBloc != null) {
           if (selectionBloc.event.state == SelectionStates.empty)
-            selectionBloc.dispatch(SelectionAction.add, {"model": model});
+            selectionBloc.dispatch(SelectionAction.add, data: {"model": model});
         }
       },
       onTap: () {
@@ -36,8 +36,9 @@ class ImageGridTile extends StatelessWidget {
             selectionBloc.event.state != SelectionStates.empty) {
           selectionBloc.event.object.containsKey(model.hash)
               ? selectionBloc
-                  .dispatch(SelectionAction.remove, {"hash": model.hash})
-              : selectionBloc.dispatch(SelectionAction.add, {"model": model});
+                  .dispatch(SelectionAction.remove, data: {"hash": model.hash})
+              : selectionBloc
+                  .dispatch(SelectionAction.add, data: {"model": model});
         } else {
           Navigator.push(
               context,

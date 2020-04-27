@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:ural/app.dart';
 
-typedef void VoidCallback(BuildContext context);
+typedef void VoidCallback();
 
 class RoundedPurpleButton extends StatelessWidget {
+  final Widget child;
   final String title;
   final VoidCallback onPressed;
-  const RoundedPurpleButton({Key key, this.title, this.onPressed})
+  const RoundedPurpleButton({Key key, this.title, this.onPressed, this.child})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FlatButton(
-      onPressed: () => onPressed(context),
-      child: Text(title),
+      onPressed: () => onPressed(),
+      child: child ?? Text(title),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
       textColor: Colors.white,
       colorBrightness: Brightness.dark,
@@ -36,7 +37,7 @@ class FlatPurpleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlatButton(
-      onPressed: () => onPressed(context),
+      onPressed: () => onPressed(),
       child: Text(title),
       textColor: Colors.white,
       highlightColor: AppTheme.isDark(context)

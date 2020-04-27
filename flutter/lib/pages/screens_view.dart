@@ -100,7 +100,7 @@ class _ScreenViewState extends State<ScreenView>
           .debounceTime(Duration(milliseconds: 300))
           .listen((data) {
         if (data.state != SearchFieldState.reset && data.object.isNotEmpty) {
-          _searchBloc.dispatch(SearchAction.fetch, {
+          _searchBloc.dispatch(SearchAction.fetch, data: {
             "query": data.object,
             "ural_pref": uralPref,
             "filters": _filterBloc.event.object

@@ -5,6 +5,7 @@ import 'package:ural/database.dart';
 import 'package:ural/utils/async.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/models/screen_model.dart';
+import 'package:ural/utils/file_utils.dart';
 
 abstract class AbstractScreenshots extends BlocBase<RecentScreenStates,
     RecentScreenAction, List<ScreenshotModel>> {
@@ -18,23 +19,48 @@ abstract class AbstractScreenshots extends BlocBase<RecentScreenStates,
   void initializeDatabase(ScreenshotListDatabase db) {
     _slDB = db;
   }
+
+  Future<void> _deleteItems(List<ScreenshotModel> models) async {
+    List<int> hash = [];
+    List<String> paths = [];
+
+    for (var model in models) {
+      hash.add(model.hash);
+      paths.add(model.imagePath);
+    }
+
+    final result = List.from((await FileUtils.deleteFiles(paths)).values);
+
+    for (var i = 0; i < hash.length; i++) {
+      if (result[i]) _slDB.delete(hash[i]);
+    }
+  }
 }
 
 enum RecentScreenStates { loading, done }
 enum RecentScreenAction {
   /// Fetch all screenshots from the database
-  fetch
+  fetch,
+
+  /// Delete
+  /// Require: `List<ScreenshotModel>:selected_models`
+  delete
 }
 
 class RecentScreenBloc extends AbstractScreenshots {
   @override
-  void dispatch(RecentScreenAction actionState, [Map<String, dynamic> data]) {
+  void dispatch(RecentScreenAction actionState,
+      {Map<String, dynamic> data, VoidOnComplete onComplete}) async {
     switch (actionState) {
       case RecentScreenAction.fetch:
         _getAllScreens();
         break;
+      case RecentScreenAction.delete:
+        await _deleteItems(data["selected_models"]);
+        break;
       default:
     }
+    if (onComplete != null) onComplete();
   }
 
   /// List all screenshots from the database
@@ -75,13 +101,18 @@ class TaggedScreenBloc extends AbstractScreenshots {
   }
 
   @override
-  void dispatch(RecentScreenAction actionState, [Map<String, dynamic> data]) {
+  void dispatch(RecentScreenAction actionState,
+      {Map<String, dynamic> data, VoidOnComplete onComplete}) async {
     switch (actionState) {
       case RecentScreenAction.fetch:
         _getAllScreens();
         break;
+      case RecentScreenAction.delete:
+        await _deleteItems(data["selected_models"]);
+        break;
       default:
     }
+    if (onComplete != null) onComplete();
   }
 
   void _getAllScreens() async {

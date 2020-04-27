@@ -12,6 +12,7 @@ import 'package:ural/repository/database_repo.dart';
 import 'package:ural/values/theme.dart';
 import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/dialogs/base.dart';
+import 'package:ural/widgets/dialogs/confirmation_dialog.dart';
 
 class TagsPage extends StatefulWidget {
   TagsPage({Key key}) : super(key: key);
@@ -93,15 +94,16 @@ class _TagsPageState extends State<TagsPage> {
                                     builder: (context) => ConfirmationDialog(
                                           onConfirm: (_, c) {
                                             Navigator.pop(_);
-                                            _tagsBloc.dispatch(
-                                                TagAction.delete, {
-                                              "index": index,
-                                              "model":
-                                                  snapshot.data.object[index]
-                                            });
+                                            _tagsBloc.dispatch(TagAction.delete,
+                                                data: {
+                                                  "index": index,
+                                                  "model": snapshot
+                                                      .data.object[index]
+                                                });
                                           },
                                           title: "Delete Tag",
                                           buttonText: "Confirm",
+                                          processingText: "Deleting",
                                           optionTitle:
                                               "Do you want to remove the screenshots too?",
                                           optionSubtitle:
@@ -133,55 +135,6 @@ class _TagsPageState extends State<TagsPage> {
         ),
       ),
     );
-  }
-}
-
-class ConfirmationDialog extends StatefulWidget {
-  final String title, buttonText, optionTitle, optionSubtitle;
-  final void Function(BuildContext context, bool confirmed) onConfirm;
-  ConfirmationDialog(
-      {Key key,
-      this.title,
-      this.buttonText,
-      this.optionTitle,
-      this.optionSubtitle,
-      @required this.onConfirm})
-      : super(key: key);
-
-  @override
-  _ConfirmationDialogState createState() => _ConfirmationDialogState();
-}
-
-class _ConfirmationDialogState extends State<ConfirmationDialog> {
-  bool _confirmed = false;
-  @override
-  Widget build(BuildContext context) {
-    return BaseDialog(
-        title: widget.title,
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-              child: CheckboxListTile(
-                value: _confirmed,
-                onChanged: (v) {
-                  setState(() {
-                    _confirmed = v;
-                  });
-                },
-                isThreeLine: true,
-                title: Text(widget.optionTitle),
-                subtitle: Text(widget.optionSubtitle),
-              ),
-            ),
-            RoundedPurpleButton(
-              title: widget.buttonText,
-              onPressed: (_) {
-                widget.onConfirm(_, _confirmed);
-              },
-            )
-          ],
-        ));
   }
 }
 
@@ -229,7 +182,7 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
 
   void handleCreate(TagsBloc bloc) {
     if (controller.text.length > 0 && _selectedColor != -1) {
-      bloc.dispatch(TagAction.create, {
+      bloc.dispatch(TagAction.create, data: {
         "name": controller.text,
         "color": colorShades[_selectedColor].value
       });
@@ -246,7 +199,7 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
 
   void handleUpdate(TagsBloc bloc) {
     if (controller.text.isNotEmpty && _selectedColor != -1) {
-      bloc.dispatch(TagAction.update, {
+      bloc.dispatch(TagAction.update, data: {
         "index": widget.index,
         "model": TagModel(
             model.id, controller.text, colorShades[_selectedColor].value)
@@ -327,7 +280,7 @@ class _NewTagDialogueState extends State<NewTagDialogue> {
           ),
           Center(
             child: RoundedPurpleButton(
-              onPressed: (context) {
+              onPressed: () {
                 if (create) {
                   handleCreate(bloc);
                 } else {

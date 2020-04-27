@@ -224,4 +224,22 @@ class FileUtils {
         return list..sort();
     }
   }
+
+  static Future<Map<String, bool>> deleteFiles(List<String> paths) async {
+    Map<String, bool> deleted = {};
+    for (var path in paths) {
+      final file = File(path);
+      try {
+        if (file.existsSync()) {
+          file.deleteSync();
+          deleted[path] = true;
+        } else {
+          deleted[path] = false;
+        }
+      } catch (e) {
+        deleted[path] = false;
+      }
+    }
+    return deleted;
+  }
 }

@@ -38,7 +38,8 @@ class TagsBloc extends BlocBase<TagState, TagAction, List<TagModel>> {
   }
 
   @override
-  void dispatch(TagAction actionState, [Map<String, dynamic> data]) {
+  void dispatch(TagAction actionState,
+      {Map<String, dynamic> data, VoidOnComplete onComplete}) {
     switch (actionState) {
       case TagAction.fetch:
         _getTags();
