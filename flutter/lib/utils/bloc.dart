@@ -4,6 +4,8 @@ import 'package:rxdart/rxdart.dart';
 export 'package:rxdart/transformers.dart';
 
 /// I think this will be the last major iteration of my bloc library
+///
+typedef VoidOnComplete = void Function();
 
 class Event<S, T> {
   final S state;
@@ -33,7 +35,8 @@ abstract class BlocBase<S, A, T> {
     _controller.close();
   }
 
-  void dispatch(A actionState, [Map<String, dynamic> data]);
+  void dispatch(A actionState,
+      {Map<String, dynamic> data, VoidOnComplete onComplete});
 }
 
 typedef Widget SnapshopBuilder<A, K>(BuildContext context, Event<A, K> event);
