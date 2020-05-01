@@ -65,7 +65,7 @@ class _TagsPageState extends State<TagsPage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => TaggedScreen(
-                                      model: snapshot.data.object[index],
+                                      tagModel: snapshot.data.object[index],
                                     ))),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,

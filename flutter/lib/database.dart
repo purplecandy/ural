@@ -246,9 +246,11 @@ class TagUtils {
 
   static Future<AsyncResponse> getScreensByTag(Database db, int tagId) async {
     try {
+      /// col names
+      final String hash = "hash", imagePath = "imagePath", text = "text";
       if (tagId == null) throw Exception("tagId is null");
       String sql =
-          """SELECT * FROM ${ScreenshotListDatabase.vtable} WHERE docid IN (SELECT docid FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid=$tagId)""";
+          """SELECT $hash,$imagePath,$text,docid FROM ${ScreenshotListDatabase.vtable} WHERE docid IN (SELECT docid FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid=$tagId)""";
 
       List<Map> results = await db.rawQuery(sql);
       List<ScreenshotModel> screens = [];
@@ -305,6 +307,20 @@ class TagUtils {
           'UPDATE ${ScreenshotListDatabase.tags} SET name = "$newName",color = $newColor WHERE id = $id';
       db.execute(sql);
       return AsyncResponse(ResponseStatus.success, "Deleted tag successfull");
+    } catch (e) {
+      print(e);
+      return AsyncResponse(ResponseStatus.failed, e);
+    }
+  }
+
+  static Future<AsyncResponse> deleteTaggedScreen(
+      Database db, int tagId, int docId) async {
+    try {
+      String sql =
+          'DELETE FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid = $tagId AND docid = $docId';
+      db.execute(sql);
+      return AsyncResponse(
+          ResponseStatus.success, "Tagged Screen deleted successfull");
     } catch (e) {
       print(e);
       return AsyncResponse(ResponseStatus.failed, e);

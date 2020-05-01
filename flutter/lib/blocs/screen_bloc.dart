@@ -44,7 +44,10 @@ enum RecentScreenAction {
 
   /// Delete
   /// Require: `List<ScreenshotModel>:selected_models`
-  delete
+  delete,
+
+  /// Require: `List<ScreenshotModel>:selected_models` , `TagModel: tag`
+  remove
 }
 
 class RecentScreenBloc extends AbstractScreenshots {
@@ -60,7 +63,7 @@ class RecentScreenBloc extends AbstractScreenshots {
         break;
       default:
     }
-    if (onComplete != null) onComplete();
+    onComplete?.call();
   }
 
   /// List all screenshots from the database
@@ -110,6 +113,9 @@ class TaggedScreenBloc extends AbstractScreenshots {
       case RecentScreenAction.delete:
         await _deleteItems(data["selected_models"]);
         break;
+      case RecentScreenAction.remove:
+        await _removeItems(data["selected_models"], data["tag"]);
+        break;
       default:
     }
     if (onComplete != null) onComplete();
@@ -128,6 +134,12 @@ class TaggedScreenBloc extends AbstractScreenshots {
         await TagUtils.insert(_slDB.db, model.id, id);
       }
       dispatch(RecentScreenAction.fetch);
+    }
+  }
+
+  Future<void> _removeItems(List<ScreenshotModel> models, TagModel tag) async {
+    for (var model in models) {
+      await TagUtils.deleteTaggedScreen(_slDB.db, tag.id, model.docId);
     }
   }
 }

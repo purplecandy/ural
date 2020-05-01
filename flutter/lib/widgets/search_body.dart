@@ -178,35 +178,38 @@ class ScreenshotListGrid extends StatelessWidget {
                           "Couldn't find anything. Please trying typing something else",
                     );
                   } else {
-                    return Material(
-                      color: Colors.transparent,
-                      child: GridView.builder(
-                          physics: ClampingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: snapshot.data.object.length,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                  mainAxisSpacing: 16,
-                                  crossAxisSpacing: 8,
-                                  childAspectRatio: (150 / 270),
-                                  crossAxisCount:
-                                      (orientation == Orientation.portrait)
-                                          ? 3
-                                          : 4),
-                          itemBuilder: (context, index) {
-                            File file =
-                                File(snapshot.data.object[index].imagePath);
-                            return file.existsSync()
-                                ? ImageGridTile(
-                                    model: snapshot.data.object[index],
-                                    file: file,
-                                  )
-                                : Container(
-                                    child: Center(
-                                      child: Icon(Icons.broken_image),
-                                    ),
-                                  );
-                          }),
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: GridView.builder(
+                            physics: ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: snapshot.data.object.length,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    mainAxisSpacing: 16,
+                                    crossAxisSpacing: 8,
+                                    childAspectRatio: (150 / 270),
+                                    crossAxisCount:
+                                        (orientation == Orientation.portrait)
+                                            ? 3
+                                            : 4),
+                            itemBuilder: (context, index) {
+                              File file =
+                                  File(snapshot.data.object[index].imagePath);
+                              return file.existsSync()
+                                  ? ImageGridTile(
+                                      model: snapshot.data.object[index],
+                                      file: file,
+                                    )
+                                  : Container(
+                                      child: Center(
+                                        child: Icon(Icons.broken_image),
+                                      ),
+                                    );
+                            }),
+                      ),
                     );
                   }
                 }
