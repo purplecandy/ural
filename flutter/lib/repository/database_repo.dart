@@ -3,7 +3,7 @@ import 'package:ural/database.dart';
 // import 'package:ural/utils/bloc_provider.dart';
 
 class DatabaseRepository extends ChangeNotifier {
-  ScreenshotListDatabase slDB = ScreenshotListDatabase();
+  AppDB slDB = AppDB();
 
   DatabaseRepository() {
     initializeDatabase();

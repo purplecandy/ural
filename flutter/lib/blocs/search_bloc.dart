@@ -28,12 +28,12 @@ enum SearchAction {
 
 class SearchScreenBloc
     extends BlocBase<SearchStates, SearchAction, List<ScreenshotModel>> {
-  ScreenshotListDatabase _slDB;
+  AppDB _slDB;
   SearchScreenBloc()
       : super(state: SearchStates.idle, object: List<ScreenshotModel>());
 
   /// Initialize database
-  void initializeDatabase(ScreenshotListDatabase db) {
+  void initializeDatabase(AppDB db) {
     _slDB = db;
   }
 

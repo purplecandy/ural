@@ -25,7 +25,7 @@ Future<bool> uploadImagesInBackground() async {
       // initialize a textrecognizer
       final textRecognizer = FirebaseVision.instance.textRecognizer();
       // initialize our database
-      final ScreenshotListDatabase _slDB = ScreenshotListDatabase();
+      final AppDB _slDB = AppDB();
       await _slDB.initDB();
       try {
         List<FileSystemEntity> fileEntities = dir.listSync(recursive: true)

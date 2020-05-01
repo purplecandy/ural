@@ -4,14 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:ural/app.dart';
 
 import 'package:ural/blocs/search_bloc.dart';
-import 'package:ural/blocs/tags_bloc.dart';
-import 'package:ural/models/tags_model.dart';
-import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/bloc.dart';
-import 'package:ural/values/theme.dart';
 import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';

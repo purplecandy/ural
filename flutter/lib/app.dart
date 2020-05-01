@@ -46,7 +46,7 @@ class AppBody extends StatelessWidget {
 /// AppTheme widget responds the change in current ThemeMode and returns the AppBody with the current ThemeMode
 class AppTheme extends StatefulWidget {
   final BehaviorSubject<ThemeMode> _controller =
-      BehaviorSubject.seeded(ThemeMode.dark);
+      BehaviorSubject.seeded(ThemeMode.light);
   AppTheme({Key key}) : super(key: key);
 
   ThemeMode get activeThemeMode => _controller.value;
@@ -75,6 +75,10 @@ class AppTheme extends StatefulWidget {
   static toggleTheme(BuildContext context) {
     context.findAncestorWidgetOfExactType<AppTheme>().toggle();
   }
+
+  static Color setColor(context,
+          {@required Color dark, @required Color light}) =>
+      isDark(context) ? dark : light;
 }
 
 class _AppThemeState extends State<AppTheme> {

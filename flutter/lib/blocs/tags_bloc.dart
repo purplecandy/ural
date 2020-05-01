@@ -25,10 +25,10 @@ enum TagAction {
 enum TagState { loading, completed }
 
 class TagsBloc extends BlocBase<TagState, TagAction, List<TagModel>> {
-  ScreenshotListDatabase _slDB;
+  AppDB _slDB;
   TagsBloc() : super(state: TagState.loading, object: []);
 
-  void initializeDatabase(ScreenshotListDatabase db) {
+  void initializeDatabase(AppDB db) {
     _slDB = db;
   }
 

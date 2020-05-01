@@ -13,12 +13,28 @@ class InsertionError implements Exception {
   InsertionError(this.message);
 }
 
-class ScreenshotListDatabase {
+class _Screenshots {
+  static const String docid = "docid",
+      hash = "hash",
+      imagePath = "imagePath",
+      text = "text",
+      table = "virtualscreenshotlist";
+}
+
+class _Tags {
+  static const String id = "id", name = "name", color = "color", table = "tags";
+}
+
+class _TaggedScreens {
+  static const String tid = "tid", docid = "docid", table = "tagged_screens";
+}
+
+class AppDB {
   /// col names
   final String hash = "hash", imagePath = "imagePath", text = "text";
 
   /// table name
-  static final String screenshotlist = "screenshotlist";
+  // static final String screenshotlist = "screenshotlist";
   static final String vtable = "virtualscreenshotlist";
   static final String tags = "tags";
   static final String taggedScreens = "tagged_screens";
@@ -26,9 +42,9 @@ class ScreenshotListDatabase {
   static Database database;
   Database get db => database;
 
-  static final ScreenshotListDatabase _instance = ScreenshotListDatabase._();
-  factory ScreenshotListDatabase() => _instance;
-  ScreenshotListDatabase._();
+  static final AppDB _instance = AppDB._();
+  factory AppDB() => _instance;
+  AppDB._();
 
   /// Initialize database
   Future<void> initDB() async {
@@ -51,12 +67,12 @@ class ScreenshotListDatabase {
 
   Future _onOpen(Database db) async {
     List<Map<String, dynamic>> tables = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='$tags'");
+        "SELECT ${_Tags.name} FROM sqlite_master WHERE type='table' AND ${_Tags.name}='$tags'");
 
     if (tables.isEmpty) createTagsTable(db);
 
     tables = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='$taggedScreens'");
+        "SELECT ${_Tags.name} FROM sqlite_master WHERE type='table' AND ${_Tags.name}='$taggedScreens'");
 
     if (tables.isEmpty) createTagScreensTable(db);
   }
@@ -66,7 +82,7 @@ class ScreenshotListDatabase {
     await db.execute('PRAGMA foreign_keys = ON');
 
     String sql =
-        '''CREATE VIRTUAL TABLE $vtable USING fts4($hash,$imagePath,$text)''';
+        '''CREATE VIRTUAL TABLE ${_Screenshots.table} USING fts4(${_Screenshots.hash},${_Screenshots.imagePath},${_Screenshots.text})''';
     await db.execute(sql).then((val) {
       print("Virtual table created successfully");
     });
@@ -78,35 +94,35 @@ class ScreenshotListDatabase {
 
   Future<void> createTagsTable(Database db) async {
     String sql = '''
-    CREATE TABLE $tags (
-      id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-      name varchar(25) UNIQUE NOT NULL,
-      color INTEGER
+    CREATE TABLE ${_Tags.table} (
+      ${_Tags.id} INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+      ${_Tags.name} varchar(25) UNIQUE NOT NULL,
+      ${_Tags.color} INTEGER
     )
     ''';
     await db.execute(sql).then((val) {
-      print("$tags table created successfully");
+      print("${_Tags.table} table created successfully");
     });
   }
 
   Future<void> createTagScreensTable(Database db) async {
     String sql = '''
-    CREATE TABLE $taggedScreens (
-      tid INTEGER NOT NULL,
-      docid INTEGER NOT NULL,
-      FOREIGN KEY (tid) REFERENCES $tags(id) ON DELETE CASCADE,
-      FOREIGN KEY (docid) REFERENCES $vtable(docid) ON DELETE CASCADE,
-      CONSTRAINT combo UNIQUE (tid,docid)
+    CREATE TABLE ${_TaggedScreens.table} (
+      ${_TaggedScreens.tid} INTEGER NOT NULL,
+      ${_TaggedScreens.docid} INTEGER NOT NULL,
+      FOREIGN KEY (${_TaggedScreens.tid}) REFERENCES ${_Tags.table}(${_Tags.id}) ON DELETE CASCADE,
+      FOREIGN KEY (${_TaggedScreens.docid}) REFERENCES ${_Screenshots.table}(${_Screenshots.docid}) ON DELETE CASCADE,
+      CONSTRAINT combo UNIQUE (${_TaggedScreens.tid},${_TaggedScreens.docid})
     )''';
 
     await db.execute(sql).then((val) {
-      print("$taggedScreens table created successfully");
+      print("${_TaggedScreens.table} table created successfully");
     });
   }
 
   Future<AsyncResponse> reset() async {
     try {
-      await database.execute('DELETE FROM $vtable');
+      await database.execute('DELETE FROM ${_Screenshots.table}');
       AsyncResponse(ResponseStatus.success, null);
     } catch (e) {
       print(e);
@@ -117,7 +133,8 @@ class ScreenshotListDatabase {
 
   Future<void> delete(int hash) async {
     try {
-      await database.rawQuery('DELETE FROM $vtable WHERE hash = $hash');
+      await database
+          .rawQuery('DELETE FROM ${_Screenshots.table} WHERE hash = $hash');
     } catch (e) {
       print(e);
     }
@@ -125,8 +142,8 @@ class ScreenshotListDatabase {
 
   ///Check if image already exist
   Future<bool> exist(int hash) async {
-    final records =
-        await database.rawQuery('SELECT hash FROM $vtable WHERE hash = $hash');
+    final records = await database.rawQuery(
+        'SELECT ${_Screenshots.hash} FROM ${_Screenshots.table} WHERE hash = $hash');
     if (records == null) return false;
     if (records.length > 0) return true;
     return false;
@@ -157,8 +174,7 @@ class ScreenshotListDatabase {
     String filterSQL = "";
     if (filter != null) {
       for (var id in filter) {
-        subSql.add(
-            "SELECT docid FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid=$id");
+        subSql.add("SELECT docid FROM ${AppDB.taggedScreens} WHERE tid=$id");
       }
       if (subSql.isNotEmpty) {
         filterSQL = "AND docid IN (" +
@@ -208,7 +224,7 @@ class TagUtils {
       Database db, String name, int color) async {
     try {
       await db.execute(
-          "INSERT INTO ${ScreenshotListDatabase.tags} ('name','color') VALUES ('$name',$color)");
+          "INSERT INTO ${AppDB.tags} ('name','color') VALUES ('$name',$color)");
       return AsyncResponse(ResponseStatus.success, null);
     } catch (e) {
       print(e);
@@ -219,7 +235,7 @@ class TagUtils {
   static Future<AsyncResponse> insert(Database db, int tagId, int docId) async {
     try {
       await db.rawInsert(
-          "INSERT INTO ${ScreenshotListDatabase.taggedScreens} ('tid','docid') VALUES($tagId,$docId)");
+          "INSERT INTO ${AppDB.taggedScreens} ('tid','docid') VALUES($tagId,$docId)");
       return AsyncResponse(ResponseStatus.success, null);
     } catch (e) {
       print(e);
@@ -229,8 +245,7 @@ class TagUtils {
 
   static Future<AsyncResponse> getTags(Database db) async {
     try {
-      List results =
-          await db.rawQuery("SELECT * FROM ${ScreenshotListDatabase.tags}");
+      List results = await db.rawQuery("SELECT * FROM ${AppDB.tags}");
       List<TagModel> tags = [];
       if (results.length > 0) {
         for (var item in results) {
@@ -250,7 +265,7 @@ class TagUtils {
       final String hash = "hash", imagePath = "imagePath", text = "text";
       if (tagId == null) throw Exception("tagId is null");
       String sql =
-          """SELECT $hash,$imagePath,$text,docid FROM ${ScreenshotListDatabase.vtable} WHERE docid IN (SELECT docid FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid=$tagId)""";
+          """SELECT $hash,$imagePath,$text,docid FROM ${AppDB.vtable} WHERE docid IN (SELECT docid FROM ${AppDB.taggedScreens} WHERE tid=$tagId)""";
 
       List<Map> results = await db.rawQuery(sql);
       List<ScreenshotModel> screens = [];
@@ -290,7 +305,7 @@ class TagUtils {
 
   static Future<AsyncResponse> delete(Database db, int id) async {
     try {
-      String sql = 'DELETE FROM ${ScreenshotListDatabase.tags} WHERE id = $id';
+      String sql = 'DELETE FROM ${AppDB.tags} WHERE id = $id';
       db.execute(sql);
       return AsyncResponse(ResponseStatus.success, "Deleted tag successfull");
     } catch (e) {
@@ -304,7 +319,7 @@ class TagUtils {
     try {
       newName.trim();
       String sql =
-          'UPDATE ${ScreenshotListDatabase.tags} SET name = "$newName",color = $newColor WHERE id = $id';
+          'UPDATE ${AppDB.tags} SET name = "$newName",color = $newColor WHERE id = $id';
       db.execute(sql);
       return AsyncResponse(ResponseStatus.success, "Deleted tag successfull");
     } catch (e) {
@@ -317,7 +332,7 @@ class TagUtils {
       Database db, int tagId, int docId) async {
     try {
       String sql =
-          'DELETE FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid = $tagId AND docid = $docId';
+          'DELETE FROM ${AppDB.taggedScreens} WHERE tid = $tagId AND docid = $docId';
       db.execute(sql);
       return AsyncResponse(
           ResponseStatus.success, "Tagged Screen deleted successfull");
@@ -332,11 +347,10 @@ class TagUtils {
     // parse Ids into sql queries
     List<String> subSql = [];
     for (int id in ids) {
-      subSql.add(
-          "SELECT docid FROM ${ScreenshotListDatabase.taggedScreens} WHERE tid=$id");
+      subSql.add("SELECT docid FROM ${AppDB.taggedScreens} WHERE tid=$id");
     }
 
-    return "SELECT * FROM ${ScreenshotListDatabase.screenshotlist} WHERE docid IN (" +
+    return "SELECT * FROM ${AppDB.vtable} WHERE docid IN (" +
         (subSql.length > 1 ? subSql.join(" INTERSECT ") : subSql[0]) +
         ")";
   }

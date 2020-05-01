@@ -84,7 +84,7 @@ class _FilterTagsWidgetState extends State<FilterByTagsWidget> {
                                         .contains(event.object[index].id)
                                     ? FilterAction.del
                                     : FilterAction.add,
-                                {"id": event.object[index].id});
+                                data: {"id": event.object[index].id});
                           },
                           trailing: SizedBox(
                             height: 10,

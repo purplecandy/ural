@@ -9,14 +9,14 @@ import 'package:ural/utils/file_utils.dart';
 
 abstract class AbstractScreenshots extends BlocBase<RecentScreenStates,
     RecentScreenAction, List<ScreenshotModel>> {
-  ScreenshotListDatabase _slDB;
+  AppDB _slDB;
 
   AbstractScreenshots()
       : super(
             state: RecentScreenStates.loading, object: List<ScreenshotModel>());
 
   /// Initialize database
-  void initializeDatabase(ScreenshotListDatabase db) {
+  void initializeDatabase(AppDB db) {
     _slDB = db;
   }
 
