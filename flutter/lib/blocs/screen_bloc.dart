@@ -32,7 +32,7 @@ abstract class AbstractScreenshots extends BlocBase<RecentScreenStates,
     final result = List.from((await FileUtils.deleteFiles(paths)).values);
 
     for (var i = 0; i < hash.length; i++) {
-      if (result[i]) _slDB.delete(hash[i]);
+      if (result[i]) ScreenshotsUtils.delete(_slDB.db, hash[i]);
     }
   }
 }
@@ -68,11 +68,11 @@ class RecentScreenBloc extends AbstractScreenshots {
 
   /// List all screenshots from the database
   void _getAllScreens() async {
-    updateState(RecentScreenStates.done, await _slDB.list());
+    updateState(RecentScreenStates.done, await ScreenshotsUtils.list(_slDB.db));
   }
 
   Future<bool> handleRemove(List<ScreenshotModel> selected) async {
-    final resp = await _slDB.removeBatch(selected);
+    final resp = await ScreenshotsUtils.deleteMultiple(_slDB.db, selected);
     dispatch(RecentScreenAction.fetch);
     return resp.state == ResponseStatus.success;
   }

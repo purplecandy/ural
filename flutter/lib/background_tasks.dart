@@ -43,7 +43,8 @@ Future<bool> uploadImagesInBackground() async {
                 .substring(entity.path.length - 3, entity.path.length);
             if (["jpg", "png"].contains(ext)) {
               /// Check if the image already exist
-              final bool exist = await _slDB.exist(entity.path.hashCode);
+              final bool exist =
+                  await ScreenshotsUtils.exist(_slDB.db, entity.path.hashCode);
 
               /// Skip if true
               if (exist) continue;
@@ -54,7 +55,7 @@ Future<bool> uploadImagesInBackground() async {
               });
               ScreenshotModel model =
                   ScreenshotModel(entity.path.hashCode, entity.path, text);
-              _slDB.insert(model);
+              ScreenshotsUtils.insert(_slDB.db, model);
               //asynchronosly generate the thumbnail
               generateThumb(entity.path);
             }

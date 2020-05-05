@@ -64,7 +64,7 @@ class SearchScreenBloc
       [Set<int> filters]) async {
     updateState(SearchStates.searching, event.object);
     var newState;
-    _slDB.find(query, filter: filters).then((screenshots) {
+    ScreenshotsUtils.find(_slDB.db, query, filter: filters).then((screenshots) {
       if (screenshots.length > 0) {
         newState = SearchStates.done;
         prefrences.updateRecentSearches(query);

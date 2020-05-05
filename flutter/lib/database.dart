@@ -123,105 +123,105 @@ class AppDB {
     });
   }
 
-  Future<AsyncResponse> reset() async {
-    try {
-      await database.execute('DELETE FROM ${_Screenshots.table}');
-      AsyncResponse(ResponseStatus.success, null);
-    } catch (e) {
-      print(e);
-      AsyncResponse(ResponseStatus.failed, null);
-    }
-    return AsyncResponse(ResponseStatus.unkown, null);
-  }
+  // Future<AsyncResponse> reset() async {
+  //   try {
+  //     await database.execute('DELETE FROM ${_Screenshots.table}');
+  //     AsyncResponse(ResponseStatus.success, null);
+  //   } catch (e) {
+  //     print(e);
+  //     AsyncResponse(ResponseStatus.failed, null);
+  //   }
+  //   return AsyncResponse(ResponseStatus.unkown, null);
+  // }
 
-  Future<void> delete(int hash) async {
-    try {
-      await database
-          .rawQuery('DELETE FROM ${_Screenshots.table} WHERE hash = $hash');
-    } catch (e) {
-      print(e);
-    }
-  }
+  // Future<void> delete(int hash) async {
+  //   try {
+  //     await database
+  //         .rawQuery('DELETE FROM ${_Screenshots.table} WHERE hash = $hash');
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   ///Check if image already exist
-  Future<bool> exist(int hash) async {
-    final records = await database.rawQuery(
-        'SELECT ${_Screenshots.hash} FROM ${_Screenshots.table} WHERE ${_Screenshots.hash} = $hash');
-    if (records == null) return false;
-    if (records.length > 0) return true;
-    return false;
-  }
+  // Future<bool> exist(int hash) async {
+  //   final records = await database.rawQuery(
+  //       'SELECT ${_Screenshots.hash} FROM ${_Screenshots.table} WHERE ${_Screenshots.hash} = $hash');
+  //   if (records == null) return false;
+  //   if (records.length > 0) return true;
+  //   return false;
+  // }
 
   /// Returns all screenshots
-  Future<List<ScreenshotModel>> list() async {
-    List<ScreenshotModel> screenshots = [];
-    try {
-      List<Map> records = await database.rawQuery(
-          "SELECT ${_Screenshots.hash},${_Screenshots.imagePath},${_Screenshots.text},${_Screenshots.docid} FROM ${_Screenshots.table} ORDER BY ${_Screenshots.docid} DESC");
-      for (var record in records) {
-        ScreenshotModel model = ScreenshotModel.fromMap(record);
-        screenshots.add(model);
-      }
-    } catch (e) {
-      print(e);
-    }
-    return screenshots;
-  }
+  // Future<List<ScreenshotModel>> list() async {
+  //   List<ScreenshotModel> screenshots = [];
+  //   try {
+  //     List<Map> records = await database.rawQuery(
+  //         "SELECT ${_Screenshots.hash},${_Screenshots.imagePath},${_Screenshots.text},${_Screenshots.docid} FROM ${_Screenshots.table} ORDER BY ${_Screenshots.docid} DESC");
+  //     for (var record in records) {
+  //       ScreenshotModel model = ScreenshotModel.fromMap(record);
+  //       screenshots.add(model);
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  //   return screenshots;
+  // }
 
-  Future<void> insert(ScreenshotModel model) async {
-    await database.insert(_Screenshots.table, model.toMap());
-  }
+  // Future<void> insert(ScreenshotModel model) async {
+  //   await database.insert(_Screenshots.table, model.toMap());
+  // }
 
-  Future<List<ScreenshotModel>> find(String query, {Set<int> filter}) async {
-    List<String> subSql = [];
-    String filterSQL = "";
-    if (filter != null) {
-      for (var id in filter) {
-        subSql.add(
-            "SELECT ${_TaggedScreens.docid} FROM ${_TaggedScreens.table} WHERE ${_TaggedScreens.tid}=$id");
-      }
-      if (subSql.isNotEmpty) {
-        filterSQL = "AND ${_Screenshots.docid} IN (" +
-            (subSql.length > 1 ? subSql.join(" INTERSECT ") : subSql[0]) +
-            ")";
-      }
-    }
-    final String sql =
-        'SELECT * FROM ${_Screenshots.table} WHERE ${_Screenshots.text} MATCH "$query*" $filterSQL';
-    List<ScreenshotModel> screenshots = [];
-    try {
-      List<Map> records = await database.rawQuery(sql);
-      // print("");
-      // print(records);
-      for (var record in records) {
-        // print(record);
-        ScreenshotModel model = ScreenshotModel.fromMap(record);
-        screenshots.add(model);
-      }
-    } catch (e) {
-      print(e);
-    }
-    return screenshots;
-  }
+  // Future<List<ScreenshotModel>> find(String query, {Set<int> filter}) async {
+  //   List<String> subSql = [];
+  //   String filterSQL = "";
+  //   if (filter != null) {
+  //     for (var id in filter) {
+  //       subSql.add(
+  //           "SELECT ${_TaggedScreens.docid} FROM ${_TaggedScreens.table} WHERE ${_TaggedScreens.tid}=$id");
+  //     }
+  //     if (subSql.isNotEmpty) {
+  //       filterSQL = "AND ${_Screenshots.docid} IN (" +
+  //           (subSql.length > 1 ? subSql.join(" INTERSECT ") : subSql[0]) +
+  //           ")";
+  //     }
+  //   }
+  //   final String sql =
+  //       'SELECT * FROM ${_Screenshots.table} WHERE ${_Screenshots.text} MATCH "$query*" $filterSQL';
+  //   List<ScreenshotModel> screenshots = [];
+  //   try {
+  //     List<Map> records = await database.rawQuery(sql);
+  //     // print("");
+  //     // print(records);
+  //     for (var record in records) {
+  //       // print(record);
+  //       ScreenshotModel model = ScreenshotModel.fromMap(record);
+  //       screenshots.add(model);
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  //   return screenshots;
+  // }
 
-  Future<AsyncResponse> removeBatch(List<ScreenshotModel> screens,
-      {
+  // Future<AsyncResponse> removeBatch(List<ScreenshotModel> screens,
+  //     {
 
-      /// true - if you want to delete the files too
-      bool rmfile = false}) async {
-    try {
-      for (var item in screens) {
-        String sql =
-            'DELETE FROM ${_Screenshots.table} WHERE ${_Screenshots.hash} = ${item.hash}';
-        await database.execute(sql);
-        if (rmfile) File(item.imagePath).delete();
-      }
-      return AsyncResponse(ResponseStatus.success, null);
-    } catch (e) {
-      print(e);
-      return AsyncResponse(ResponseStatus.failed, e);
-    }
-  }
+  //     /// true - if you want to delete the files too
+  //     bool rmfile = false}) async {
+  //   try {
+  //     for (var item in screens) {
+  //       String sql =
+  //           'DELETE FROM ${_Screenshots.table} WHERE ${_Screenshots.hash} = ${item.hash}';
+  //       await database.execute(sql);
+  //       if (rmfile) File(item.imagePath).delete();
+  //     }
+  //     return AsyncResponse(ResponseStatus.success, null);
+  //   } catch (e) {
+  //     print(e);
+  //     return AsyncResponse(ResponseStatus.failed, e);
+  //   }
+  // }
 }
 
 class TagUtils {
