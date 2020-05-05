@@ -1,7 +1,7 @@
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:ural/models/tags_model.dart';
 
-import 'package:ural/database.dart';
+import 'package:ural/database/database.dart';
 import 'package:ural/utils/async.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/models/screen_model.dart';

@@ -6,7 +6,7 @@ import 'package:workmanager/workmanager.dart';
 import 'dart:io';
 
 import 'models/screen_model.dart';
-import 'database.dart';
+import 'package:ural/database/database.dart';
 
 Future<bool> uploadImagesInBackground() async {
   /// We need to first check if the user has specified any default-folder

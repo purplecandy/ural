@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ural/database.dart';
+import 'package:ural/database/database.dart';
 // import 'package:ural/utils/bloc_provider.dart';
 
 class DatabaseRepository extends ChangeNotifier {
@@ -15,5 +15,5 @@ class DatabaseRepository extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> hardReset() async => await slDB.reset();
+  Future<void> hardReset() async => await ScreenshotsUtils.deleteAll(slDB.db);
 }

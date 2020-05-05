@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/utils/bloc.dart';
-import 'package:ural/database.dart';
+import 'package:ural/database/database.dart';
 import 'package:ural/prefrences.dart';
 
 enum SearchStates {
