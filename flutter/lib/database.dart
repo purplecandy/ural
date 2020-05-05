@@ -237,18 +237,18 @@ class TagUtils {
     }
   }
 
-  static Future<AsyncResponse> insert(Database db, int tagId, int docId) async {
-    try {
-      await db.rawInsert(
-          "INSERT INTO ${_TaggedScreens.table} ('${_TaggedScreens.tid}','${_TaggedScreens.docid}') VALUES($tagId,$docId)");
-      return AsyncResponse(ResponseStatus.success, null);
-    } catch (e) {
-      print(e);
-      return AsyncResponse(ResponseStatus.failed, null);
-    }
-  }
+  // static Future<AsyncResponse> insert(Database db, int tagId, int docId) async {
+  //   try {
+  //     await db.rawInsert(
+  //         "INSERT INTO ${_TaggedScreens.table} ('${_TaggedScreens.tid}','${_TaggedScreens.docid}') VALUES($tagId,$docId)");
+  //     return AsyncResponse(ResponseStatus.success, null);
+  //   } catch (e) {
+  //     print(e);
+  //     return AsyncResponse(ResponseStatus.failed, null);
+  //   }
+  // }
 
-  static Future<AsyncResponse> getTags(Database db) async {
+  static Future<AsyncResponse> list(Database db) async {
     try {
       List results = await db.rawQuery("SELECT * FROM ${_Tags.table}");
       List<TagModel> tags = [];
@@ -264,49 +264,49 @@ class TagUtils {
     }
   }
 
-  static Future<AsyncResponse> getScreensByTag(Database db, int tagId) async {
-    try {
-      /// col names
-      // final String hash = "hash", imagePath = "imagePath", text = "text";
-      if (tagId == null) throw Exception("tagId is null");
-      String sql =
-          """SELECT ${_Screenshots.hash},${_Screenshots.imagePath},${_Screenshots.text},${_Screenshots.docid} FROM ${_Screenshots.table} WHERE ${_Screenshots.docid} IN (SELECT ${_Screenshots.docid} FROM ${_TaggedScreens.table} WHERE ${_TaggedScreens.tid}=$tagId)""";
+  // static Future<AsyncResponse> getScreensByTag(Database db, int tagId) async {
+  //   try {
+  //     /// col names
+  //     // final String hash = "hash", imagePath = "imagePath", text = "text";
+  //     if (tagId == null) throw Exception("tagId is null");
+  //     String sql =
+  //         """SELECT ${_Screenshots.hash},${_Screenshots.imagePath},${_Screenshots.text},${_Screenshots.docid} FROM ${_Screenshots.table} WHERE ${_Screenshots.docid} IN (SELECT ${_Screenshots.docid} FROM ${_TaggedScreens.table} WHERE ${_TaggedScreens.tid}=$tagId)""";
 
-      List<Map> results = await db.rawQuery(sql);
-      List<ScreenshotModel> screens = [];
-      if (results.length > 0) {
-        for (var item in results) {
-          ScreenshotModel model = ScreenshotModel.fromMap(item);
-          screens.add(model);
-        }
-        return AsyncResponse(ResponseStatus.success, screens);
-      }
-      return AsyncResponse(ResponseStatus.success, screens);
-    } catch (e) {
-      print(e);
-      return AsyncResponse(ResponseStatus.failed, e);
-    }
-  }
+  //     List<Map> results = await db.rawQuery(sql);
+  //     List<ScreenshotModel> screens = [];
+  //     if (results.length > 0) {
+  //       for (var item in results) {
+  //         ScreenshotModel model = ScreenshotModel.fromMap(item);
+  //         screens.add(model);
+  //       }
+  //       return AsyncResponse(ResponseStatus.success, screens);
+  //     }
+  //     return AsyncResponse(ResponseStatus.success, screens);
+  //   } catch (e) {
+  //     print(e);
+  //     return AsyncResponse(ResponseStatus.failed, e);
+  //   }
+  // }
 
-  static Future<AsyncResponse> filter(Database db, List<int> ids) async {
-    try {
-      if (ids.isEmpty) throw Exception("ids not provided");
-      String sql = _generateSQL(ids);
-      List results = await db.rawQuery(sql);
-      if (results.length > 0) {
-        List<ScreenshotModel> screens = [];
-        for (var item in results) {
-          ScreenshotModel model = ScreenshotModel.fromMap(item);
-          screens.add(model);
-        }
-        return AsyncResponse(ResponseStatus.success, screens);
-      }
-      return AsyncResponse(ResponseStatus.success, results);
-    } catch (e) {
-      print(e);
-      return AsyncResponse(ResponseStatus.failed, e);
-    }
-  }
+  // static Future<AsyncResponse> filter(Database db, List<int> ids) async {
+  //   try {
+  //     if (ids.isEmpty) throw Exception("ids not provided");
+  //     String sql = _generateSQL(ids);
+  //     List results = await db.rawQuery(sql);
+  //     if (results.length > 0) {
+  //       List<ScreenshotModel> screens = [];
+  //       for (var item in results) {
+  //         ScreenshotModel model = ScreenshotModel.fromMap(item);
+  //         screens.add(model);
+  //       }
+  //       return AsyncResponse(ResponseStatus.success, screens);
+  //     }
+  //     return AsyncResponse(ResponseStatus.success, results);
+  //   } catch (e) {
+  //     print(e);
+  //     return AsyncResponse(ResponseStatus.failed, e);
+  //   }
+  // }
 
   static Future<AsyncResponse> delete(Database db, int id) async {
     try {
@@ -333,33 +333,33 @@ class TagUtils {
     }
   }
 
-  static Future<AsyncResponse> deleteTaggedScreen(
-      Database db, int tagId, int docId) async {
-    try {
-      String sql =
-          'DELETE FROM ${_TaggedScreens.table} WHERE ${_TaggedScreens.tid} = $tagId AND ${_TaggedScreens.docid} = $docId';
-      db.execute(sql);
-      return AsyncResponse(
-          ResponseStatus.success, "Tagged Screen deleted successfull");
-    } catch (e) {
-      print(e);
-      return AsyncResponse(ResponseStatus.failed, e);
-    }
-  }
+  // static Future<AsyncResponse> deleteTaggedScreen(
+  //     Database db, int tagId, int docId) async {
+  //   try {
+  //     String sql =
+  //         'DELETE FROM ${_TaggedScreens.table} WHERE ${_TaggedScreens.tid} = $tagId AND ${_TaggedScreens.docid} = $docId';
+  //     db.execute(sql);
+  //     return AsyncResponse(
+  //         ResponseStatus.success, "Tagged Screen deleted successfull");
+  //   } catch (e) {
+  //     print(e);
+  //     return AsyncResponse(ResponseStatus.failed, e);
+  //   }
+  // }
 
-  static String _generateSQL(List<int> ids) {
-    // get tagIds
-    // parse Ids into sql queries
-    List<String> subSql = [];
-    for (int id in ids) {
-      subSql.add(
-          "SELECT ${_TaggedScreens.docid} FROM ${_TaggedScreens.table} WHERE ${_TaggedScreens.tid}=$id");
-    }
+  // static String _generateSQL(List<int> ids) {
+  //   // get tagIds
+  //   // parse Ids into sql queries
+  //   List<String> subSql = [];
+  //   for (int id in ids) {
+  //     subSql.add(
+  //         "SELECT ${_TaggedScreens.docid} FROM ${_TaggedScreens.table} WHERE ${_TaggedScreens.tid}=$id");
+  //   }
 
-    return "SELECT * FROM ${_Screenshots.table} WHERE ${_Screenshots.docid} IN (" +
-        (subSql.length > 1 ? subSql.join(" INTERSECT ") : subSql[0]) +
-        ")";
-  }
+  //   return "SELECT * FROM ${_Screenshots.table} WHERE ${_Screenshots.docid} IN (" +
+  //       (subSql.length > 1 ? subSql.join(" INTERSECT ") : subSql[0]) +
+  //       ")";
+  // }
 }
 
 class TaggedScreensUtils {

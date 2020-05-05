@@ -72,7 +72,7 @@ class TagsBloc extends BlocBase<TagState, TagAction, List<TagModel>> {
   }
 
   void _getTags() async {
-    final result = await TagUtils.getTags(_slDB.db);
+    final result = await TagUtils.list(_slDB.db);
     if (result.state == ResponseStatus.success) {
       updateState(TagState.completed, result.object);
     }

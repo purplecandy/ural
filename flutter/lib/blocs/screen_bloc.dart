@@ -122,7 +122,7 @@ class TaggedScreenBloc extends AbstractScreenshots {
   }
 
   void _getAllScreens() async {
-    final resp = await TagUtils.getScreensByTag(_slDB.db, model.id);
+    final resp = await TaggedScreensUtils.list(_slDB.db, model.id);
     if (resp.state == ResponseStatus.success) {
       updateState(RecentScreenStates.done, resp.object);
     }
@@ -131,7 +131,7 @@ class TaggedScreenBloc extends AbstractScreenshots {
   Future<void> handleAdd(List<int> docIds) async {
     if (docIds != null) {
       for (var id in docIds) {
-        await TagUtils.insert(_slDB.db, model.id, id);
+        await TaggedScreensUtils.insert(_slDB.db, model.id, id);
       }
       dispatch(RecentScreenAction.fetch);
     }
@@ -139,7 +139,7 @@ class TaggedScreenBloc extends AbstractScreenshots {
 
   Future<void> _removeItems(List<ScreenshotModel> models, TagModel tag) async {
     for (var model in models) {
-      await TagUtils.deleteTaggedScreen(_slDB.db, tag.id, model.docId);
+      await TaggedScreensUtils.delete(_slDB.db, tag.id, model.docId);
     }
   }
 }
