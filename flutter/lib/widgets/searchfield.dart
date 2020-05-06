@@ -65,6 +65,7 @@ class _SearchFieldWidgetState extends State<SearchFieldWidget> {
             color: Colors.white, borderRadius: BorderRadius.circular(radius)),
         child: TextField(
           controller: widget.controller,
+          textInputAction: TextInputAction.search,
           focusNode: widget.focusNode,
           onChanged: widget.onChanged,
           onSubmitted: widget.onSubmitted,
@@ -88,15 +89,21 @@ class _SearchFieldWidgetState extends State<SearchFieldWidget> {
                             Icons.filter_list,
                             color: e.object.isEmpty
                                 ? Colors.grey
-                                : Theme.of(context).accentColor,
+                                : Colors.pinkAccent,
                           ),
                           onPressed: () {
                             widget.focusNode.unfocus(focusPrevious: true);
                             showModalBottomSheet(
+                                isScrollControlled: true,
                                 context: context,
                                 builder: (context) =>
                                     FilterByTagsWidget<FilterTagsBloc>(
                                       bloc: filterBloc,
+                                      onApply: () {
+                                        Navigator.pop(context);
+                                        widget.onSubmitted(
+                                            widget.controller.text);
+                                      },
                                     ));
                           })),
                 ),

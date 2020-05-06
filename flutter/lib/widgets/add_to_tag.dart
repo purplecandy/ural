@@ -24,6 +24,7 @@ class AddToTagButtonWidget extends StatelessWidget {
         icon: Icon(Feather.tag),
         onPressed: () {
           showModalBottomSheet(
+              isScrollControlled: true,
               context: context,
               builder: (context) => Provider<ScreenSelectionBloc>(
                   create: (_) => selectionBloc, child: AddToTagWidget()));
@@ -64,6 +65,7 @@ class _AddToTagWidgetState extends State<AddToTagWidget> {
     final db = Provider.of<DatabaseRepository>(context, listen: false).slDB.db;
     Navigator.pop(context);
     try {
+      if (_selected.isEmpty) return;
       for (var item in _selectedScreens) {
         for (var tagId in _selected) {
           await TaggedScreensUtils.insert(db, tagId, item.docId);
@@ -81,6 +83,7 @@ class _AddToTagWidgetState extends State<AddToTagWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: EdgeInsets.only(top: 20),
       decoration: BoxDecoration(
           color: Theme.of(context).backgroundColor,
           borderRadius: BorderRadius.circular(19)),
@@ -96,7 +99,7 @@ class _AddToTagWidgetState extends State<AddToTagWidget> {
                 children: <Widget>[
                   Text(
                     "Add tags",
-                    style: TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   CupertinoButton(
                     onPressed: handleApply,
@@ -110,7 +113,7 @@ class _AddToTagWidgetState extends State<AddToTagWidget> {
                 ],
               )),
           //create new
-          Divider(),
+          Divider(height: 1),
           ListTile(
             leading: Icon(Feather.plus),
             onTap: () {
@@ -122,7 +125,7 @@ class _AddToTagWidgetState extends State<AddToTagWidget> {
             title: Text("Create new tag"),
           ),
           //display tags
-          Divider(),
+          Divider(height: 1),
           Expanded(
             child: SingleChildScrollView(
               child: BlocBuilder<TagState, List<TagModel>>(

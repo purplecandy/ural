@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:ural/blocs/search_bloc.dart';
 import 'package:ural/blocs/tags_bloc.dart';
@@ -8,9 +9,11 @@ import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/bloc.dart';
 
 class FilterByTagsWidget<T> extends StatefulWidget {
+  final void Function() onApply;
   final String title;
   final T bloc;
-  FilterByTagsWidget({Key key, this.title, @required this.bloc})
+  FilterByTagsWidget(
+      {Key key, this.title, @required this.bloc, @required this.onApply})
       : super(key: key);
 
   @override
@@ -35,8 +38,8 @@ class _FilterTagsWidgetState extends State<FilterByTagsWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxHeight: 400),
-      padding: EdgeInsets.all(8),
+      // constraints: BoxConstraints(maxHeight: 400),
+      padding: EdgeInsets.only(top: 20),
       color: Theme.of(context).backgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -50,20 +53,29 @@ class _FilterTagsWidgetState extends State<FilterByTagsWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
-                    widget.title ?? "FILTER BY TAGS",
-                    style: TextStyle(fontSize: 18),
+                    widget.title ?? "Filter by tags",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   CupertinoButton(
-                    onPressed: () => bloc.dispatch(FilterAction.reset),
+                    onPressed: widget.onApply,
                     child: Text(
-                      "Reset",
+                      "Apply",
                       style: TextStyle(
-                        color: Theme.of(context).accentColor,
+                        color: Colors.pinkAccent,
                       ),
                     ),
                   )
                 ],
               )),
+          //
+          Divider(height: 1),
+          ListTile(
+            leading: Icon(Feather.x),
+            title: Text("Remove filters"),
+            onTap: () => bloc.dispatch(FilterAction.reset),
+          ),
+          Divider(height: 1),
+          //
           //lower section
           Expanded(
             child: SingleChildScrollView(
