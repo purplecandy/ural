@@ -6,10 +6,12 @@ import 'package:provider/provider.dart';
 import 'package:ural/app.dart';
 
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/blocs/selection_bloc.dart';
 
 import 'package:ural/prefrences.dart';
 import 'package:ural/pages/screens_view.dart';
 import 'package:ural/values/theme.dart';
+import 'package:ural/widgets/add_to_tag.dart';
 import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/delete_button.dart';
 
@@ -62,8 +64,10 @@ class _HomePageState extends State<HomePage> {
     return ScreenView(
       isStandalone: false,
       bottomButtons: BottomButtons(),
-      actionBuilder: (context) =>
-          <Widget>[DeleteButtonWidget<RecentScreenBloc>()],
+      actionBuilder: (context) => <Widget>[
+        AddToTagButtonWidget(),
+        DeleteButtonWidget<RecentScreenBloc>()
+      ],
     );
   }
 }

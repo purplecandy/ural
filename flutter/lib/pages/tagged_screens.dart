@@ -9,6 +9,7 @@ import 'package:ural/repository/database_repo.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/blocs/selection_bloc.dart';
 import 'package:ural/utils/bloc.dart';
+import 'package:ural/widgets/add_to_tag.dart';
 import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/delete_button.dart';
 import 'package:ural/widgets/dialogs/alert.dart';
@@ -47,22 +48,23 @@ class _TaggedScreenState extends State<TaggedScreen> {
       child: Provider<ScreenSelectionBloc>(
         create: (_) => _selectionBloc,
         child: Scaffold(
-            appBar: AppBar(
-              title: Text(tagModel.name),
-              actions: <Widget>[
-                BlocBuilder<SelectionStates, Map<int, ScreenshotModel>>(
-                  bloc: _selectionBloc,
-                  onSuccess: (c, e) => e.state != SelectionStates.empty
-                      ? DeleteButtonWidget<TaggedScreenBloc>()
-                      : Container(),
-                ),
-                BlocBuilder<SelectionStates, Map<int, ScreenshotModel>>(
-                  bloc: _selectionBloc,
-                  onSuccess: (c, e) => e.state != SelectionStates.empty
-                      ? RemoveScreensButton(tag: tagModel)
-                      : Container(),
-                ),
-              ],
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(56),
+              child: BlocBuilder<SelectionStates, Map<int, ScreenshotModel>>(
+                bloc: _selectionBloc,
+                onSuccess: (c, e) => e.state == SelectionStates.empty
+                    ? AppBar(
+                        title: Text(tagModel.name),
+                      )
+                    : AppBar(
+                        title: Text(tagModel.name),
+                        actions: <Widget>[
+                          AddToTagButtonWidget(),
+                          DeleteButtonWidget<TaggedScreenBloc>(),
+                          RemoveScreensButton(tag: tagModel)
+                        ],
+                      ),
+              ),
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () => Navigator.push(

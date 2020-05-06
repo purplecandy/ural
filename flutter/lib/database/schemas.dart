@@ -4,9 +4,6 @@ class Screenshots {
       imagePath = "imagePath",
       text = "text",
       table = "virtualscreenshotlist";
-
-  // @override
-  // String toString()=>table;
 }
 
 class Tags {

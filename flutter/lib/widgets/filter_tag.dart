@@ -6,7 +6,6 @@ import 'package:ural/blocs/tags_bloc.dart';
 import 'package:ural/models/tags_model.dart';
 import 'package:ural/repository/database_repo.dart';
 import 'package:ural/utils/bloc.dart';
-import 'package:ural/widgets/thin_listtile.dart';
 
 class FilterByTagsWidget<T> extends StatefulWidget {
   final String title;
@@ -35,79 +34,68 @@ class _FilterTagsWidgetState extends State<FilterByTagsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
+    return Container(
       constraints: BoxConstraints(maxHeight: 400),
-      child: Container(
-        padding: EdgeInsets.all(8),
-        color: Theme.of(context).backgroundColor,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            //upper section
-
-            Padding(
-                padding:
-                    const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      widget.title ?? "FILTER BY TAGS",
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    CupertinoButton(
-                      onPressed: () => bloc.dispatch(FilterAction.reset),
-                      child: Text(
-                        "Reset",
-                        style: TextStyle(
-                          color: Theme.of(context).accentColor,
-                        ),
+      padding: EdgeInsets.all(8),
+      color: Theme.of(context).backgroundColor,
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          //upper section
+          Padding(
+              padding:
+                  const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    widget.title ?? "FILTER BY TAGS",
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  CupertinoButton(
+                    onPressed: () => bloc.dispatch(FilterAction.reset),
+                    child: Text(
+                      "Reset",
+                      style: TextStyle(
+                        color: Theme.of(context).accentColor,
                       ),
-                    )
-                  ],
-                )),
-            //lower section
-            Expanded(
+                    ),
+                  )
+                ],
+              )),
+          //lower section
+          Expanded(
+            child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
               child: BlocBuilder<TagState, List<TagModel>>(
                 bloc: _tagsBloc,
-                onSuccess: (_, event) => event.state == TagState.loading
-                    ? Container()
-                    : ListView.builder(
-                        physics: ClampingScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: event.object.length,
-                        itemBuilder: (context, index) => ThinListTiles(
-                          color: Color(event.object[index].colorCode),
-                          callback: (_) {
-                            bloc.dispatch(
-                                bloc.event.object
-                                        .contains(event.object[index].id)
-                                    ? FilterAction.del
-                                    : FilterAction.add,
-                                data: {"id": event.object[index].id});
-                          },
-                          trailing: SizedBox(
-                            height: 10,
-                            child: BlocBuilder<FilterState, Set<int>>(
-                              bloc: bloc,
-                              onSuccess: (c, e) => Checkbox(
-                                  activeColor: Theme.of(context).accentColor,
-                                  value:
-                                      e.object.contains(event.object[index].id),
-                                  onChanged: (val) {}),
-                            ),
-                          ),
-                          title: Text(
-                            event.object[index].name,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(color: Colors.black87),
-                          ),
-                        ),
-                      ),
+                onSuccess: (_, event) => BlocBuilder<FilterState, Set<int>>(
+                  bloc: bloc,
+                  onSuccess: (_, e) => Wrap(
+                    children: event.object
+                        .map((t) => Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: FilterChip(
+                                label: Text(t.name),
+                                selected: e.object.contains(t.id),
+                                onSelected: (val) {
+                                  bloc.dispatch(
+                                      !val
+                                          ? FilterAction.del
+                                          : FilterAction.add,
+                                      data: {"id": t.id});
+                                },
+                                backgroundColor: Color(t.colorCode),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                ),
               ),
-            )
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
