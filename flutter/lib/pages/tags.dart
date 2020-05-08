@@ -9,7 +9,6 @@ import 'package:ural/models/tags_model.dart';
 import 'package:ural/pages/tagged_screens.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/repository/database_repo.dart';
-import 'package:ural/values/theme.dart';
 import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/dialogs/base.dart';
 import 'package:ural/widgets/dialogs/confirmation_dialog.dart';

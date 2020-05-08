@@ -107,7 +107,7 @@ class _ListScreenshotsWidgetState<T extends AbstractScreenshots>
                                 ),
                               );
                             }
-                            return ImageGridTile(
+                            return ImageGridTile<T>(
                               model: snapshot.data.object[index],
                               file: file,
                               key: UniqueKey(),

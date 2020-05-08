@@ -4,19 +4,21 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 
 import 'package:ural/background_tasks.dart';
+import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/blocs/selection_bloc.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/pages/image_view.dart';
 
-class ImageGridTile extends StatelessWidget {
+class ImageGridTile<T extends AbstractScreenshots> extends StatelessWidget {
   final ScreenshotModel model;
   final File file;
   const ImageGridTile({Key key, this.file, this.model}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final rscreenBloc = Provider.of<T>(context, listen: false);
     var selectionBloc;
     try {
       selectionBloc = Provider.of<ScreenSelectionBloc>(context, listen: false);
@@ -43,8 +45,21 @@ class ImageGridTile extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ImageView(
+                builder: (_) => ImageView(
+                  image: File(model.imagePath),
                   model: model,
+                  onDelete: () {
+                    //pop the delete dialog
+                    Navigator.pop(_);
+                    //pop the image view
+                    Navigator.pop(_);
+                    rscreenBloc.dispatch(RecentScreenAction.delete,
+                        data: {
+                          "selected_models": [model]
+                        },
+                        onComplete: () =>
+                            rscreenBloc.dispatch(RecentScreenAction.fetch));
+                  },
                 ),
               ));
         }
@@ -54,15 +69,17 @@ class ImageGridTile extends StatelessWidget {
         child: Stack(
           children: [
             Container(
-              // margin: EdgeInsets.all(8),
               width: double.infinity,
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Center(
-                    child: Thumbanail(
-                      imagePath: file.path,
-                    ),
-                  )),
+              child: Hero(
+                tag: model.hash,
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Center(
+                      child: Thumbanail(
+                        imagePath: file.path,
+                      ),
+                    )),
+              ),
             ),
             selectionBloc == null
                 ? Container()

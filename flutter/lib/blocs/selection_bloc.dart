@@ -1,6 +1,5 @@
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/models/screen_model.dart';
-import 'package:ural/utils/file_utils.dart';
 
 enum SelectionStates { contains, empty, modified }
 enum SelectionAction {
