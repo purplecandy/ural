@@ -14,6 +14,7 @@ import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/delete_button.dart';
 import 'package:ural/widgets/dialogs/alert.dart';
 import 'package:ural/widgets/list_screens.dart';
+import 'package:ural/widgets/popup_progress.dart';
 
 class TaggedScreen extends StatefulWidget {
   final TagModel tagModel;
@@ -105,29 +106,6 @@ class _TaggedScreenState extends State<TaggedScreen> {
               child: Icon(Feather.plus),
             ),
             body: ListScreenshotsWidget<TaggedScreenBloc>()),
-      ),
-    );
-  }
-}
-
-class PopUpProgress extends StatefulWidget {
-  PopUpProgress({Key key}) : super(key: key);
-
-  @override
-  _PopUpProgressState createState() => _PopUpProgressState();
-}
-
-class _PopUpProgressState extends State<PopUpProgress> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.transparent,
-      height: 30,
-      width: 15,
-      child: Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 6,
-        ),
       ),
     );
   }

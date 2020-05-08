@@ -43,9 +43,8 @@ class ImageGridTile extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                fullscreenDialog: true,
                 builder: (context) => ImageView(
-                  imageFile: file,
+                  model: model,
                 ),
               ));
         }

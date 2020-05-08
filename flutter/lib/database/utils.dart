@@ -237,7 +237,7 @@ class ScreenshotsUtils {
         String sql =
             'DELETE FROM ${Screenshots.table} WHERE ${Screenshots.hash} = ${item.hash}';
         await db.execute(sql);
-        if (rmfile) File(item.imagePath).delete();
+        if (rmfile) File(item.imagePath).deleteSync();
       }
       return AsyncResponse(ResponseStatus.success, null);
     } catch (e) {
