@@ -7,6 +7,7 @@ import 'package:ural/background_tasks.dart';
 import 'package:ural/utils/async.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/utils/file_utils.dart';
+import 'package:ural/widgets/buttons.dart';
 import 'package:ural/widgets/dialogs/base.dart';
 
 class InitialSetupDialog extends StatefulWidget {
@@ -36,7 +37,7 @@ class _InitialSetupDialogState extends State<InitialSetupDialog> {
           SizedBox(
             height: 10,
           ),
-          FlatButton(
+          RoundedPurpleButton(
             onPressed: () async {
               final resp = await getPermissionStatus();
               if (resp.state == ResponseStatus.success) {
@@ -83,10 +84,6 @@ class _InitialSetupDialogState extends State<InitialSetupDialog> {
                     ),
                   )
                 : Text("Grant Permisson"),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
-            highlightColor: Colors.deepPurpleAccent,
-            color: Colors.deepPurple,
           )
         ],
       ),

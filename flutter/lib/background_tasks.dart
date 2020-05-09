@@ -2,6 +2,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image/image.dart' as img;
+import 'package:sqflite/sqflite.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:io';
 
@@ -38,27 +39,9 @@ Future<bool> uploadImagesInBackground() async {
 
         for (FileSystemEntity entity in fileEntities) {
           if (entity is File) {
-            //identify if the file is an image format
-            String ext = entity.path
-                .substring(entity.path.length - 3, entity.path.length);
-            if (["jpg", "png"].contains(ext)) {
-              /// Check if the image already exist
-              final bool exist =
-                  await ScreenshotsUtils.exist(_slDB.db, entity.path.hashCode);
-
-              /// Skip if true
-              if (exist) continue;
-              final visionImage = FirebaseVisionImage.fromFile(entity);
-              String text = "";
-              await textRecognizer.processImage(visionImage).then((vt) {
-                text = vt.text;
-              });
-              ScreenshotModel model =
-                  ScreenshotModel(entity.path.hashCode, entity.path, text);
-              ScreenshotsUtils.insert(_slDB.db, model);
-              //asynchronosly generate the thumbnail
-              generateThumb(entity.path);
-            }
+            await addImageToDatabase(_slDB.db, entity, textRecognizer);
+            //asynchronosly generate the thumbnail
+            generateThumb(entity.path);
           }
         }
       } catch (e) {
@@ -71,6 +54,33 @@ Future<bool> uploadImagesInBackground() async {
   }
 
   return false;
+}
+
+Future<void> addImageToDatabase(
+    Database db, File entity, TextRecognizer textRecognizer) async {
+  if (entity is File) {
+    try {
+      //identify if the file is an image format
+      final ext =
+          entity.path.substring(entity.path.length - 3, entity.path.length);
+      if (["jpg", "png"].contains(ext)) {
+        /// Check if the image already exist
+        final exist = await ScreenshotsUtils.exist(db, entity.path.hashCode);
+
+        /// Skip if true
+        if (exist) return;
+        final visionImage = FirebaseVisionImage.fromFile(entity);
+        final text = (await textRecognizer.processImage(visionImage)).text;
+        final model = ScreenshotModel(entity.path.hashCode, entity.path, text);
+        ScreenshotsUtils.insert(db, model);
+      }
+    } catch (e) {
+      print("Exception when executing addImageToDatabase()");
+      print("Excection: $e");
+    }
+  } else {
+    throw Exception("The entity is not a file");
+  }
 }
 
 /// Generate thumbnail from image source
