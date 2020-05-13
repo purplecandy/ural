@@ -1,41 +1,11 @@
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:ural/models/tags_model.dart';
 
+import 'package:ural/blocs/abstract_screens.dart';
+import 'package:ural/models/tags_model.dart';
 import 'package:ural/database/database.dart';
 import 'package:ural/utils/async.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/models/screen_model.dart';
-import 'package:ural/utils/file_utils.dart';
-
-abstract class AbstractScreenshots extends BlocBase<RecentScreenStates,
-    RecentScreenAction, List<ScreenshotModel>> {
-  AppDB _slDB;
-
-  AbstractScreenshots()
-      : super(
-            state: RecentScreenStates.loading, object: List<ScreenshotModel>());
-
-  /// Initialize database
-  void initializeDatabase(AppDB db) {
-    _slDB = db;
-  }
-
-  Future<void> _deleteItems(List<ScreenshotModel> models) async {
-    List<int> hash = [];
-    List<String> paths = [];
-
-    for (var model in models) {
-      hash.add(model.hash);
-      paths.add(model.imagePath);
-    }
-
-    final result = List.from((await FileUtils.deleteFiles(paths)).values);
-
-    for (var i = 0; i < hash.length; i++) {
-      if (result[i]) ScreenshotsUtils.delete(_slDB.db, hash[i]);
-    }
-  }
-}
 
 enum RecentScreenStates { loading, done }
 enum RecentScreenAction {
@@ -50,7 +20,10 @@ enum RecentScreenAction {
   remove
 }
 
-class RecentScreenBloc extends AbstractScreenshots {
+class RecentScreenBloc
+    extends AbstractScreenshots<RecentScreenStates, RecentScreenAction> {
+  RecentScreenBloc() : super(state: RecentScreenStates.loading);
+
   @override
   void dispatch(RecentScreenAction actionState,
       {Map<String, dynamic> data, VoidOnComplete onComplete}) async {
@@ -59,7 +32,8 @@ class RecentScreenBloc extends AbstractScreenshots {
         _getAllScreens();
         break;
       case RecentScreenAction.delete:
-        await _deleteItems(data["selected_models"]);
+        await deleteItems(data["selected_models"]);
+        _updateDeleted(data["selected_models"]);
         break;
       default:
     }
@@ -68,11 +42,11 @@ class RecentScreenBloc extends AbstractScreenshots {
 
   /// List all screenshots from the database
   void _getAllScreens() async {
-    updateState(RecentScreenStates.done, await ScreenshotsUtils.list(_slDB.db));
+    updateState(RecentScreenStates.done, await ScreenshotsUtils.list(appDB.db));
   }
 
   Future<bool> handleRemove(List<ScreenshotModel> selected) async {
-    final resp = await ScreenshotsUtils.deleteMultiple(_slDB.db, selected);
+    final resp = await ScreenshotsUtils.deleteMultiple(appDB.db, selected);
     dispatch(RecentScreenAction.fetch);
     return resp.state == ResponseStatus.success;
   }
@@ -89,9 +63,16 @@ class RecentScreenBloc extends AbstractScreenshots {
   void dispose() {
     super.dispose();
   }
+
+  void _updateDeleted(List<ScreenshotModel> models) {
+    event.object.removeWhere((element) => models.contains(element));
+    updateState(RecentScreenStates.done, event.object);
+  }
 }
 
-class TaggedScreenBloc extends AbstractScreenshots {
+class TaggedScreenBloc
+    extends AbstractScreenshots<RecentScreenStates, RecentScreenAction> {
+  TaggedScreenBloc() : super(state: RecentScreenStates.loading);
   TagModel model;
 
   void initializeModel(TagModel tagModel) {
@@ -111,7 +92,8 @@ class TaggedScreenBloc extends AbstractScreenshots {
         _getAllScreens();
         break;
       case RecentScreenAction.delete:
-        await _deleteItems(data["selected_models"]);
+        await deleteItems(data["selected_models"]);
+        _updateDeleted(data["selected_models"]);
         break;
       case RecentScreenAction.remove:
         await _removeItems(data["selected_models"], data["tag"]);
@@ -122,7 +104,7 @@ class TaggedScreenBloc extends AbstractScreenshots {
   }
 
   void _getAllScreens() async {
-    final resp = await TaggedScreensUtils.list(_slDB.db, model.id);
+    final resp = await TaggedScreensUtils.list(appDB.db, model.id);
     if (resp.state == ResponseStatus.success) {
       updateState(RecentScreenStates.done, resp.object);
     }
@@ -131,7 +113,7 @@ class TaggedScreenBloc extends AbstractScreenshots {
   Future<void> handleAdd(List<int> docIds) async {
     if (docIds != null) {
       for (var id in docIds) {
-        await TaggedScreensUtils.insert(_slDB.db, model.id, id);
+        await TaggedScreensUtils.insert(appDB.db, model.id, id);
       }
       dispatch(RecentScreenAction.fetch);
     }
@@ -139,7 +121,12 @@ class TaggedScreenBloc extends AbstractScreenshots {
 
   Future<void> _removeItems(List<ScreenshotModel> models, TagModel tag) async {
     for (var model in models) {
-      await TaggedScreensUtils.delete(_slDB.db, tag.id, model.docId);
+      await TaggedScreensUtils.delete(appDB.db, tag.id, model.docId);
     }
+  }
+
+  void _updateDeleted(List<ScreenshotModel> models) {
+    event.object.removeWhere((element) => models.contains(element));
+    updateState(RecentScreenStates.done, event.object);
   }
 }

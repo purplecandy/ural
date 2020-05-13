@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:ural/blocs/abstract_screens.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/database/database.dart';
@@ -23,19 +24,15 @@ enum SearchAction {
   ///
   /// Requires:  `String:query` and `UralPreferences:ural_pref` and `Set<int>:filters`
   fetch,
+
+  /// Delete
+  /// Require: `List<ScreenshotModel>:selected_models`
+  delete,
   reset
 }
 
-class SearchScreenBloc
-    extends BlocBase<SearchStates, SearchAction, List<ScreenshotModel>> {
-  AppDB _slDB;
-  SearchScreenBloc()
-      : super(state: SearchStates.idle, object: List<ScreenshotModel>());
-
-  /// Initialize database
-  void initializeDatabase(AppDB db) {
-    _slDB = db;
-  }
+class SearchScreenBloc extends AbstractScreenshots<SearchStates, SearchAction> {
+  SearchScreenBloc() : super(state: SearchStates.idle);
 
   @override
   void dispose() {
@@ -45,7 +42,7 @@ class SearchScreenBloc
   int count = 0;
   @override
   void dispatch(SearchAction actionState,
-      {Map<String, dynamic> data, VoidOnComplete onComplete}) {
+      {Map<String, dynamic> data, VoidOnComplete onComplete}) async {
     count++;
     print(count);
     switch (actionState) {
@@ -56,15 +53,20 @@ class SearchScreenBloc
         // state.currentState = SearchStates.idle;
         // updateState(SearchStates.idle, event.object);
         break;
+      case SearchAction.delete:
+        await deleteItems(data["selected_models"]);
+        _updateDeleted(data["selected_models"]);
+        break;
       default:
     }
+    onComplete?.call();
   }
 
   void _find(String query, UralPrefrences prefrences,
       [Set<int> filters]) async {
     updateState(SearchStates.searching, event.object);
     var newState;
-    ScreenshotsUtils.find(_slDB.db, query, filter: filters).then((screenshots) {
+    ScreenshotsUtils.find(appDB.db, query, filter: filters).then((screenshots) {
       if (screenshots.length > 0) {
         newState = SearchStates.done;
         prefrences.updateRecentSearches(query);
@@ -73,6 +75,14 @@ class SearchScreenBloc
       }
       updateState(newState, screenshots);
     });
+  }
+
+  void _updateDeleted(List<ScreenshotModel> models) {
+    for (var model in models) {
+      event.object.removeWhere((element) => model.hash == element.hash);
+    }
+    updateState(event.object.isEmpty ? SearchStates.empty : SearchStates.done,
+        event.object);
   }
 }
 
