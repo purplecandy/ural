@@ -16,9 +16,7 @@ import 'package:ural/widgets/textview.dart';
 class ImageView extends StatefulWidget {
   final File image;
   final ScreenshotModel model;
-  final void Function() onDelete;
-  ImageView({Key key, this.image, this.model, @required this.onDelete})
-      : super(key: key);
+  ImageView({Key key, this.image, this.model}) : super(key: key);
 
   @override
   _ImageViewState createState() => _ImageViewState();
@@ -143,7 +141,10 @@ class _ImageViewState extends State<ImageView> {
                             onCancel: () => Navigator.pop(context),
                             // When the action is confirmed
                             onConfirm: () {
-                              widget.onDelete?.call();
+                              //pop the dialog
+                              Navigator.pop(context);
+                              //pop the Widget
+                              Navigator.pop(context, "delete");
                             },
                           ));
                 }),

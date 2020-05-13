@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -7,9 +6,9 @@ import 'package:provider/provider.dart';
 
 import 'package:ural/blocs/search_bloc.dart';
 import 'package:ural/utils/bloc.dart';
-import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
+import 'package:ural/widgets/screenshot_grid.dart';
 
 /// This widget has 2 stream that is SearchFieldBloc and SearchScreenBloc
 ///
@@ -85,12 +84,6 @@ class _SearchBodyWidgetState extends State<SearchBodyWidget> {
         ));
       }
     }
-    // searchResults.add(Divider());
-    // searchResults.add(FilterByTagsWidget(
-    //   onApply: (ids) {
-    //     print(ids);
-    //   },
-    // ));
     return searchResults;
   }
 
@@ -143,7 +136,6 @@ class ScreenshotListGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Orientation orientation = MediaQuery.of(context).orientation;
     // final ScreenBloc screenBloc = SingleBlocProvider.of<ScreenBloc>(context);
     // final SearchFieldBloc searchFieldBloc = Provider.of<SearchFieldBloc>(context);
     final SearchScreenBloc bloc =
@@ -175,35 +167,8 @@ class ScreenshotListGrid extends StatelessWidget {
                   } else {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: GridView.builder(
-                            physics: ClampingScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: snapshot.data.object.length,
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                    mainAxisSpacing: 16,
-                                    crossAxisSpacing: 8,
-                                    childAspectRatio: (150 / 270),
-                                    crossAxisCount:
-                                        (orientation == Orientation.portrait)
-                                            ? 3
-                                            : 4),
-                            itemBuilder: (context, index) {
-                              File file =
-                                  File(snapshot.data.object[index].imagePath);
-                              return file.existsSync()
-                                  ? ImageGridTile(
-                                      model: snapshot.data.object[index],
-                                      file: file,
-                                    )
-                                  : Container(
-                                      child: Center(
-                                        child: Icon(Icons.broken_image),
-                                      ),
-                                    );
-                            }),
+                      child: ScreenshotGridBuilder(
+                        screenshots: snapshot.data.object,
                       ),
                     );
                   }

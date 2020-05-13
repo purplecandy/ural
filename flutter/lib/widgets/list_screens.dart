@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'dart:io';
 import 'package:provider/provider.dart';
 
+import 'package:ural/blocs/abstract_screens.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/widgets/buttons.dart' show RoundedPurpleButton;
-import 'package:ural/widgets/image_grid_tile.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/utils/bloc_provider.dart';
+import 'package:ural/widgets/screenshot_grid.dart';
 
 class ListScreenshotsWidget<T extends AbstractScreenshots>
     extends StatefulWidget {
@@ -29,7 +29,6 @@ class _ListScreenshotsWidgetState<T extends AbstractScreenshots>
 
   @override
   Widget build(BuildContext context) {
-    final Orientation orientation = MediaQuery.of(context).orientation;
     final rscreenBloc = Provider.of<T>(context, listen: false);
     return ListView(children: [
       SizedBox(
@@ -74,46 +73,9 @@ class _ListScreenshotsWidgetState<T extends AbstractScreenshots>
                     callback: refresh,
                   );
                 } else {
-                  return Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      margin: EdgeInsets.only(left: 8, right: 8),
-                      child: GridView.builder(
-                          physics: ClampingScrollPhysics(),
-                          controller: _scrollController,
-                          shrinkWrap: true,
-                          itemCount: snapshot.data.object.length,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                  mainAxisSpacing: 16,
-                                  crossAxisSpacing: 8,
-                                  childAspectRatio: (150 / 270),
-                                  crossAxisCount:
-                                      (orientation == Orientation.portrait)
-                                          ? 3
-                                          : 4),
-                          itemBuilder: (context, index) {
-                            File file;
-                            try {
-                              file =
-                                  File(snapshot.data.object[index].imagePath);
-                              if (!file.existsSync()) {
-                                throw Exception("Image does not exist");
-                              }
-                            } catch (e) {
-                              return Container(
-                                child: Center(
-                                  child: Icon(Icons.broken_image),
-                                ),
-                              );
-                            }
-                            return ImageGridTile<T>(
-                              model: snapshot.data.object[index],
-                              file: file,
-                              key: UniqueKey(),
-                            );
-                          }),
-                    ),
+                  return ScreenshotGridBuilder(
+                    controller: _scrollController,
+                    screenshots: snapshot.data.object,
                   );
                 }
               }

@@ -5,21 +5,24 @@ import 'dart:io';
 
 import 'package:ural/background_tasks.dart';
 import 'package:ural/blocs/screen_bloc.dart';
+import 'package:ural/blocs/search_bloc.dart';
 import 'package:ural/blocs/selection_bloc.dart';
 import 'package:ural/models/screen_model.dart';
 import 'package:ural/prefrences.dart';
 import 'package:ural/utils/bloc.dart';
 import 'package:ural/pages/image_view.dart';
+import 'package:ural/widgets/delete_button.dart';
 
-class ImageGridTile<T extends AbstractScreenshots> extends StatelessWidget {
+class ImageGridTile extends StatelessWidget {
   final ScreenshotModel model;
   final File file;
   const ImageGridTile({Key key, this.file, this.model}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final rscreenBloc = Provider.of<T>(context, listen: false);
-    var selectionBloc;
+    final rscreen = Provider.of<RecentScreenBloc>(context, listen: false);
+    final search = Provider.of<SearchScreenBloc>(context, listen: false);
+    ScreenSelectionBloc selectionBloc;
     try {
       selectionBloc = Provider.of<ScreenSelectionBloc>(context, listen: false);
     } catch (e) {
@@ -33,7 +36,7 @@ class ImageGridTile<T extends AbstractScreenshots> extends StatelessWidget {
             selectionBloc.dispatch(SelectionAction.add, data: {"model": model});
         }
       },
-      onTap: () {
+      onTap: () async {
         if ((selectionBloc != null) &&
             selectionBloc.event.state != SelectionStates.empty) {
           selectionBloc.event.object.containsKey(model.hash)
@@ -42,26 +45,15 @@ class ImageGridTile<T extends AbstractScreenshots> extends StatelessWidget {
               : selectionBloc
                   .dispatch(SelectionAction.add, data: {"model": model});
         } else {
-          Navigator.push(
+          final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => ImageView(
-                  image: File(model.imagePath),
-                  model: model,
-                  onDelete: () {
-                    //pop the delete dialog
-                    Navigator.pop(_);
-                    //pop the image view
-                    Navigator.pop(_);
-                    rscreenBloc.dispatch(RecentScreenAction.delete,
-                        data: {
-                          "selected_models": [model]
-                        },
-                        onComplete: () =>
-                            rscreenBloc.dispatch(RecentScreenAction.fetch));
-                  },
-                ),
+                builder: (_) =>
+                    ImageView(image: File(model.imagePath), model: model),
               ));
+          if (result == "delete")
+            DeleteButtonWidget.deleteAction(context, [model],
+                rscreen: rscreen, search: search);
         }
       },
       child: Container(
@@ -75,7 +67,7 @@ class ImageGridTile<T extends AbstractScreenshots> extends StatelessWidget {
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Center(
-                      child: Thumbanail(
+                      child: Thumbnail(
                         imagePath: file.path,
                       ),
                     )),
@@ -114,15 +106,15 @@ class ImageGridTile<T extends AbstractScreenshots> extends StatelessWidget {
   }
 }
 
-class Thumbanail extends StatefulWidget {
+class Thumbnail extends StatefulWidget {
   final String imagePath;
-  Thumbanail({Key key, this.imagePath}) : super(key: key);
+  Thumbnail({Key key, this.imagePath}) : super(key: key);
 
   @override
   _ThumbanailState createState() => _ThumbanailState();
 }
 
-class _ThumbanailState extends State<Thumbanail> with TickerProviderStateMixin {
+class _ThumbanailState extends State<Thumbnail> with TickerProviderStateMixin {
   bool _thumbGenerated = false;
   Widget _placeholder = Container(
     height: 15,

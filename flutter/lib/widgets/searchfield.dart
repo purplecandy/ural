@@ -92,7 +92,9 @@ class _SearchFieldWidgetState extends State<SearchFieldWidget> {
                                 : Colors.pinkAccent,
                           ),
                           onPressed: () {
-                            widget.focusNode.unfocus(focusPrevious: true);
+                            widget.focusNode.unfocus(
+                                disposition:
+                                    UnfocusDisposition.previouslyFocusedChild);
                             showModalBottomSheet(
                                 isScrollControlled: true,
                                 context: context,

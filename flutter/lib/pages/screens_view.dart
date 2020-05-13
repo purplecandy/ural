@@ -138,7 +138,7 @@ class _ScreenViewState extends State<ScreenView>
     final deviceWidth = MediaQuery.of(context).size.width;
     return WillPopScope(
       onWillPop: () async {
-        if (!searchStack && isStandalone) return Navigator.pop(context);
+        if (!searchStack && isStandalone) return true;
         focusNode.unfocus();
         setState(() {
           _animController.reverse().whenComplete(() {
