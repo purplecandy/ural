@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 
 import 'package:ural/background_tasks.dart';
+import 'package:ural/blocs/abstract_screens.dart';
 import 'package:ural/blocs/screen_bloc.dart';
 import 'package:ural/blocs/search_bloc.dart';
 import 'package:ural/blocs/selection_bloc.dart';
@@ -20,15 +21,17 @@ class ImageGridTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rscreen = Provider.of<RecentScreenBloc>(context, listen: false);
-    final search = Provider.of<SearchScreenBloc>(context, listen: false);
+    AbstractScreenshots rscreen;
+    SearchScreenBloc search;
     ScreenSelectionBloc selectionBloc;
     try {
       selectionBloc = Provider.of<ScreenSelectionBloc>(context, listen: false);
+      rscreen = Provider.of<RecentScreenBloc>(context, listen: false);
+      search = Provider.of<SearchScreenBloc>(context, listen: false);
     } catch (e) {
       selectionBloc = null;
+      rscreen = Provider.of<TaggedScreenBloc>(context, listen: false);
     }
-
     return InkWell(
       onLongPress: () {
         if (selectionBloc != null) {
